@@ -37,18 +37,59 @@ export default function CompanyDetailPage() {
   const router = useRouter();
   const id = params?.id as string;
 
-  // Search in peer_group
-  const peerGroup = intel?.peer_group || [];
-  const peer = peerGroup.find((p: any) => 
-    p.name.toLowerCase() === decodeURIComponent(id).toLowerCase()
-  );
+  // Helper to normalize strings for comparison
+  const normalize = (str: string): string => {
+    if (!str) return '';
+    return str.toLowerCase().trim().replace(/\s+/g, ' ');
+  };
 
-  // Search in suppliers
+  // Decode and normalize the URL parameter
+  const companyName = (() => {
+    try {
+      return decodeURIComponent(id || '');
+    } catch (e) {
+      return id || '';
+    }
+  })();
+  const normalizedSearchName = normalize(companyName);
+
+  // Search in peer_group with robust matching
+  const peerGroup = intel?.peer_group || [];
+  let peer = peerGroup.find((p: any) => {
+    if (!p.name) return false;
+    const normalizedPeerName = normalize(p.name);
+    return normalizedPeerName === normalizedSearchName;
+  });
+
+  // Fallback: Try matching with common abbreviations
+  if (!peer) {
+    const nameVariations: { [key: string]: string[] } = {
+      'british american tobacco': ['bat', 'british american tobacco', 'british-american-tobacco'],
+      'philip morris int.': ['pmi', 'philip morris international', 'philip morris'],
+      'imperial brands': ['imperial', 'imperial brands plc'],
+      'japan tobacco': ['jti', 'japan tobacco international']
+    };
+    
+    for (const [fullName, variations] of Object.entries(nameVariations)) {
+      if (variations.some(v => normalize(v) === normalizedSearchName)) {
+        peer = peerGroup.find((p: any) => normalize(p.name) === normalize(fullName));
+        if (peer) break;
+      }
+    }
+  }
+
+  // Search in suppliers with robust matching (check both name and slug)
   const suppliers = intel?.suppliers?.suppliers || [];
-  const supplier = suppliers.find((s: any) => 
-    s.name.toLowerCase() === decodeURIComponent(id).toLowerCase() ||
-    s.slug === decodeURIComponent(id).toLowerCase()
-  );
+  let supplier = suppliers.find((s: any) => {
+    if (!s.name && !s.slug) return false;
+    const normalizedSupplierName = normalize(s.name || '');
+    const normalizedSlug = (s.slug || '').toLowerCase().trim();
+    const normalizedSearchSlug = normalizedSearchName.replace(/\s+/g, '-');
+    
+    return normalizedSupplierName === normalizedSearchName ||
+           normalizedSlug === normalizedSearchName ||
+           normalizedSlug === normalizedSearchSlug;
+  });
 
   const company = peer || supplier;
   const isPeer = !!peer;
@@ -74,11 +115,11 @@ export default function CompanyDetailPage() {
   }
 
   // Prepare external links
-  const companyName = company.name;
+  const entityName = company.name;
   const ticker = company.ticker || company.stock_ticker;
-  const googleNewsUrl = `https://www.google.com/search?q=${encodeURIComponent(companyName)}+supply+chain+news&tbm=nws`;
+  const googleNewsUrl = `https://www.google.com/search?q=${encodeURIComponent(entityName)}+supply+chain+news&tbm=nws`;
   const yahooFinanceUrl = ticker ? `https://finance.yahoo.com/quote/${ticker}` : null;
-  const secFilingsUrl = `https://www.sec.gov/edgar/search/#/q=${encodeURIComponent(companyName)}`;
+  const secFilingsUrl = `https://www.sec.gov/edgar/search/#/q=${encodeURIComponent(entityName)}`;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -95,7 +136,7 @@ export default function CompanyDetailPage() {
               </Link>
               <div className="h-6 w-px bg-gray-300"></div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">{companyName}</h1>
+                <h1 className="text-3xl font-bold text-gray-900">{entityName}</h1>
                 <div className="flex items-center gap-3 mt-2">
                   {ticker && (
                     <span className="text-sm text-gray-600 font-mono">{ticker}</span>

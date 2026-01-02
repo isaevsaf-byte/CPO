@@ -342,7 +342,7 @@ export default function MorningCoffeeDashboard() {
           <h2 className="text-xl font-bold text-gray-900 mb-4">Peer Intelligence</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {peerGroup.map((peer: any, idx: number) => {
-              const isBAT = peer.name === 'BAT';
+              const isBAT = peer.name === 'British American Tobacco' || peer.name === 'BAT' || peer.ticker === 'BTI';
               const stockMovePositive = peer.stock_move?.startsWith('+');
               const stockMoveNegative = peer.stock_move?.startsWith('-');
               

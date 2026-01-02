@@ -1,0 +1,632 @@
+{
+  "last_updated": "2026-01-02T11:06:31.696724",
+  "macro": {
+    "status": "success",
+    "rag_score": "GREEN",
+    "regions": {
+      "us": {
+        "status": "success",
+        "region": "US",
+        "indicators": {
+          "fx_rate": "Placeholder - USD/EUR",
+          "inflation": "Placeholder - CPI data",
+          "policy": "Placeholder - Fed policy updates"
+        },
+        "summary": "US economic indicators placeholder",
+        "last_fetched": "2026-01-02T11:06:28.715533"
+      },
+      "eu": {
+        "status": "success",
+        "region": "EU",
+        "indicators": {
+          "fx_rate": 1.175,
+          "inflation": "Placeholder - HICP data",
+          "policy": "Placeholder - ECB policy updates"
+        },
+        "summary": "EU economic indicators - EUR/USD: 1.175",
+        "last_fetched": "2026-01-02T11:06:28.814165"
+      },
+      "china": {
+        "status": "success",
+        "region": "China",
+        "indicators": {
+          "fx_rate": "Placeholder - CNY/USD",
+          "inflation": "Placeholder - CPI data",
+          "policy": "Placeholder - PBOC policy updates"
+        },
+        "summary": "China economic indicators placeholder",
+        "last_fetched": "2026-01-02T11:06:28.814596"
+      }
+    },
+    "volatility_pct": 0.0,
+    "last_fetched": "2026-01-02T11:06:28.814613"
+  },
+  "peers": {
+    "status": "success",
+    "rag_score": "AMBER",
+    "total_peers": 5,
+    "total_red_signals": 0,
+    "total_amber_signals": 1,
+    "peers": [
+      {
+        "name": "BAT",
+        "full_name": "British American Tobacco",
+        "type": "Tobacco Competitor",
+        "rag_score": "GREEN",
+        "summary": "Neutral: Company not US-listed. Monitoring international filings and news sources.",
+        "sec_filings": {
+          "status": "skipped",
+          "reason": "Not US-listed or placeholder",
+          "filings": [],
+          "red_signals": 0,
+          "amber_signals": 0,
+          "last_fetched": "2026-01-02T11:06:28.814623"
+        },
+        "news": {
+          "status": "placeholder",
+          "recent_news": [],
+          "note": "News tracking placeholder - integrate news API"
+        }
+      },
+      {
+        "name": "PMI",
+        "full_name": "Philip Morris International",
+        "type": "Tobacco Competitor",
+        "rag_score": "AMBER",
+        "summary": "WARNING: 1 warning signal(s) detected. Recent director departures or management changes noted.",
+        "sec_filings": {
+          "status": "success",
+          "filings": [
+            {
+              "title": "8-K  - Current report",
+              "summary": " <b>Filed:</b> 2025-12-12 <b>AccNo:</b> 0001628280-25-056649 <b>Size:</b> 818 KB<br>Item 7.01: Regulation FD Disclosure<br>Item 9.01: Financial Statements and Exhibits",
+              "published": ""
+            },
+            {
+              "title": "8-K  - Current report",
+              "summary": " <b>Filed:</b> 2025-12-11 <b>AccNo:</b> 0001104659-25-120310 <b>Size:</b> 1 MB<br>Item 1.01: Entry into a Material Definitive Agreement<br>Item 1.02: Termination of a Material Definitive Agreement<br>",
+              "published": ""
+            },
+            {
+              "title": "8-K  - Current report",
+              "summary": " <b>Filed:</b> 2025-12-02 <b>AccNo:</b> 0001628280-25-054598 <b>Size:</b> 506 KB<br>Item 7.01: Regulation FD Disclosure<br>Item 9.01: Financial Statements and Exhibits",
+              "published": ""
+            },
+            {
+              "title": "8-K  - Current report",
+              "summary": " <b>Filed:</b> 2025-11-17 <b>AccNo:</b> 0001104659-25-113182 <b>Size:</b> 399 KB<br>Item 8.01: Other Events",
+              "published": ""
+            },
+            {
+              "title": "8-K  - Current report",
+              "summary": " <b>Filed:</b> 2025-11-04 <b>AccNo:</b> 0001628280-25-048526 <b>Size:</b> 794 KB<br>Item 5.02: Departure of Directors or Certain Officers; Election of Directors; Appointment of Certain Officers: Compe",
+              "published": ""
+            },
+            {
+              "title": "8-K  - Current report",
+              "summary": " <b>Filed:</b> 2025-10-29 <b>AccNo:</b> 0001104659-25-103715 <b>Size:</b> 1 MB<br>Item 8.01: Other Events<br>Item 9.01: Financial Statements and Exhibits",
+              "published": ""
+            },
+            {
+              "title": "8-K  - Current report",
+              "summary": " <b>Filed:</b> 2025-10-21 <b>AccNo:</b> 0001628280-25-045579 <b>Size:</b> 2 MB<br>Item 2.02: Results of Operations and Financial Condition<br>Item 9.01: Financial Statements and Exhibits",
+              "published": ""
+            },
+            {
+              "title": "8-K  - Current report",
+              "summary": " <b>Filed:</b> 2025-09-19 <b>AccNo:</b> 0001628280-25-042043 <b>Size:</b> 818 KB<br>Item 7.01: Regulation FD Disclosure<br>Item 9.01: Financial Statements and Exhibits",
+              "published": ""
+            },
+            {
+              "title": "8-K  - Current report",
+              "summary": " <b>Filed:</b> 2025-09-02 <b>AccNo:</b> 0001413329-25-000154 <b>Size:</b> 858 KB<br>Item 7.01: Regulation FD Disclosure<br>Item 9.01: Financial Statements and Exhibits",
+              "published": ""
+            },
+            {
+              "title": "8-K  - Current report",
+              "summary": " <b>Filed:</b> 2025-07-22 <b>AccNo:</b> 0001413329-25-000145 <b>Size:</b> 2 MB<br>Item 2.02: Results of Operations and Financial Condition<br>Item 9.01: Financial Statements and Exhibits",
+              "published": ""
+            }
+          ],
+          "red_signals": 0,
+          "amber_signals": 1,
+          "last_fetched": "2026-01-02T11:06:29.066846"
+        },
+        "news": {
+          "status": "placeholder",
+          "recent_news": [],
+          "note": "News tracking placeholder - integrate news API"
+        }
+      },
+      {
+        "name": "Imperial",
+        "full_name": "Imperial Brands",
+        "type": "Tobacco Competitor",
+        "rag_score": "GREEN",
+        "summary": "Neutral: Company not US-listed. Monitoring international filings and news sources.",
+        "sec_filings": {
+          "status": "skipped",
+          "reason": "Not US-listed or placeholder",
+          "filings": [],
+          "red_signals": 0,
+          "amber_signals": 0,
+          "last_fetched": "2026-01-02T11:06:29.067575"
+        },
+        "news": {
+          "status": "placeholder",
+          "recent_news": [],
+          "note": "News tracking placeholder - integrate news API"
+        }
+      },
+      {
+        "name": "JTI",
+        "full_name": "Japan Tobacco International",
+        "type": "Tobacco Competitor",
+        "rag_score": "GREEN",
+        "summary": "Neutral: Company not US-listed. Monitoring international filings and news sources.",
+        "sec_filings": {
+          "status": "skipped",
+          "reason": "Not US-listed or placeholder",
+          "filings": [],
+          "red_signals": 0,
+          "amber_signals": 0,
+          "last_fetched": "2026-01-02T11:06:29.067583"
+        },
+        "news": {
+          "status": "placeholder",
+          "recent_news": [],
+          "note": "News tracking placeholder - integrate news API"
+        }
+      },
+      {
+        "name": "Our Company",
+        "full_name": "Our Company",
+        "type": "Self-Reference",
+        "rag_score": "GREEN",
+        "summary": "Neutral: Self-reference placeholder. Internal monitoring active.",
+        "sec_filings": {
+          "status": "skipped",
+          "reason": "Not US-listed or placeholder",
+          "filings": [],
+          "red_signals": 0,
+          "amber_signals": 0,
+          "last_fetched": "2026-01-02T11:06:29.067587"
+        },
+        "news": {
+          "status": "placeholder",
+          "recent_news": [],
+          "note": "News tracking placeholder - integrate news API"
+        }
+      }
+    ],
+    "last_fetched": "2026-01-02T11:06:29.067610"
+  },
+  "suppliers": {
+    "status": "success",
+    "rag_score": "GREEN",
+    "total_suppliers": 24,
+    "suppliers_at_cyber_risk": 0,
+    "suppliers_at_news_risk": 0,
+    "suppliers": [
+      {
+        "name": "AMCOR",
+        "slug": "amcor",
+        "category": "Printed Packaging",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. AMCOR maintains stable operations in Printed Packaging. No cyber threats or negative news detected. Critical exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Critical",
+        "segment": "Combustibles",
+        "location": "USA",
+        "stock_ticker": "AMCR",
+        "latest_news_summary": "AMCOR continues to be a strategic partner for BAT's new category expansion. Recent capacity investments align with Vuse production ramp-up. Supply chain monitoring shows stable operations. AMCOR maintains quality certifications and on-time delivery metrics above 98%."
+      },
+      {
+        "name": "GPI",
+        "slug": "gpi",
+        "category": "Printed Packaging",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. GPI maintains stable operations in Printed Packaging. No cyber threats or negative news detected. High exposure level managed through standard procurement protocols.",
+        "bat_exposure": "High",
+        "segment": "Combustibles",
+        "location": "USA",
+        "stock_ticker": "GPI",
+        "latest_news_summary": "GPI reported strong quarterly results with increased demand from tobacco industry clients. Operational status normal. No supply disruptions reported. Category: Printed Packaging remains stable."
+      },
+      {
+        "name": "Stora Enso",
+        "slug": "stora-enso",
+        "category": "Printing Substrates",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Stora Enso maintains stable operations in Printing Substrates. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "Finland",
+        "stock_ticker": "STERV.HE",
+        "latest_news_summary": "Stora Enso maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "IP Sun",
+        "slug": "ip-sun",
+        "category": "Printing Substrates",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. IP Sun maintains stable operations in Printing Substrates. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "China",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "IP Sun maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Sappi",
+        "slug": "sappi",
+        "category": "Printing Substrates",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Sappi maintains stable operations in Printing Substrates. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "South Africa",
+        "stock_ticker": "SAP",
+        "latest_news_summary": "Sappi maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Daicel",
+        "slug": "daicel",
+        "category": "Filter Materials",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Daicel maintains stable operations in Filter Materials. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "Japan",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "Daicel maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Eastman",
+        "slug": "eastman",
+        "category": "Filter Materials",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Eastman maintains stable operations in Filter Materials. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "USA",
+        "stock_ticker": "EMN",
+        "latest_news_summary": "Eastman maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Cerdia",
+        "slug": "cerdia",
+        "category": "Filter Materials",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Cerdia maintains stable operations in Filter Materials. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "Germany",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "Cerdia maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Tae Young Filters",
+        "slug": "tae-young-filters",
+        "category": "Filter Materials",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Tae Young Filters maintains stable operations in Filter Materials. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "South Korea",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "Tae Young Filters maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Fuji",
+        "slug": "fuji",
+        "category": "Capsules",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Fuji maintains stable operations in Capsules. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "Japan",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "Fuji maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "SWM (Mativ)",
+        "slug": "swm-mativ",
+        "category": "Fine Papers",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. SWM (Mativ) maintains stable operations in Fine Papers. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "USA",
+        "stock_ticker": "MATV",
+        "latest_news_summary": "SWM (Mativ) maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Delfort",
+        "slug": "delfort",
+        "category": "Fine Papers",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Delfort maintains stable operations in Fine Papers. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "Austria",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "Delfort maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "CNT",
+        "slug": "cnt",
+        "category": "Nicotine",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. CNT maintains stable operations in Nicotine. No cyber threats or negative news detected. Critical exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Critical",
+        "segment": "Combustibles",
+        "location": "China",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "CNT continues to be a strategic partner for BAT's new category expansion. Recent capacity investments align with Vuse production ramp-up. Supply chain monitoring shows stable operations. CNT maintains quality certifications and on-time delivery metrics above 98%."
+      },
+      {
+        "name": "ITC",
+        "slug": "itc",
+        "category": "Nicotine",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. ITC maintains stable operations in Nicotine. No cyber threats or negative news detected. High exposure level managed through standard procurement protocols.",
+        "bat_exposure": "High",
+        "segment": "Combustibles",
+        "location": "India",
+        "stock_ticker": "ITC.NS",
+        "latest_news_summary": "ITC reported strong quarterly results with increased demand from tobacco industry clients. Operational status normal. No supply disruptions reported. Category: Nicotine remains stable."
+      },
+      {
+        "name": "Porton",
+        "slug": "porton",
+        "category": "Nicotine",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Porton maintains stable operations in Nicotine. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "Combustibles",
+        "location": "China",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "Porton maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Tenowo",
+        "slug": "tenowo",
+        "category": "Modern/Traditional Oral Fleece",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Tenowo maintains stable operations in Modern/Traditional Oral Fleece. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "New Categories (Vuse/Glo)",
+        "location": "Germany",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "Tenowo maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Huizhou BYD Electronic",
+        "slug": "byd-electronic",
+        "category": "EMS",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Huizhou BYD Electronic maintains stable operations in EMS. No cyber threats or negative news detected. Critical exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Critical",
+        "segment": "New Categories (Vuse/Glo)",
+        "location": "China",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "Huizhou BYD Electronic continues to be a strategic partner for BAT's new category expansion. Recent capacity investments align with Vuse production ramp-up. Supply chain monitoring shows stable operations. Huizhou BYD Electronic maintains quality certifications and on-time delivery metrics above 98%."
+      },
+      {
+        "name": "Smoore",
+        "slug": "smoore",
+        "category": "EMS",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Smoore maintains stable operations in EMS. No cyber threats or negative news detected. Critical exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Critical",
+        "segment": "New Categories (Vuse/Glo)",
+        "location": "China",
+        "stock_ticker": "6969.HK",
+        "latest_news_summary": "Smoore continues to be a strategic partner for BAT's new category expansion. Recent capacity investments align with Vuse production ramp-up. Supply chain monitoring shows stable operations. Smoore maintains quality certifications and on-time delivery metrics above 98%."
+      },
+      {
+        "name": "EVE Energy",
+        "slug": "eve-energy",
+        "category": "Batteries",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. EVE Energy maintains stable operations in Batteries. No cyber threats or negative news detected. High exposure level managed through standard procurement protocols.",
+        "bat_exposure": "High",
+        "segment": "New Categories (Vuse/Glo)",
+        "location": "China",
+        "stock_ticker": "300014.SZ",
+        "latest_news_summary": "EVE Energy reported strong quarterly results with increased demand from tobacco industry clients. Operational status normal. No supply disruptions reported. Category: Batteries remains stable."
+      },
+      {
+        "name": "Texas Instruments",
+        "slug": "texas-instruments",
+        "category": "EE Component",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Texas Instruments maintains stable operations in EE Component. No cyber threats or negative news detected. High exposure level managed through standard procurement protocols.",
+        "bat_exposure": "High",
+        "segment": "New Categories (Vuse/Glo)",
+        "location": "USA",
+        "stock_ticker": "TXN",
+        "latest_news_summary": "Texas Instruments reported strong quarterly results with increased demand from tobacco industry clients. Operational status normal. No supply disruptions reported. Category: EE Component remains stable."
+      },
+      {
+        "name": "Infineon",
+        "slug": "infineon",
+        "category": "EE Component",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Infineon maintains stable operations in EE Component. No cyber threats or negative news detected. High exposure level managed through standard procurement protocols.",
+        "bat_exposure": "High",
+        "segment": "New Categories (Vuse/Glo)",
+        "location": "Germany",
+        "stock_ticker": "IFX.DE",
+        "latest_news_summary": "Infineon reported strong quarterly results with increased demand from tobacco industry clients. Operational status normal. No supply disruptions reported. Category: EE Component remains stable."
+      },
+      {
+        "name": "Weener",
+        "slug": "weener",
+        "category": "Mechanical",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Weener maintains stable operations in Mechanical. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "New Categories (Vuse/Glo)",
+        "location": "Netherlands",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "Weener maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Rosti",
+        "slug": "rosti",
+        "category": "Mechanical",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Rosti maintains stable operations in Mechanical. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "New Categories (Vuse/Glo)",
+        "location": "Denmark",
+        "stock_ticker": "N/A",
+        "latest_news_summary": "Rosti maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      },
+      {
+        "name": "Jabil",
+        "slug": "jabil",
+        "category": "Mechanical",
+        "cyber_risk": false,
+        "matching_vulnerabilities": [],
+        "news_risk": false,
+        "news_items": [],
+        "risk_analysis": "Low risk profile. Jabil maintains stable operations in Mechanical. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "bat_exposure": "Medium",
+        "segment": "New Categories (Vuse/Glo)",
+        "location": "USA",
+        "stock_ticker": "JBL",
+        "latest_news_summary": "Jabil maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
+      }
+    ],
+    "last_fetched": "2026-01-02T11:06:29.067755"
+  },
+  "macro_economy": {
+    "us": {
+      "cpi": "3.2%",
+      "rate": "5.50%",
+      "trend": "Declining",
+      "summary": "S&P 500 declining: -0.74% change. Market reflects broader economic conditions. Fed signals potential rate cuts in Q3 as inflation moderates. Industrial output remains resilient despite market volatility. Investors monitoring employment data and consumer spending trends."
+    },
+    "eu": {
+      "cpi": "N/A",
+      "rate": "N/A",
+      "trend": "N/A",
+      "summary": "Unable to fetch EUR/USD data. Market may be closed."
+    },
+    "china": {
+      "cpi": "N/A",
+      "rate": "N/A",
+      "trend": "N/A",
+      "summary": "Unable to fetch CNY/USD data. Market may be closed."
+    }
+  },
+  "peer_group": [
+    {
+      "name": "BAT",
+      "ticker": "BATS.L",
+      "sentiment": "Negative",
+      "latest_headline": "No recent news available",
+      "stock_move": "-1.07%",
+      "current_price": 4169.0,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "name": "PMI",
+      "ticker": "PM",
+      "sentiment": "Neutral",
+      "latest_headline": "No recent news available",
+      "stock_move": "-0.96%",
+      "current_price": 160.39999389648438,
+      "risk_level": "MEDIUM"
+    },
+    {
+      "name": "Imperial",
+      "ticker": "IMB.L",
+      "sentiment": "Neutral",
+      "latest_headline": "No recent news available",
+      "stock_move": "-0.38%",
+      "current_price": 3107.0,
+      "risk_level": "LOW"
+    },
+    {
+      "name": "JTI",
+      "ticker": "2914.T",
+      "sentiment": "Neutral",
+      "latest_headline": "No recent news available",
+      "stock_move": "-0.48%",
+      "current_price": 5640.0,
+      "risk_level": "LOW"
+    }
+  ]
+}

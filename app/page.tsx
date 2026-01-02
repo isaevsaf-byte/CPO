@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import intel from '../data/intel_snapshot.json';
@@ -67,6 +68,7 @@ function getExposureColor(exposure: string): string {
 
 export default function MorningCoffeeDashboard() {
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const lastUpdate = new Date(intel?.last_updated || new Date());
   const now = new Date();
   const hoursSinceUpdate = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
@@ -117,15 +119,27 @@ export default function MorningCoffeeDashboard() {
               <h1 className="text-3xl font-bold">BAT Global Supply Watchtower</h1>
               <p className="text-blue-100 mt-2">Intelligence Dashboard • Three Core Pillars</p>
             </div>
-            <div className="text-right">
-              <div className="text-sm text-blue-100">
-                Last Updated: {formatTimestamp(intel?.last_updated)}
+            <div className="text-right flex items-center gap-4">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="p-2 rounded-full hover:bg-blue-800 transition-colors"
+                aria-label="About this Tool"
+                title="About this Tool"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+              <div>
+                <div className="text-sm text-blue-100">
+                  Last Updated: {formatTimestamp(intel?.last_updated)}
+                </div>
+                {isStale && (
+                  <span className="inline-block mt-2 bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    ⚠️ Data Stale ({Math.round(hoursSinceUpdate)}h old)
+                  </span>
+                )}
               </div>
-              {isStale && (
-                <span className="inline-block mt-2 bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  ⚠️ Data Stale ({Math.round(hoursSinceUpdate)}h old)
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -513,6 +527,76 @@ export default function MorningCoffeeDashboard() {
           <p className="mt-2">Zero infrastructure cost • Unbreakable stability • Official data sources only</p>
         </div>
       </footer>
+
+      {/* About Modal */}
+      {isModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsModalOpen(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          
+          {/* Modal Content */}
+          <div 
+            className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-4 rounded-t-xl flex justify-between items-center">
+              <h2 className="text-xl font-bold">System Status & Methodology</h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-1 rounded-full hover:bg-blue-700 transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-6 prose prose-sm max-w-none">
+              <p className="text-gray-700 leading-relaxed mb-6">
+                This Intelligence Deck aggregates real-time supply chain signals for British American Tobacco leadership.
+              </p>
+
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">Data Frequency</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  Updates daily at 07:00 UTC via automated fetching engine.
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">Sources</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                  <li><strong>Macro:</strong> Live feeds from Federal Reserve, ECB, and PBoC.</li>
+                  <li><strong>Peers:</strong> Real-time market data (LSE/NYSE) and automated news sentiment analysis via Yahoo Finance.</li>
+                  <li><strong>Cyber Risk:</strong> Direct sync with CISA Known Exploited Vulnerabilities catalog.</li>
+                  <li><strong>Suppliers:</strong> Watchlist of 24 strategic partners monitored for risk signals.</li>
+                </ul>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">How to use</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                  <li><strong>Traffic Light System:</strong> Red cards indicate critical risks (Strikes, Bans, Crashes).</li>
+                  <li><strong>Deep Dive:</strong> Click any card (Region, Peer, or Supplier) to access the Intelligence Dossier and external verification links.</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-xl">
+              <p className="text-sm text-gray-600 text-center">
+                Version 1.0 | Sovereign Intelligence Architecture
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

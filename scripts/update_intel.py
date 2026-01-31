@@ -746,11 +746,67 @@ def get_supplier_deep_dive_data(supplier_name, category):
         "latest_news_summary": news_summary
     }
 
+def fetch_supplier_stock_data(ticker_symbol):
+    """
+    Fetch stock data for a supplier using yfinance.
+    Returns (daily_change_pct, current_price, latest_headline) or (None, None, None) on error.
+    """
+    if not ticker_symbol or ticker_symbol == "N/A":
+        return None, None, None
+
+    # Check circuit breaker
+    if not yfinance_circuit_breaker.can_execute():
+        return None, None, None
+
+    try:
+        rate_limiter.wait_if_needed()
+        ticker = yf.Ticker(ticker_symbol)
+
+        # Get historical data for price change
+        hist = ticker.history(period="5d")  # 5 days for more reliable data
+
+        daily_change_pct = None
+        current_price = None
+
+        if len(hist) >= 2:
+            current = hist['Close'].iloc[-1]
+            previous = hist['Close'].iloc[-2]
+            daily_change_pct = ((current - previous) / previous) * 100
+            current_price = current
+        elif len(hist) == 1:
+            current_price = hist['Close'].iloc[-1]
+
+        # Try to get news headline
+        latest_headline = None
+        try:
+            news = ticker.news
+            if news and len(news) > 0:
+                latest_headline = news[0].get('title', None)
+        except Exception:
+            pass
+
+        yfinance_circuit_breaker.record_success()
+        return daily_change_pct, current_price, latest_headline
+
+    except Exception as e:
+        yfinance_circuit_breaker.record_failure()
+        harvest_stats.record_warning(f"supplier_stock_{ticker_symbol}", str(e)[:100])
+        return None, None, None
+
+
 def process_suppliers(cyber_data):
-    """Process supplier watchlist and check against CISA alerts and news"""
+    """Process supplier watchlist and check against CISA alerts, news, AND stock data"""
     suppliers = []
     cisa_vulns = cyber_data.get("recent_vulnerabilities", [])
-    
+
+    # Risk keywords for news analysis
+    CRITICAL_KEYWORDS = ["investigation", "fraud", "sanction", "bankruptcy", "recall",
+                          "strike", "ban", "seize", "breach", "hack", "data leak"]
+    WARNING_KEYWORDS = ["delay", "shortage", "volatile", "drop", "miss", "down",
+                        "lawsuit", "fine", "cut", "layoff", "restructur"]
+
+    suppliers_at_stock_risk = 0  # Track suppliers with stock-based risk
+
     # Check each supplier against CISA alerts
     for supplier in WATCHLIST_DATA:
         supplier_name_upper = supplier["name"].upper()
@@ -758,15 +814,15 @@ def process_suppliers(cyber_data):
         category = supplier["category"]
         cyber_risk = False
         matching_vulns = []
-        
+
         # Check if supplier name appears in any CISA vulnerability
         for vuln in cisa_vulns:
             vendor = vuln.get('vendorProject', '').upper()
             product = vuln.get('product', '').upper()
             description = vuln.get('vulnerabilityName', '').upper()
-            
-            if (supplier_name_upper in vendor or 
-                supplier_name_upper in product or 
+
+            if (supplier_name_upper in vendor or
+                supplier_name_upper in product or
                 supplier_name_upper in description):
                 cyber_risk = True
                 matching_vulns.append({
@@ -774,51 +830,90 @@ def process_suppliers(cyber_data):
                     "vulnerabilityName": vuln.get('vulnerabilityName', ''),
                     "dateAdded": vuln.get('dateAdded', '')
                 })
-        
-        # Placeholder for general news check (would integrate news API)
+
+        # Get deep dive data (includes stock ticker)
+        deep_dive = get_supplier_deep_dive_data(supplier_name, category)
+        stock_ticker = deep_dive.get('stock_ticker', 'N/A')
+
+        # NEW: Fetch live stock data for suppliers with tickers
         news_risk = False
         news_items = []
-        news_text = ""  # Will contain news headline if found
-        # In production: Check news APIs for supplier name mentions
-        
-        # Get deep dive data
-        deep_dive = get_supplier_deep_dive_data(supplier_name, category)
-        
+        news_text = ""
+        daily_change_pct = None
+        current_price = None
+        stock_risk = False
+
+        if stock_ticker and stock_ticker != "N/A":
+            daily_change_pct, current_price, latest_headline = fetch_supplier_stock_data(stock_ticker)
+
+            # Check headline for risk keywords
+            if latest_headline:
+                news_text = latest_headline
+                headline_lower = latest_headline.lower()
+
+                if any(kw in headline_lower for kw in CRITICAL_KEYWORDS):
+                    news_risk = True
+                    news_items.append({"headline": latest_headline, "risk": "CRITICAL"})
+                elif any(kw in headline_lower for kw in WARNING_KEYWORDS):
+                    news_risk = True
+                    news_items.append({"headline": latest_headline, "risk": "WARNING"})
+
+            # Check stock price movement
+            if daily_change_pct is not None:
+                if daily_change_pct < -5.0:
+                    stock_risk = True
+                    suppliers_at_stock_risk += 1
+                elif daily_change_pct < -2.0:
+                    stock_risk = True
+                    suppliers_at_stock_risk += 1
+
         # Generate slug for URL routing
         slug = supplier_name.lower().replace(" ", "-").replace("(", "").replace(")", "").replace("huizhou-byd-electronic", "byd-electronic")
-        
+
         # Calculate risk level and signal for suppliers
-        # Suppliers don't have stock data, so we check cyber and news risks
         supplier_risk_level = "LOW"
         last_signal = "No significant risk signals detected."
-        
-        # Check cyber risk first (most critical)
+
+        # Priority 1: Check cyber risk (most critical)
         if cyber_risk:
-            supplier_risk_level = "CRITICAL" if len(matching_vulns) >= 2 else "MEDIUM"
+            supplier_risk_level = "CRITICAL" if len(matching_vulns) >= 2 else "HIGH"
             last_signal = f"🚨 Cyber Risk: {len(matching_vulns)} CISA vulnerability(ies) match {supplier_name}. CVE IDs: {', '.join([v.get('cveID', 'N/A') for v in matching_vulns[:3]])}."
             risk_analysis = f"Cyber risk identified: {len(matching_vulns)} CISA vulnerability(ies) match {supplier_name}. Review recommended for {category} supply chain continuity. Impact assessment: {deep_dive['bat_exposure']} exposure level requires immediate attention."
+
+        # Priority 2: Check news risk
         elif news_risk:
-            # If news risk is detected, calculate using news text
-            supplier_risk_level, last_signal = calculate_risk_with_signal(news_text, None)
+            # Determine severity from news items
+            has_critical = any(item.get('risk') == 'CRITICAL' for item in news_items)
+            if has_critical:
+                supplier_risk_level = "CRITICAL"
+                last_signal = f"🚨 News Alert: {news_text[:120]}"
+            else:
+                supplier_risk_level = "MEDIUM"
+                last_signal = f"⚠️ News Alert: {news_text[:120]}"
             risk_analysis = f"News monitoring indicates potential supply chain concerns. {supplier_name} ({category}) flagged in recent industry reports. Standard risk mitigation protocols recommended."
+
+        # Priority 3: Check stock volatility
+        elif stock_risk and daily_change_pct is not None:
+            if daily_change_pct < -5.0:
+                supplier_risk_level = "CRITICAL"
+                last_signal = f"🚨 Market Alert: {supplier_name} stock down {daily_change_pct:.2f}% (severe drop)"
+            elif daily_change_pct < -2.0:
+                supplier_risk_level = "MEDIUM"
+                last_signal = f"📉 Market Alert: {supplier_name} stock down {daily_change_pct:.2f}%"
+            risk_analysis = f"Stock volatility detected for {supplier_name}. Daily change: {daily_change_pct:.2f}%. Monitor for supply chain impact. {deep_dive['bat_exposure']} exposure level."
+
+        # Default: No risks detected
         else:
-            # No risks - ensure LOW and explicit message
             supplier_risk_level = "LOW"
-            last_signal = "No significant risk signals detected."
-            risk_analysis = f"Low risk profile. {supplier_name} maintains stable operations in {category}. No cyber threats or negative news detected. {deep_dive['bat_exposure']} exposure level managed through standard procurement protocols."
-        
-        # Final consistency check: If risk is not LOW, signal must be explicit
-        if supplier_risk_level != "LOW":
-            if "No significant" in last_signal or "No material" in last_signal or "No recent" in last_signal:
-                if cyber_risk:
-                    last_signal = f"🚨 Cyber Risk: {len(matching_vulns)} CISA vulnerability(ies) detected for {supplier_name}."
-                elif news_risk:
-                    last_signal = f"⚠️ News Risk: {supplier_name} flagged in recent reports."
-                else:
-                    # Should not happen, but fallback
-                    last_signal = f"⚠️ Risk detected: Review required for {supplier_name}."
-        
-        suppliers.append({
+            # Add stock info to signal if available
+            if daily_change_pct is not None:
+                last_signal = f"Stable operations. Stock: {daily_change_pct:+.2f}% today."
+            else:
+                last_signal = "No significant risk signals detected."
+            risk_analysis = f"Low risk profile. {supplier_name} maintains stable operations in {category}. No cyber threats, negative news, or stock volatility detected. {deep_dive['bat_exposure']} exposure level managed through standard procurement protocols."
+
+        # Store additional stock data
+        supplier_data = {
             "name": supplier_name,
             "slug": slug,
             "category": category,
@@ -826,30 +921,41 @@ def process_suppliers(cyber_data):
             "matching_vulnerabilities": matching_vulns[:5],
             "news_risk": news_risk,
             "news_items": news_items,
+            "stock_risk": stock_risk,
+            "daily_change_pct": round(daily_change_pct, 2) if daily_change_pct is not None else None,
+            "current_price": round(current_price, 2) if current_price is not None else None,
             "risk_analysis": risk_analysis,
             "risk_level": supplier_risk_level,
             "last_signal": last_signal,
             **deep_dive  # Unpack all deep dive fields
-        })
-    
-    # Calculate RAG score
+        }
+
+        suppliers.append(supplier_data)
+
+    # Calculate RAG score - now includes stock risk
     suppliers_at_cyber_risk = sum(1 for s in suppliers if s["cyber_risk"])
     suppliers_at_news_risk = sum(1 for s in suppliers if s["news_risk"])
-    total_at_risk = suppliers_at_cyber_risk + suppliers_at_news_risk
-    
-    if total_at_risk >= 3:
+    suppliers_at_market_risk = sum(1 for s in suppliers if s.get("stock_risk", False))
+
+    total_critical = sum(1 for s in suppliers if s["risk_level"] == "CRITICAL")
+    total_medium = sum(1 for s in suppliers if s["risk_level"] == "MEDIUM")
+    total_high = sum(1 for s in suppliers if s["risk_level"] == "HIGH")
+
+    # RAG score based on severity
+    if total_critical >= 1 or (total_high + total_medium) >= 3:
         rag_score = "RED"
-    elif total_at_risk > 0:
+    elif total_high >= 1 or total_medium >= 1:
         rag_score = "AMBER"
     else:
         rag_score = "GREEN"
-    
+
     return {
         "status": "success",
         "rag_score": rag_score,
         "total_suppliers": len(suppliers),
         "suppliers_at_cyber_risk": suppliers_at_cyber_risk,
         "suppliers_at_news_risk": suppliers_at_news_risk,
+        "suppliers_at_market_risk": suppliers_at_market_risk,
         "suppliers": suppliers,
         "last_fetched": datetime.utcnow().isoformat()
     }
@@ -1129,12 +1235,17 @@ def calculate_risk_with_signal(text, daily_change_percent):
 # ============================================================================
 
 def fetch_peer_group():
-    """Fetch real peer group intelligence using yfinance - STRICT LOGIC, NO FALSE POSITIVES"""
+    """
+    Fetch real peer group intelligence using yfinance.
+    MORE SENSITIVE risk detection - stock movements are a primary signal.
+    """
     peer_data = []
 
-    # Strict risk keywords - only flag if actually found in headline
-    CRITICAL_KEYWORDS = ["investigation", "fraud", "sanction", "bankruptcy", "recall"]
-    WARNING_KEYWORDS = ["delay", "shortage", "drop", "lawsuit"]
+    # Risk keywords for news analysis
+    CRITICAL_KEYWORDS = ["investigation", "fraud", "sanction", "bankruptcy", "recall",
+                          "strike", "ban", "seize", "breach", "hack", "lawsuit"]
+    WARNING_KEYWORDS = ["delay", "shortage", "volatile", "drop", "miss", "down",
+                        "fine", "cut", "layoff", "restructur", "warning", "concern"]
 
     # Check circuit breaker before making yfinance calls
     if not yfinance_circuit_breaker.can_execute():
@@ -1150,6 +1261,7 @@ def fetch_peer_group():
                 "latest_headline": peer_config.get("default_text", "Data temporarily unavailable."),
                 "stock_move": "N/A",
                 "current_price": None,
+                "daily_change_pct": None,
                 "risk_level": "LOW",
                 "last_signal": peer_config.get("default_text", "Circuit breaker active.")
             })
@@ -1161,16 +1273,16 @@ def fetch_peer_group():
         try:
             ticker_symbol = peer_config["ticker"]
             ticker = yf.Ticker(ticker_symbol)
-            
+
             # Get current price and historical data for daily change
             info = ticker.info
-            hist = ticker.history(period="2d")
-            
+            hist = ticker.history(period="5d")  # 5 days for more reliable data
+
             # Calculate daily change
             current_price = None
             daily_change_pct = None
             stock_move = "N/A"
-            
+
             if len(hist) >= 2:
                 current = hist['Close'].iloc[-1]
                 previous = hist['Close'].iloc[-2]
@@ -1183,8 +1295,8 @@ def fetch_peer_group():
             elif 'currentPrice' in info:
                 current_price = info['currentPrice']
                 stock_move = "N/A (no historical data)"
-            
-            # Get latest news headline - CRITICAL: Use default_text if no news
+
+            # Get latest news headline
             latest_headline = None
             real_headline_found = False
             try:
@@ -1194,47 +1306,74 @@ def fetch_peer_group():
                     if latest_headline:
                         real_headline_found = True
             except Exception as e:
-                print(f"News fetch error for {peer_config['name']}: {e}", file=sys.stderr)
-            
+                logger.warning(f"News fetch error for {peer_config['name']}: {e}")
+
             # Use default_text if no real headline found
             if not real_headline_found:
                 latest_headline = peer_config.get("default_text", "Monitoring active.")
-            
-            # STRICT Risk Scoring - Only flag if keywords actually found in headline
+
+            # ========================================
+            # RISK SCORING - Stock movement is PRIMARY
+            # ========================================
             risk_level = "LOW"
-            last_signal = peer_config.get("default_text", "Monitoring active.")
-            
+            last_signal = ""
+            news_risk_detected = False
+            stock_risk_detected = False
+
+            # STEP 1: Check news for risk keywords (if real headline found)
             if real_headline_found and latest_headline:
                 headline_lower = latest_headline.lower()
-                
+
                 # Check for CRITICAL keywords
                 has_critical = any(keyword in headline_lower for keyword in CRITICAL_KEYWORDS)
                 if has_critical:
                     risk_level = "CRITICAL"
-                    last_signal = f"🚨 News Alert: {latest_headline[:150]}"
+                    last_signal = f"🚨 News Alert: {latest_headline[:120]}"
+                    news_risk_detected = True
                 else:
                     # Check for WARNING keywords
                     has_warning = any(keyword in headline_lower for keyword in WARNING_KEYWORDS)
                     if has_warning:
                         risk_level = "MEDIUM"
-                        last_signal = f"⚠️ Potential Issue: {latest_headline[:150]}"
-                    else:
-                        # Real headline but no risk keywords - use headline as signal
-                        risk_level = "LOW"
-                        last_signal = latest_headline[:150]
-            
-            # Stock-based risk (only if no news risk found)
-            if risk_level == "LOW" and daily_change_pct is not None:
+                        last_signal = f"⚠️ News Alert: {latest_headline[:120]}"
+                        news_risk_detected = True
+
+            # STEP 2: Check stock movement (ALWAYS check, can escalate risk)
+            if daily_change_pct is not None:
                 if daily_change_pct < -5.0:
-                    risk_level = "CRITICAL"
-                    last_signal = f"⚠️ Severe market drop: {daily_change_pct:.2f}% intraday."
+                    # Severe drop - CRITICAL regardless of news
+                    if risk_level != "CRITICAL":
+                        risk_level = "CRITICAL"
+                        last_signal = f"🚨 Severe market drop: Stock down {daily_change_pct:.2f}%"
+                    else:
+                        last_signal += f" | Stock down {daily_change_pct:.2f}%"
+                    stock_risk_detected = True
                 elif daily_change_pct < -2.0:
-                    risk_level = "MEDIUM"
-                    last_signal = f"📉 Volatility alert: Stock down {daily_change_pct:.2f}%."
-                elif daily_change_pct < -0.5:
-                    risk_level = "MEDIUM"
-                    last_signal = f"📉 Volatility alert: Stock down {daily_change_pct:.2f}%."
-            
+                    # Significant drop - at least MEDIUM
+                    if risk_level == "LOW":
+                        risk_level = "MEDIUM"
+                        last_signal = f"📉 Market drop: Stock down {daily_change_pct:.2f}%"
+                    elif risk_level == "MEDIUM" and not news_risk_detected:
+                        last_signal = f"📉 Market drop: Stock down {daily_change_pct:.2f}%"
+                    stock_risk_detected = True
+                elif daily_change_pct < -1.0:
+                    # Minor drop - flag if no other risk
+                    if risk_level == "LOW":
+                        risk_level = "MEDIUM"
+                        last_signal = f"📉 Volatility: Stock down {daily_change_pct:.2f}%"
+                    stock_risk_detected = True
+
+            # STEP 3: Default signal if no risk detected
+            if not last_signal:
+                if real_headline_found:
+                    # Show headline even if no risk keywords
+                    last_signal = f"📰 {latest_headline[:100]}"
+                elif daily_change_pct is not None:
+                    # Show stock movement
+                    last_signal = f"Stock: {daily_change_pct:+.2f}% | {peer_config.get('default_text', 'Monitoring active.')}"
+                else:
+                    last_signal = peer_config.get("default_text", "Monitoring active.")
+
             # Determine sentiment based on stock movement
             sentiment = "Neutral"
             if daily_change_pct is not None:
@@ -1244,7 +1383,7 @@ def fetch_peer_group():
                     sentiment = "Negative"
                 else:
                     sentiment = "Neutral"
-            
+
             yfinance_circuit_breaker.record_success()
             harvest_stats.record_success(f"peer_{peer_config['ticker']}")
             peer_data.append({
@@ -1255,8 +1394,11 @@ def fetch_peer_group():
                 "latest_headline": latest_headline if real_headline_found else peer_config.get("default_text", "Monitoring active."),
                 "stock_move": stock_move,
                 "current_price": current_price,
+                "daily_change_pct": round(daily_change_pct, 2) if daily_change_pct is not None else None,
                 "risk_level": risk_level,
-                "last_signal": last_signal
+                "last_signal": last_signal,
+                "news_risk": news_risk_detected,
+                "stock_risk": stock_risk_detected
             })
 
         except Exception as e:
@@ -1271,8 +1413,11 @@ def fetch_peer_group():
                 "latest_headline": peer_config.get("default_text", "Data fetch error."),
                 "stock_move": "N/A",
                 "current_price": None,
+                "daily_change_pct": None,
                 "risk_level": "LOW",
-                "last_signal": peer_config.get("default_text", "Data fetch error.")
+                "last_signal": peer_config.get("default_text", "Data fetch error."),
+                "news_risk": False,
+                "stock_risk": False
             })
 
     return peer_data

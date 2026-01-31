@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-01-31T12:21:42.618383",
-  "version": "acc581e40a9b",
+  "last_updated": "2026-01-31T12:39:05.098271",
+  "version": "c23127c8111a",
   "status": "healthy",
   "macro": {
     "status": "success",
@@ -15,7 +15,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators placeholder",
-        "last_fetched": "2026-01-31T12:21:37.151801"
+        "last_fetched": "2026-01-31T12:38:58.848202"
       },
       "eu": {
         "status": "success",
@@ -26,7 +26,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1919",
-        "last_fetched": "2026-01-31T12:21:37.885654"
+        "last_fetched": "2026-01-31T12:38:58.953123"
       },
       "china": {
         "status": "success",
@@ -37,11 +37,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators placeholder",
-        "last_fetched": "2026-01-31T12:21:37.886545"
+        "last_fetched": "2026-01-31T12:38:58.953722"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-01-31T12:21:37.886559"
+    "last_fetched": "2026-01-31T12:38:58.953740"
   },
   "peers": {
     "status": "success",
@@ -62,7 +62,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-01-31T12:21:37.886567"
+          "last_fetched": "2026-01-31T12:38:58.953751"
         },
         "news": {
           "status": "placeholder",
@@ -132,7 +132,7 @@
           ],
           "red_signals": 0,
           "amber_signals": 1,
-          "last_fetched": "2026-01-31T12:21:39.084083"
+          "last_fetched": "2026-01-31T12:38:59.180172"
         },
         "news": {
           "status": "placeholder",
@@ -152,7 +152,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-01-31T12:21:39.085035"
+          "last_fetched": "2026-01-31T12:38:59.181802"
         },
         "news": {
           "status": "placeholder",
@@ -172,7 +172,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-01-31T12:21:39.085044"
+          "last_fetched": "2026-01-31T12:38:59.181816"
         },
         "news": {
           "status": "placeholder",
@@ -192,7 +192,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-01-31T12:21:39.085048"
+          "last_fetched": "2026-01-31T12:38:59.181821"
         },
         "news": {
           "status": "placeholder",
@@ -201,14 +201,15 @@
         }
       }
     ],
-    "last_fetched": "2026-01-31T12:21:39.085051"
+    "last_fetched": "2026-01-31T12:38:59.181866"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "GREEN",
+    "rag_score": "RED",
     "total_suppliers": 24,
     "suppliers_at_cyber_risk": 0,
     "suppliers_at_news_risk": 0,
+    "suppliers_at_market_risk": 4,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -218,9 +219,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. AMCOR maintains stable operations in Printed Packaging. No cyber threats or negative news detected. Critical exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": 0.82,
+        "current_price": 44.25,
+        "risk_analysis": "Low risk profile. AMCOR maintains stable operations in Printed Packaging. No cyber threats, negative news, or stock volatility detected. Critical exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "last_signal": "Stable operations. Stock: +0.82% today.",
         "bat_exposure": "Critical",
         "segment": "Combustibles",
         "location": "USA",
@@ -235,9 +239,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. GPI maintains stable operations in Printed Packaging. No cyber threats or negative news detected. High exposure level managed through standard procurement protocols.",
-        "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "stock_risk": true,
+        "daily_change_pct": -2.45,
+        "current_price": 354.26,
+        "risk_analysis": "Stock volatility detected for GPI. Daily change: -2.45%. Monitor for supply chain impact. High exposure level.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Market Alert: GPI stock down -2.45%",
         "bat_exposure": "High",
         "segment": "Combustibles",
         "location": "USA",
@@ -252,9 +259,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Stora Enso maintains stable operations in Printing Substrates. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
-        "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "stock_risk": true,
+        "daily_change_pct": -4.67,
+        "current_price": 9.74,
+        "risk_analysis": "Stock volatility detected for Stora Enso. Daily change: -4.67%. Monitor for supply chain impact. Medium exposure level.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Market Alert: Stora Enso stock down -4.67%",
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "Finland",
@@ -269,7 +279,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. IP Sun maintains stable operations in Printing Substrates. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. IP Sun maintains stable operations in Printing Substrates. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Medium",
@@ -286,9 +299,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Sappi maintains stable operations in Printing Substrates. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": 0.41,
+        "current_price": 201.04,
+        "risk_analysis": "Low risk profile. Sappi maintains stable operations in Printing Substrates. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "last_signal": "Stable operations. Stock: +0.41% today.",
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "South Africa",
@@ -303,7 +319,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Daicel maintains stable operations in Filter Materials. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. Daicel maintains stable operations in Filter Materials. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Medium",
@@ -320,9 +339,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Eastman maintains stable operations in Filter Materials. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": 0.48,
+        "current_price": 69.32,
+        "risk_analysis": "Low risk profile. Eastman maintains stable operations in Filter Materials. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "last_signal": "Stable operations. Stock: +0.48% today.",
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "USA",
@@ -337,7 +359,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Cerdia maintains stable operations in Filter Materials. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. Cerdia maintains stable operations in Filter Materials. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Medium",
@@ -354,7 +379,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Tae Young Filters maintains stable operations in Filter Materials. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. Tae Young Filters maintains stable operations in Filter Materials. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Medium",
@@ -371,7 +399,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Fuji maintains stable operations in Capsules. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. Fuji maintains stable operations in Capsules. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Medium",
@@ -388,9 +419,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. SWM (Mativ) maintains stable operations in Fine Papers. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
-        "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "stock_risk": true,
+        "daily_change_pct": -2.03,
+        "current_price": 12.05,
+        "risk_analysis": "Stock volatility detected for SWM (Mativ). Daily change: -2.03%. Monitor for supply chain impact. Medium exposure level.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Market Alert: SWM (Mativ) stock down -2.03%",
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "USA",
@@ -405,7 +439,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Delfort maintains stable operations in Fine Papers. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. Delfort maintains stable operations in Fine Papers. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Medium",
@@ -422,7 +459,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. CNT maintains stable operations in Nicotine. No cyber threats or negative news detected. Critical exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. CNT maintains stable operations in Nicotine. No cyber threats, negative news, or stock volatility detected. Critical exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Critical",
@@ -439,9 +479,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. ITC maintains stable operations in Nicotine. No cyber threats or negative news detected. High exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": 1.11,
+        "current_price": 322.15,
+        "risk_analysis": "Low risk profile. ITC maintains stable operations in Nicotine. No cyber threats, negative news, or stock volatility detected. High exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "last_signal": "Stable operations. Stock: +1.11% today.",
         "bat_exposure": "High",
         "segment": "Combustibles",
         "location": "India",
@@ -456,7 +499,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Porton maintains stable operations in Nicotine. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. Porton maintains stable operations in Nicotine. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Medium",
@@ -473,7 +519,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Tenowo maintains stable operations in Modern/Traditional Oral Fleece. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. Tenowo maintains stable operations in Modern/Traditional Oral Fleece. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Medium",
@@ -490,7 +539,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Huizhou BYD Electronic maintains stable operations in EMS. No cyber threats or negative news detected. Critical exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. Huizhou BYD Electronic maintains stable operations in EMS. No cyber threats, negative news, or stock volatility detected. Critical exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Critical",
@@ -507,9 +559,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Smoore maintains stable operations in EMS. No cyber threats or negative news detected. Critical exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": -0.61,
+        "current_price": 11.32,
+        "risk_analysis": "Low risk profile. Smoore maintains stable operations in EMS. No cyber threats, negative news, or stock volatility detected. Critical exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "last_signal": "Stable operations. Stock: -0.61% today.",
         "bat_exposure": "Critical",
         "segment": "New Categories (Vuse/Glo)",
         "location": "China",
@@ -524,9 +579,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. EVE Energy maintains stable operations in Batteries. No cyber threats or negative news detected. High exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": 5.07,
+        "current_price": 63.79,
+        "risk_analysis": "Low risk profile. EVE Energy maintains stable operations in Batteries. No cyber threats, negative news, or stock volatility detected. High exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "last_signal": "Stable operations. Stock: +5.07% today.",
         "bat_exposure": "High",
         "segment": "New Categories (Vuse/Glo)",
         "location": "China",
@@ -541,9 +599,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Texas Instruments maintains stable operations in EE Component. No cyber threats or negative news detected. High exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": -0.92,
+        "current_price": 215.55,
+        "risk_analysis": "Low risk profile. Texas Instruments maintains stable operations in EE Component. No cyber threats, negative news, or stock volatility detected. High exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "last_signal": "Stable operations. Stock: -0.92% today.",
         "bat_exposure": "High",
         "segment": "New Categories (Vuse/Glo)",
         "location": "USA",
@@ -558,9 +619,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Infineon maintains stable operations in EE Component. No cyber threats or negative news detected. High exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": -0.45,
+        "current_price": 41.61,
+        "risk_analysis": "Low risk profile. Infineon maintains stable operations in EE Component. No cyber threats, negative news, or stock volatility detected. High exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "last_signal": "Stable operations. Stock: -0.45% today.",
         "bat_exposure": "High",
         "segment": "New Categories (Vuse/Glo)",
         "location": "Germany",
@@ -575,7 +639,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Weener maintains stable operations in Mechanical. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. Weener maintains stable operations in Mechanical. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Medium",
@@ -592,7 +659,10 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Rosti maintains stable operations in Mechanical. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
+        "stock_risk": false,
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "Low risk profile. Rosti maintains stable operations in Mechanical. No cyber threats, negative news, or stock volatility detected. Medium exposure level managed through standard procurement protocols.",
         "risk_level": "LOW",
         "last_signal": "No significant risk signals detected.",
         "bat_exposure": "Medium",
@@ -609,9 +679,12 @@
         "matching_vulnerabilities": [],
         "news_risk": false,
         "news_items": [],
-        "risk_analysis": "Low risk profile. Jabil maintains stable operations in Mechanical. No cyber threats or negative news detected. Medium exposure level managed through standard procurement protocols.",
-        "risk_level": "LOW",
-        "last_signal": "No significant risk signals detected.",
+        "stock_risk": true,
+        "daily_change_pct": -2.76,
+        "current_price": 237.19,
+        "risk_analysis": "Stock volatility detected for Jabil. Daily change: -2.76%. Monitor for supply chain impact. Medium exposure level.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Market Alert: Jabil stock down -2.76%",
         "bat_exposure": "Medium",
         "segment": "New Categories (Vuse/Glo)",
         "location": "USA",
@@ -619,7 +692,7 @@
         "latest_news_summary": "Jabil maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
       }
     ],
-    "last_fetched": "2026-01-31T12:21:39.085256"
+    "last_fetched": "2026-01-31T12:39:02.891003"
   },
   "macro_economy": {
     "us": {
@@ -650,8 +723,11 @@
       "latest_headline": "Primary listing LSE; traded as BTI (NYSE). Monitoring filings.",
       "stock_move": "+0.76%",
       "current_price": 60.68000030517578,
+      "daily_change_pct": 0.76,
       "risk_level": "LOW",
-      "last_signal": "Primary listing LSE; traded as BTI (NYSE). Monitoring filings."
+      "last_signal": "Stock: +0.76% | Primary listing LSE; traded as BTI (NYSE). Monitoring filings.",
+      "news_risk": false,
+      "stock_risk": false
     },
     {
       "name": "Philip Morris Int.",
@@ -661,8 +737,11 @@
       "latest_headline": "US-listed (NYSE). Monitoring SEC filings (8-K).",
       "stock_move": "+0.87%",
       "current_price": 179.44000244140625,
+      "daily_change_pct": 0.87,
       "risk_level": "LOW",
-      "last_signal": "US-listed (NYSE). Monitoring SEC filings (8-K)."
+      "last_signal": "Stock: +0.87% | US-listed (NYSE). Monitoring SEC filings (8-K).",
+      "news_risk": false,
+      "stock_risk": false
     },
     {
       "name": "Imperial Brands",
@@ -672,8 +751,11 @@
       "latest_headline": "UK-listed (LSE). Monitoring regulatory news.",
       "stock_move": "+1.39%",
       "current_price": 3066.0,
+      "daily_change_pct": 1.39,
       "risk_level": "LOW",
-      "last_signal": "UK-listed (LSE). Monitoring regulatory news."
+      "last_signal": "Stock: +1.39% | UK-listed (LSE). Monitoring regulatory news.",
+      "news_risk": false,
+      "stock_risk": false
     },
     {
       "name": "Japan Tobacco",
@@ -683,8 +765,11 @@
       "latest_headline": "Tokyo listed. Monitoring global press releases.",
       "stock_move": "+0.40%",
       "current_price": 5581.0,
+      "daily_change_pct": 0.4,
       "risk_level": "LOW",
-      "last_signal": "Tokyo listed. Monitoring global press releases."
+      "last_signal": "Stock: +0.40% | Tokyo listed. Monitoring global press releases.",
+      "news_risk": false,
+      "stock_risk": false
     }
   ],
   "harvest_stats": {
@@ -693,7 +778,7 @@
     "total_successes": 10,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 5.713139
+    "duration_seconds": 6.525265
   },
   "health": {
     "pillars": {

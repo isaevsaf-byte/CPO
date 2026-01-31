@@ -113,8 +113,11 @@ export interface PeerGroupItem {
   latest_headline: string;
   stock_move: string;
   current_price: number | null;
+  daily_change_pct: number | null;
   risk_level: RiskLevel;
   last_signal: string;
+  news_risk?: boolean;
+  stock_risk?: boolean;
 }
 
 // ============================================================================
@@ -135,6 +138,9 @@ export interface Supplier {
   matching_vulnerabilities: MatchingVulnerability[];
   news_risk: boolean;
   news_items: any[];
+  stock_risk?: boolean;
+  daily_change_pct: number | null;
+  current_price: number | null;
   risk_analysis: string;
   risk_level: RiskLevel;
   last_signal: string;
@@ -151,6 +157,7 @@ export interface SuppliersData {
   total_suppliers: number;
   suppliers_at_cyber_risk: number;
   suppliers_at_news_risk: number;
+  suppliers_at_market_risk?: number;
   suppliers: Supplier[];
   last_fetched: string;
 }

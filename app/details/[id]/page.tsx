@@ -4,6 +4,37 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import intel from '../../../data/intel_snapshot.json';
 
+// Type definitions for the page
+interface PeerGroupItem {
+  name: string;
+  ticker: string;
+  region: string;
+  sentiment: string;
+  latest_headline: string;
+  stock_move: string;
+  current_price: number | null;
+  risk_level: string;
+  last_signal: string;
+}
+
+interface SupplierItem {
+  name: string;
+  slug: string;
+  category: string;
+  cyber_risk: boolean;
+  news_risk: boolean;
+  risk_level: string;
+  last_signal: string;
+  bat_exposure: string;
+  segment: string;
+  location: string;
+  stock_ticker: string;
+  latest_news_summary: string;
+  risk_analysis: string;
+}
+
+type CompanyData = (PeerGroupItem | SupplierItem) & { [key: string]: unknown };
+
 function getRiskColor(riskLevel: string): string {
   switch (riskLevel?.toUpperCase()) {
     case 'CRITICAL':
@@ -91,9 +122,15 @@ export default function CompanyDetailPage() {
            normalizedSlug === normalizedSearchSlug;
   });
 
-  const company = peer || supplier;
+  const company = (peer || supplier) as CompanyData | undefined;
   const isPeer = !!peer;
   const isSupplier = !!supplier;
+
+  // Helper to safely get company properties
+  const getCompanyProp = <T,>(key: string, defaultValue?: T): T | undefined => {
+    if (!company) return defaultValue;
+    return (company as Record<string, unknown>)[key] as T | undefined ?? defaultValue;
+  };
 
   if (!company) {
     return (
@@ -116,7 +153,7 @@ export default function CompanyDetailPage() {
 
   // Prepare external links
   const entityName = company.name;
-  const ticker = company.ticker || company.stock_ticker;
+  const ticker: string | null = (('ticker' in company ? company.ticker : null) || ('stock_ticker' in company ? company.stock_ticker : null)) as string | null;
   const googleNewsUrl = `https://www.google.com/search?q=${encodeURIComponent(entityName)}+supply+chain+news&tbm=nws`;
   const yahooFinanceUrl = ticker ? `https://finance.yahoo.com/quote/${ticker}` : null;
   const secFilingsUrl = `https://www.sec.gov/edgar/search/#/q=${encodeURIComponent(entityName)}`;
@@ -141,19 +178,19 @@ export default function CompanyDetailPage() {
                   {ticker && (
                     <span className="text-sm text-gray-600 font-mono">{ticker}</span>
                   )}
-                  {isPeer && company.risk_level && (
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getRiskColor(company.risk_level)}`}>
-                      Risk: {company.risk_level}
+                  {isPeer && getCompanyProp<string>('risk_level') && (
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getRiskColor(getCompanyProp<string>('risk_level') || '')}`}>
+                      Risk: {getCompanyProp<string>('risk_level')}
                     </span>
                   )}
-                  {isSupplier && company.category && (
+                  {isSupplier && getCompanyProp<string>('category') && (
                     <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-300">
-                      {company.category}
+                      {getCompanyProp<string>('category')}
                     </span>
                   )}
-                  {isSupplier && company.bat_exposure && (
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getExposureColor(company.bat_exposure)}`}>
-                      {company.bat_exposure} Exposure
+                  {isSupplier && getCompanyProp<string>('bat_exposure') && (
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getExposureColor(getCompanyProp<string>('bat_exposure') || '')}`}>
+                      {getCompanyProp<string>('bat_exposure')} Exposure
                     </span>
                   )}
                 </div>
@@ -174,58 +211,58 @@ export default function CompanyDetailPage() {
               </h2>
               {isPeer && (
                 <div className="grid grid-cols-2 gap-4">
-                  {company.current_price && (
+                  {getCompanyProp<number>('current_price') && (
                     <div>
                       <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">
                         Stock Price
                       </div>
                       <div className="text-2xl font-bold text-gray-900">
-                        ${typeof company.current_price === 'number' 
-                          ? company.current_price.toFixed(2) 
-                          : company.current_price}
+                        ${typeof getCompanyProp<number>('current_price') === 'number'
+                          ? getCompanyProp<number>('current_price')!.toFixed(2)
+                          : getCompanyProp<string>('current_price')}
                       </div>
                     </div>
                   )}
-                  {company.stock_move && (
+                  {getCompanyProp<string>('stock_move') && (
                     <div>
                       <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">
                         Daily Change
                       </div>
                       <div className={`text-2xl font-bold ${
-                        company.stock_move.startsWith('+') ? 'text-green-600' :
-                        company.stock_move.startsWith('-') ? 'text-red-600' :
+                        getCompanyProp<string>('stock_move')?.startsWith('+') ? 'text-green-600' :
+                        getCompanyProp<string>('stock_move')?.startsWith('-') ? 'text-red-600' :
                         'text-gray-600'
                       }`}>
-                        {company.stock_move}
+                        {getCompanyProp<string>('stock_move')}
                       </div>
                     </div>
                   )}
-                  {company.sentiment && (
+                  {getCompanyProp<string>('sentiment') && (
                     <div>
                       <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">
                         Sentiment
                       </div>
                       <div className={`text-lg font-semibold ${
-                        company.sentiment === 'Positive' ? 'text-green-600' :
-                        company.sentiment === 'Negative' ? 'text-red-600' :
+                        getCompanyProp<string>('sentiment') === 'Positive' ? 'text-green-600' :
+                        getCompanyProp<string>('sentiment') === 'Negative' ? 'text-red-600' :
                         'text-gray-600'
                       }`}>
-                        {company.sentiment}
+                        {getCompanyProp<string>('sentiment')}
                       </div>
                     </div>
                   )}
-                  {company.risk_level && (
+                  {getCompanyProp<string>('risk_level') && (
                     <div>
                       <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">
                         Risk Level
                       </div>
                       <div className={`text-lg font-semibold ${
-                        company.risk_level === 'CRITICAL' ? 'text-red-600' :
-                        company.risk_level === 'HIGH' ? 'text-amber-600' :
-                        company.risk_level === 'MEDIUM' ? 'text-yellow-600' :
+                        getCompanyProp<string>('risk_level') === 'CRITICAL' ? 'text-red-600' :
+                        getCompanyProp<string>('risk_level') === 'HIGH' ? 'text-amber-600' :
+                        getCompanyProp<string>('risk_level') === 'MEDIUM' ? 'text-yellow-600' :
                         'text-green-600'
                       }`}>
-                        {company.risk_level}
+                        {getCompanyProp<string>('risk_level')}
                       </div>
                     </div>
                   )}
@@ -233,42 +270,42 @@ export default function CompanyDetailPage() {
               )}
               {isSupplier && (
                 <div className="grid grid-cols-2 gap-4">
-                  {company.category && (
+                  {getCompanyProp<string>('category') && (
                     <div>
                       <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">
                         Category
                       </div>
-                      <div className="text-lg font-semibold text-gray-900">{company.category}</div>
+                      <div className="text-lg font-semibold text-gray-900">{getCompanyProp<string>('category')}</div>
                     </div>
                   )}
-                  {company.bat_exposure && (
+                  {getCompanyProp<string>('bat_exposure') && (
                     <div>
                       <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">
                         BAT Exposure
                       </div>
                       <div className={`text-lg font-semibold ${
-                        company.bat_exposure === 'Critical' ? 'text-red-600' :
-                        company.bat_exposure === 'High' ? 'text-amber-600' :
+                        getCompanyProp<string>('bat_exposure') === 'Critical' ? 'text-red-600' :
+                        getCompanyProp<string>('bat_exposure') === 'High' ? 'text-amber-600' :
                         'text-green-600'
                       }`}>
-                        {company.bat_exposure}
+                        {getCompanyProp<string>('bat_exposure')}
                       </div>
                     </div>
                   )}
-                  {company.location && (
+                  {getCompanyProp<string>('location') && (
                     <div>
                       <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">
                         Location
                       </div>
-                      <div className="text-lg font-semibold text-gray-900">{company.location}</div>
+                      <div className="text-lg font-semibold text-gray-900">{getCompanyProp<string>('location')}</div>
                     </div>
                   )}
-                  {company.segment && (
+                  {getCompanyProp<string>('segment') && (
                     <div>
                       <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">
                         Segment
                       </div>
-                      <div className="text-lg font-semibold text-gray-900">{company.segment}</div>
+                      <div className="text-lg font-semibold text-gray-900">{getCompanyProp<string>('segment')}</div>
                     </div>
                   )}
                 </div>
@@ -281,33 +318,33 @@ export default function CompanyDetailPage() {
                 Live Intelligence
               </h2>
               <div className="prose prose-sm max-w-none">
-                {isPeer && company.latest_headline && (
+                {isPeer && getCompanyProp<string>('latest_headline') && (
                   <div className="mb-4">
                     <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       Latest Headline
                     </div>
                     <p className="text-base text-gray-700 leading-relaxed bg-gray-50 p-4 rounded border border-gray-200">
-                      {company.latest_headline}
+                      {getCompanyProp<string>('latest_headline')}
                     </p>
                   </div>
                 )}
-                {isSupplier && company.latest_news_summary && (
+                {isSupplier && getCompanyProp<string>('latest_news_summary') && (
                   <div className="mb-4">
                     <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       Latest News Summary
                     </div>
                     <p className="text-base text-gray-700 leading-relaxed bg-gray-50 p-4 rounded border border-gray-200">
-                      {company.latest_news_summary}
+                      {getCompanyProp<string>('latest_news_summary')}
                     </p>
                   </div>
                 )}
-                {isSupplier && company.risk_analysis && (
+                {isSupplier && getCompanyProp<string>('risk_analysis') && (
                   <div>
                     <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
                       Risk Analysis
                     </div>
                     <p className="text-base text-gray-700 leading-relaxed bg-gray-50 p-4 rounded border border-gray-200">
-                      {company.risk_analysis}
+                      {getCompanyProp<string>('risk_analysis')}
                     </p>
                   </div>
                 )}
@@ -362,32 +399,32 @@ export default function CompanyDetailPage() {
                     <div className="text-gray-900 font-medium font-mono">{ticker}</div>
                   </div>
                 )}
-                {isPeer && company.risk_level && (
+                {isPeer && getCompanyProp<string>('risk_level') && (
                   <div>
                     <div className="text-gray-500">Risk Level</div>
-                    <div className={`inline-block px-2 py-1 rounded text-xs font-semibold ${getRiskColor(company.risk_level)}`}>
-                      {company.risk_level}
+                    <div className={`inline-block px-2 py-1 rounded text-xs font-semibold ${getRiskColor(getCompanyProp<string>('risk_level') || '')}`}>
+                      {getCompanyProp<string>('risk_level')}
                     </div>
                   </div>
                 )}
-                {isSupplier && company.bat_exposure && (
+                {isSupplier && getCompanyProp<string>('bat_exposure') && (
                   <div>
                     <div className="text-gray-500">BAT Exposure</div>
-                    <div className={`inline-block px-2 py-1 rounded text-xs font-semibold ${getExposureColor(company.bat_exposure)}`}>
-                      {company.bat_exposure}
+                    <div className={`inline-block px-2 py-1 rounded text-xs font-semibold ${getExposureColor(getCompanyProp<string>('bat_exposure') || '')}`}>
+                      {getCompanyProp<string>('bat_exposure')}
                     </div>
                   </div>
                 )}
-                {isSupplier && company.cyber_risk && (
+                {isSupplier && getCompanyProp<boolean>('cyber_risk') && (
                   <div>
                     <div className="text-gray-500">Cyber Risk</div>
-                    <div className="text-red-600 font-semibold">⚠️ Active</div>
+                    <div className="text-red-600 font-semibold">&#9888; Active</div>
                   </div>
                 )}
-                {isSupplier && company.news_risk && (
+                {isSupplier && getCompanyProp<boolean>('news_risk') && (
                   <div>
                     <div className="text-gray-500">News Risk</div>
-                    <div className="text-amber-600 font-semibold">⚠️ Active</div>
+                    <div className="text-amber-600 font-semibold">&#9888; Active</div>
                   </div>
                 )}
               </div>

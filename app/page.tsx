@@ -4,37 +4,24 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import intel from '../data/intel_snapshot.json';
+import { useDataFreshness } from '../hooks/useDataFreshness';
+import type {
+  IntelSnapshot,
+  RAGScore as RAGScoreType,
+  Supplier,
+  PeerGroupItem,
+  Peer,
+} from '../types/intel';
+import {
+  getRAGColor,
+  getRAGLabel,
+  getExposureColor,
+  RAG_COLORS,
+  RAG_LABELS,
+} from '../types/intel';
 
-interface RAGScore {
-  RED: string;
-  AMBER: string;
-  GREEN: string;
-  UNKNOWN: string;
-}
-
-const RAG_COLORS: RAGScore = {
-  RED: 'border-red-500 bg-red-50',
-  AMBER: 'border-amber-500 bg-amber-50',
-  GREEN: 'border-green-500 bg-green-50',
-  UNKNOWN: 'border-gray-500 bg-gray-50'
-};
-
-const RAG_LABELS: RAGScore = {
-  RED: 'CRITICAL',
-  AMBER: 'WARNING',
-  GREEN: 'NORMAL',
-  UNKNOWN: 'UNKNOWN'
-};
-
-function getRAGColor(score: string | undefined): string {
-  if (!score) return RAG_COLORS.UNKNOWN;
-  return RAG_COLORS[score as keyof RAGScore] || RAG_COLORS.UNKNOWN;
-}
-
-function getRAGLabel(score: string | undefined): string {
-  if (!score) return RAG_LABELS.UNKNOWN;
-  return RAG_LABELS[score as keyof RAGScore] || RAG_LABELS.UNKNOWN;
-}
+// Cast intel to proper type
+const typedIntel = intel as unknown as IntelSnapshot;
 
 function formatTimestamp(isoString: string | undefined): string {
   if (!isoString) return 'Unknown';
@@ -53,38 +40,44 @@ function formatTimestamp(isoString: string | undefined): string {
   }
 }
 
-function getExposureColor(exposure: string): string {
-  switch (exposure) {
-    case 'Critical':
-      return 'bg-red-100 text-red-800 border-red-300';
-    case 'High':
-      return 'bg-amber-100 text-amber-800 border-amber-300';
-    case 'Medium':
-      return 'bg-green-100 text-green-800 border-green-300';
-    default:
-      return 'bg-gray-100 text-gray-800 border-gray-300';
-  }
+// Health status indicator component
+function HealthIndicator({ status }: { status: string }) {
+  const color = status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-yellow-500';
+  return (
+    <span className={`inline-block w-2 h-2 rounded-full ${color}`} title={`Status: ${status}`} />
+  );
 }
 
 export default function MorningCoffeeDashboard() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const lastUpdate = new Date(intel?.last_updated || new Date());
-  const now = new Date();
-  const hoursSinceUpdate = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
-  const isStale = hoursSinceUpdate > 24;
 
-  const macro = intel?.macro || {};
-  const peers = intel?.peers || {};
-  const suppliers = intel?.suppliers || {};
-  const macroEconomy = intel?.macro_economy || {};
-  const peerGroup = intel?.peer_group || [];
+  // Use the data freshness hook
+  const {
+    isStale,
+    hoursSinceUpdate,
+    hasNewVersion,
+    isChecking,
+    refreshData,
+    dismissNewVersion,
+  } = useDataFreshness({
+    currentVersion: typedIntel.version,
+    lastUpdated: typedIntel.last_updated,
+    checkInterval: 5 * 60 * 1000, // Check every 5 minutes
+    staleThresholdHours: 24,
+  });
+
+  const macro = typedIntel?.macro || {} as IntelSnapshot['macro'];
+  const peers = typedIntel?.peers || {} as IntelSnapshot['peers'];
+  const suppliers = typedIntel?.suppliers || {} as IntelSnapshot['suppliers'];
+  const macroEconomy = typedIntel?.macro_economy || {} as IntelSnapshot['macro_economy'];
+  const peerGroup = typedIntel?.peer_group || [] as PeerGroupItem[];
 
   // Group suppliers by category
-  const suppliersByCategory: { [key: string]: any[] } = {};
-  const suppliersList = suppliers?.suppliers || [];
-  
-  suppliersList.forEach((supplier: any) => {
+  const suppliersByCategory: { [key: string]: Supplier[] } = {};
+  const suppliersList: Supplier[] = suppliers?.suppliers || [];
+
+  suppliersList.forEach((supplier: Supplier) => {
     const category = supplier.category || 'Other';
     if (!suppliersByCategory[category]) {
       suppliersByCategory[category] = [];
@@ -93,13 +86,13 @@ export default function MorningCoffeeDashboard() {
   });
 
   // Group suppliers by risk level
-  const suppliersByRisk: { [key: string]: any[] } = {
+  const suppliersByRisk: { [key: string]: Supplier[] } = {
     'High Risk': [],
     'Medium Risk': [],
     'Low Risk': []
   };
 
-  suppliersList.forEach((supplier: any) => {
+  suppliersList.forEach((supplier: Supplier) => {
     if (supplier.cyber_risk || supplier.news_risk) {
       suppliersByRisk['High Risk'].push(supplier);
     } else if (supplier.bat_exposure === 'High' || supplier.bat_exposure === 'Critical') {
@@ -120,6 +113,14 @@ export default function MorningCoffeeDashboard() {
               <p className="text-blue-100 mt-2">Intelligence Dashboard • Three Core Pillars</p>
             </div>
             <div className="text-right flex items-center gap-4">
+              {/* Health Status Indicators */}
+              <div className="flex items-center gap-2" title="Data Source Health">
+                <span className="text-xs text-blue-200 mr-1">Health:</span>
+                <HealthIndicator status={macro?.status || 'unknown'} />
+                <HealthIndicator status={peers?.status || 'unknown'} />
+                <HealthIndicator status={suppliers?.status || 'unknown'} />
+              </div>
+
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="p-2 rounded-full hover:bg-blue-800 transition-colors"
@@ -131,12 +132,20 @@ export default function MorningCoffeeDashboard() {
                 </svg>
               </button>
               <div>
-                <div className="text-sm text-blue-100">
-                  Last Updated: {formatTimestamp(intel?.last_updated)}
+                <div className="text-sm text-blue-100 flex items-center gap-2">
+                  <span>Last Updated: {formatTimestamp(typedIntel?.last_updated)}</span>
+                  {isChecking && (
+                    <span className="animate-spin text-xs">&#8635;</span>
+                  )}
                 </div>
+                {typedIntel?.version && (
+                  <div className="text-xs text-blue-200 font-mono">
+                    v{typedIntel.version}
+                  </div>
+                )}
                 {isStale && (
                   <span className="inline-block mt-2 bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    ⚠️ Data Stale ({Math.round(hoursSinceUpdate)}h old)
+                    &#9888; Data Stale ({Math.round(hoursSinceUpdate)}h old)
                   </span>
                 )}
               </div>
@@ -144,6 +153,33 @@ export default function MorningCoffeeDashboard() {
           </div>
         </div>
       </header>
+
+      {/* New Version Available Banner */}
+      {hasNewVersion && (
+        <div className="bg-blue-600 text-white px-4 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-lg">&#128260;</span>
+              <span className="font-medium">New data available! Click refresh to see the latest intelligence.</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={refreshData}
+                className="bg-white text-blue-600 px-4 py-1.5 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              >
+                Refresh Now
+              </button>
+              <button
+                onClick={dismissNewVersion}
+                className="text-blue-200 hover:text-white px-2 py-1"
+                aria-label="Dismiss"
+              >
+                &#10005;
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Three Core Pillars Overview */}
@@ -341,7 +377,7 @@ export default function MorningCoffeeDashboard() {
         <div className="mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Peer Intelligence</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {peerGroup.map((peer: any, idx: number) => {
+            {peerGroup.map((peer: PeerGroupItem, idx: number) => {
               const isBAT = peer.name === 'British American Tobacco' || peer.name === 'BAT' || peer.ticker === 'BTI';
               const stockMovePositive = peer.stock_move?.startsWith('+');
               const stockMoveNegative = peer.stock_move?.startsWith('-');
@@ -418,7 +454,7 @@ export default function MorningCoffeeDashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {suppliersList.map((supplier: any, idx: number) => (
+                {suppliersList.map((supplier: Supplier, idx: number) => (
                   <tr
                     key={idx}
                     className="hover:bg-slate-50 cursor-pointer transition-colors"
@@ -489,7 +525,7 @@ export default function MorningCoffeeDashboard() {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {peers.peers.map((peer: any, idx: number) => (
+                {peers.peers.map((peer: Peer, idx: number) => (
                   <Link
                     key={idx}
                     href={`/details/${encodeURIComponent(peer.name)}`}

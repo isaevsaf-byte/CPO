@@ -1,16 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // TypeScript errors will now fail the build - this is safer
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    ignoreBuildErrors: true,
+    // Set to false to catch type errors during build
+    ignoreBuildErrors: false,
   },
+  // ESLint errors will now fail the build - this is safer
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
-    ignoreDuringBuilds: true,
+    // Set to false to catch linting errors during build
+    ignoreDuringBuilds: false,
   },
 }
 

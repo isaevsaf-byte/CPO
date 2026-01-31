@@ -11,11 +11,187 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
 import sys
+import time
+import hashlib
+import logging
+import os
+import shutil
 import yfinance as yf
 
-# CONFIG
+# ============================================================================
+# CONFIGURATION
+# ============================================================================
 USER_AGENT = {'User-Agent': 'SupplyChainIntelligence contact@mycompany.com'}
-TIMEOUT = 15
+TIMEOUT = int(os.getenv("FETCH_TIMEOUT", 15))
+MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
+STALE_THRESHOLD_HOURS = int(os.getenv("STALE_THRESHOLD", 24))
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stderr)]
+)
+logger = logging.getLogger('intel_harvester')
+
+# ============================================================================
+# UTILITY CLASSES
+# ============================================================================
+
+class HarvestStats:
+    """Track errors and warnings during harvest for aggregated reporting"""
+    def __init__(self):
+        self.errors = []
+        self.warnings = []
+        self.successes = []
+        self.start_time = datetime.utcnow()
+
+    def record_error(self, source: str, error: str):
+        self.errors.append({
+            "source": source,
+            "error": str(error)[:200],
+            "time": datetime.utcnow().isoformat()
+        })
+        logger.error(f"[{source}] {error}")
+
+    def record_warning(self, source: str, warning: str):
+        self.warnings.append({
+            "source": source,
+            "warning": str(warning)[:200],
+            "time": datetime.utcnow().isoformat()
+        })
+        logger.warning(f"[{source}] {warning}")
+
+    def record_success(self, source: str):
+        self.successes.append({
+            "source": source,
+            "time": datetime.utcnow().isoformat()
+        })
+        logger.info(f"[{source}] Success")
+
+    def should_alert(self) -> bool:
+        """Determine if errors are critical enough to warrant alerting"""
+        critical_sources = ['cisa_kev', 'sec_edgar', 'ecb_fx']
+        return (
+            len(self.errors) >= 3 or
+            any(e['source'] in critical_sources for e in self.errors)
+        )
+
+    def summary(self) -> dict:
+        return {
+            "total_errors": len(self.errors),
+            "total_warnings": len(self.warnings),
+            "total_successes": len(self.successes),
+            "errors": self.errors[-10:],
+            "warnings": self.warnings[-5:],
+            "duration_seconds": (datetime.utcnow() - self.start_time).total_seconds()
+        }
+
+class RateLimiter:
+    """Rate limiter to prevent API throttling"""
+    def __init__(self, calls_per_minute: int = 20):
+        self.calls_per_minute = calls_per_minute
+        self.calls = []
+
+    def wait_if_needed(self):
+        now = time.time()
+        # Remove calls older than 60 seconds
+        self.calls = [t for t in self.calls if now - t < 60]
+        if len(self.calls) >= self.calls_per_minute:
+            sleep_time = 60 - (now - self.calls[0]) + 0.1
+            if sleep_time > 0:
+                logger.info(f"Rate limiting: sleeping for {sleep_time:.1f}s")
+                time.sleep(sleep_time)
+        self.calls.append(time.time())
+
+class CircuitBreaker:
+    """Circuit breaker pattern to prevent cascading failures"""
+    def __init__(self, failure_threshold: int = 3, reset_timeout: int = 300):
+        self.failure_count = 0
+        self.failure_threshold = failure_threshold
+        self.reset_timeout = reset_timeout
+        self.last_failure_time = None
+        self.state = "closed"  # closed, open, half-open
+
+    def record_success(self):
+        self.failure_count = 0
+        self.state = "closed"
+
+    def record_failure(self):
+        self.failure_count += 1
+        self.last_failure_time = time.time()
+        if self.failure_count >= self.failure_threshold:
+            self.state = "open"
+            logger.warning(f"Circuit breaker OPEN after {self.failure_count} failures")
+
+    def can_execute(self) -> bool:
+        if self.state == "closed":
+            return True
+        if self.state == "open":
+            if time.time() - self.last_failure_time > self.reset_timeout:
+                self.state = "half-open"
+                logger.info("Circuit breaker transitioning to half-open")
+                return True
+            return False
+        return True  # half-open allows one attempt
+
+# Global instances
+harvest_stats = HarvestStats()
+rate_limiter = RateLimiter(calls_per_minute=20)
+yfinance_circuit_breaker = CircuitBreaker(failure_threshold=5, reset_timeout=120)
+
+# ============================================================================
+# RETRY AND FETCH UTILITIES
+# ============================================================================
+
+def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None) -> requests.Response:
+    """
+    Fetch URL with exponential backoff retry logic.
+
+    Args:
+        url: URL to fetch
+        max_retries: Maximum number of retry attempts (default from config)
+        headers: Optional headers dict
+
+    Returns:
+        requests.Response object
+
+    Raises:
+        requests.RequestException after all retries exhausted
+    """
+    if max_retries is None:
+        max_retries = MAX_RETRIES
+    if headers is None:
+        headers = USER_AGENT
+
+    last_exception = None
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, headers=headers, timeout=TIMEOUT)
+            response.raise_for_status()
+            return response
+        except requests.RequestException as e:
+            last_exception = e
+            if attempt == max_retries - 1:
+                raise
+            delay = min(2 ** attempt, 30)  # Cap at 30 seconds
+            logger.warning(f"Retry {attempt + 1}/{max_retries} for {url[:50]}... after {delay}s: {e}")
+            time.sleep(delay)
+
+    raise last_exception
+
+def calculate_data_hash(data: dict) -> str:
+    """Generate a short hash of the data for version checking"""
+    # Exclude timestamps from hash to detect actual data changes
+    data_copy = json.loads(json.dumps(data))  # Deep copy
+    # Remove fields that change every run
+    if 'last_updated' in data_copy:
+        del data_copy['last_updated']
+    if 'harvest_stats' in data_copy:
+        del data_copy['harvest_stats']
+
+    json_str = json.dumps(data_copy, sort_keys=True)
+    return hashlib.md5(json_str.encode()).hexdigest()[:12]
 
 # SUPPLIER WATCHLIST - Pillar 3
 WATCHLIST_DATA = [
@@ -83,18 +259,18 @@ PEERS_LIST = [
 ]
 
 def fetch_cisa_kev():
-    """Fetch CISA Known Exploited Vulnerabilities Catalog"""
+    """Fetch CISA Known Exploited Vulnerabilities Catalog with retry logic"""
+    source_name = "cisa_kev"
     try:
         url = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
-        response = requests.get(url, headers=USER_AGENT, timeout=TIMEOUT)
-        response.raise_for_status()
+        response = fetch_with_retry(url)
         data = response.json()
-        
+
         # Filter for vulnerabilities added in last 7 days
         seven_days_ago = datetime.utcnow() - timedelta(days=7)
         recent_vulns = []
         critical_vulns = []
-        
+
         for vuln in data.get('vulnerabilities', []):
             date_added_str = vuln.get('dateAdded', '')
             try:
@@ -108,7 +284,8 @@ def fetch_cisa_kev():
                             critical_vulns.append(vuln)
             except ValueError:
                 continue
-        
+
+        harvest_stats.record_success(source_name)
         return {
             "status": "success",
             "total_vulnerabilities": len(data.get('vulnerabilities', [])),
@@ -118,7 +295,7 @@ def fetch_cisa_kev():
             "last_fetched": datetime.utcnow().isoformat()
         }
     except Exception as e:
-        print(f"CISA KEV Error: {e}", file=sys.stderr)
+        harvest_stats.record_error(source_name, str(e))
         return {
             "status": "error",
             "error": str(e),
@@ -156,23 +333,24 @@ def fetch_macro_us():
         }
 
 def fetch_macro_eu():
-    """Fetch EU Macro Economic Indicators"""
+    """Fetch EU Macro Economic Indicators with retry logic"""
+    source_name = "ecb_fx"
     try:
         # Fetch ECB EUR/USD rate
         url = "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
-        response = requests.get(url, headers=USER_AGENT, timeout=TIMEOUT)
-        response.raise_for_status()
-        
+        response = fetch_with_retry(url)
+
         root = ET.fromstring(response.content)
         namespaces = {'gesmes': 'http://www.gesmes.org/xml/2002-08-01',
                      'ecb': 'http://www.ecb.int/vocabulary/2002-08-01/eurofxref'}
-        
+
         # Find USD rate
         usd_rate = None
         for cube in root.findall('.//ecb:Cube[@currency="USD"]', namespaces):
             usd_rate = float(cube.get('rate'))
             break
-        
+
+        harvest_stats.record_success(source_name)
         return {
             "status": "success",
             "region": "EU",
@@ -185,7 +363,7 @@ def fetch_macro_eu():
             "last_fetched": datetime.utcnow().isoformat()
         }
     except Exception as e:
-        print(f"EU Macro Error: {e}", file=sys.stderr)
+        harvest_stats.record_error(source_name, str(e))
         return {
             "status": "error",
             "region": "EU",
@@ -262,7 +440,8 @@ def fetch_macro_overview(previous_eur_usd=None):
 # ============================================================================
 
 def fetch_sec_filings_for_peer(peer_name):
-    """Fetch SEC 8-K filings for a peer company"""
+    """Fetch SEC 8-K filings for a peer company with retry logic"""
+    source_name = f"sec_edgar_{peer_name}"
     # CIK mapping for tobacco companies (simplified)
     cik_map = {
         "BAT": None,  # British American Tobacco - not US listed
@@ -271,7 +450,7 @@ def fetch_sec_filings_for_peer(peer_name):
         "JTI": None,  # Japan Tobacco - not US listed
         "Our Company": None  # Placeholder
     }
-    
+
     cik = cik_map.get(peer_name)
     if not cik:
         return {
@@ -282,42 +461,42 @@ def fetch_sec_filings_for_peer(peer_name):
             "amber_signals": 0,
             "last_fetched": datetime.utcnow().isoformat()
         }
-    
+
     try:
         url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=8-K&output=atom&count=5"
-        response = requests.get(url, headers=USER_AGENT, timeout=TIMEOUT)
-        response.raise_for_status()
-        
+        response = fetch_with_retry(url)
+
         root = ET.fromstring(response.content)
         namespaces = {'atom': 'http://www.w3.org/2005/Atom'}
-        
+
         filings = []
         red_signals = []
         amber_signals = []
-        
+
         for entry in root.findall('atom:entry', namespaces):
             title = entry.find('atom:title', namespaces)
             summary = entry.find('atom:summary', namespaces)
             published = entry.find('atom:published', namespaces)
-            
+
             title_text = title.text if title is not None else ""
             summary_text = summary.text if summary is not None else ""
             published_text = published.text if published is not None else ""
-            
+
             filing_data = {
                 "title": title_text,
                 "summary": summary_text[:200] if summary_text else "",
                 "published": published_text
             }
             filings.append(filing_data)
-            
+
             # Check for distress signals
             summary_upper = summary_text.upper()
             if "ITEM 1.03" in summary_upper or "ITEM 4.02" in summary_upper:
                 red_signals.append(filing_data)
             elif "ITEM 5.02" in summary_upper:
                 amber_signals.append(filing_data)
-        
+
+        harvest_stats.record_success(source_name)
         return {
             "status": "success",
             "filings": filings,
@@ -326,7 +505,7 @@ def fetch_sec_filings_for_peer(peer_name):
             "last_fetched": datetime.utcnow().isoformat()
         }
     except Exception as e:
-        print(f"SEC Filings Error for {peer_name}: {e}", file=sys.stderr)
+        harvest_stats.record_error(source_name, str(e))
         return {
             "status": "error",
             "error": str(e),
@@ -680,7 +859,18 @@ def process_suppliers(cyber_data):
 # ============================================================================
 
 def fetch_macro_economy():
-    """Fetch real macro economic data using yfinance"""
+    """Fetch real macro economic data using yfinance with rate limiting"""
+
+    # Check circuit breaker before making yfinance calls
+    if not yfinance_circuit_breaker.can_execute():
+        logger.warning("yfinance circuit breaker is OPEN - skipping macro economy fetch")
+        harvest_stats.record_warning("macro_economy", "Circuit breaker open - using fallback data")
+        return {
+            "us": {"cpi": "N/A", "rate": "N/A", "trend": "N/A", "summary": "Data temporarily unavailable (circuit breaker active)."},
+            "eu": {"cpi": "N/A", "rate": "N/A", "trend": "N/A", "summary": "Data temporarily unavailable (circuit breaker active)."},
+            "china": {"cpi": "N/A", "rate": "N/A", "trend": "N/A", "summary": "Data temporarily unavailable (circuit breaker active)."}
+        }
+
     def get_trend_from_change(change_pct):
         """Determine trend from daily percentage change"""
         if change_pct is None:
@@ -691,8 +881,9 @@ def fetch_macro_economy():
             return "Declining"
         else:
             return "Stable"
-    
+
     def fetch_us_macro():
+        rate_limiter.wait_if_needed()
         """Fetch US macro data from S&P 500"""
         try:
             ticker = yf.Ticker("^GSPC")
@@ -727,15 +918,17 @@ def fetch_macro_economy():
                 "summary": summary
             }
         except Exception as e:
-            print(f"US Macro fetch error: {e}", file=sys.stderr)
+            yfinance_circuit_breaker.record_failure()
+            harvest_stats.record_error("macro_us", str(e))
             return {
                 "cpi": "N/A",
                 "rate": "N/A",
                 "trend": "N/A",
                 "summary": f"Error fetching US macro data: {str(e)}"
             }
-    
+
     def fetch_eu_macro():
+        rate_limiter.wait_if_needed()
         """Fetch EU macro data from EUR/USD exchange rate"""
         try:
             ticker = yf.Ticker("EURUSD=X")
@@ -776,15 +969,17 @@ def fetch_macro_economy():
                 "summary": summary
             }
         except Exception as e:
-            print(f"EU Macro fetch error: {e}", file=sys.stderr)
+            yfinance_circuit_breaker.record_failure()
+            harvest_stats.record_error("macro_eu", str(e))
             return {
                 "cpi": "N/A",
                 "rate": "N/A",
                 "trend": "N/A",
                 "summary": f"Error fetching EU macro data: {str(e)}"
             }
-    
+
     def fetch_china_macro():
+        rate_limiter.wait_if_needed()
         """Fetch China macro data from CNY/USD exchange rate"""
         try:
             ticker = yf.Ticker("CNY=X")
@@ -826,18 +1021,29 @@ def fetch_macro_economy():
                 "summary": summary
             }
         except Exception as e:
-            print(f"China Macro fetch error: {e}", file=sys.stderr)
+            yfinance_circuit_breaker.record_failure()
+            harvest_stats.record_error("macro_china", str(e))
             return {
                 "cpi": "N/A",
                 "rate": "N/A",
                 "trend": "N/A",
                 "summary": f"Error fetching China macro data: {str(e)}"
             }
-    
+
+    us_data = fetch_us_macro()
+    eu_data = fetch_eu_macro()
+    china_data = fetch_china_macro()
+
+    # Track successes
+    for region, data in [("us", us_data), ("eu", eu_data), ("china", china_data)]:
+        if data.get("trend") != "N/A":
+            yfinance_circuit_breaker.record_success()
+            harvest_stats.record_success(f"macro_{region}")
+
     return {
-        "us": fetch_us_macro(),
-        "eu": fetch_eu_macro(),
-        "china": fetch_china_macro()
+        "us": us_data,
+        "eu": eu_data,
+        "china": china_data
     }
 
 # ============================================================================
@@ -925,12 +1131,33 @@ def calculate_risk_with_signal(text, daily_change_percent):
 def fetch_peer_group():
     """Fetch real peer group intelligence using yfinance - STRICT LOGIC, NO FALSE POSITIVES"""
     peer_data = []
-    
+
     # Strict risk keywords - only flag if actually found in headline
     CRITICAL_KEYWORDS = ["investigation", "fraud", "sanction", "bankruptcy", "recall"]
     WARNING_KEYWORDS = ["delay", "shortage", "drop", "lawsuit"]
-    
+
+    # Check circuit breaker before making yfinance calls
+    if not yfinance_circuit_breaker.can_execute():
+        logger.warning("yfinance circuit breaker is OPEN - skipping peer group fetch")
+        harvest_stats.record_warning("peer_group", "Circuit breaker open - using fallback data")
+        # Return fallback data
+        for peer_config in PEERS_CONFIG:
+            peer_data.append({
+                "name": peer_config["name"],
+                "ticker": peer_config["ticker"],
+                "region": peer_config.get("region", "Unknown"),
+                "sentiment": "N/A",
+                "latest_headline": peer_config.get("default_text", "Data temporarily unavailable."),
+                "stock_move": "N/A",
+                "current_price": None,
+                "risk_level": "LOW",
+                "last_signal": peer_config.get("default_text", "Circuit breaker active.")
+            })
+        return peer_data
+
     for peer_config in PEERS_CONFIG:
+        # Apply rate limiting
+        rate_limiter.wait_if_needed()
         try:
             ticker_symbol = peer_config["ticker"]
             ticker = yf.Ticker(ticker_symbol)
@@ -1018,6 +1245,8 @@ def fetch_peer_group():
                 else:
                     sentiment = "Neutral"
             
+            yfinance_circuit_breaker.record_success()
+            harvest_stats.record_success(f"peer_{peer_config['ticker']}")
             peer_data.append({
                 "name": peer_config["name"],
                 "ticker": ticker_symbol,
@@ -1029,9 +1258,10 @@ def fetch_peer_group():
                 "risk_level": risk_level,
                 "last_signal": last_signal
             })
-            
+
         except Exception as e:
-            print(f"Peer fetch error for {peer_config['name']} ({peer_config['ticker']}): {e}", file=sys.stderr)
+            yfinance_circuit_breaker.record_failure()
+            harvest_stats.record_error(f"peer_{peer_config['ticker']}", str(e))
             # Fallback: Use default_text, LOW risk
             peer_data.append({
                 "name": peer_config["name"],
@@ -1044,21 +1274,67 @@ def fetch_peer_group():
                 "risk_level": "LOW",
                 "last_signal": peer_config.get("default_text", "Data fetch error.")
             })
-    
+
     return peer_data
 
 # ============================================================================
 # MAIN AGGREGATION
 # ============================================================================
 
+def validate_dashboard_state(data: dict) -> tuple:
+    """
+    Validate the dashboard state has required fields.
+    Returns (is_valid, error_message)
+    """
+    required_fields = ['last_updated', 'macro', 'peers', 'suppliers']
+    for field in required_fields:
+        if field not in data:
+            return False, f"Missing required field: {field}"
+
+    # Validate pillars have status and rag_score
+    for pillar in ['macro', 'peers', 'suppliers']:
+        pillar_data = data.get(pillar, {})
+        if 'status' not in pillar_data:
+            return False, f"Missing status in {pillar}"
+        if 'rag_score' not in pillar_data:
+            return False, f"Missing rag_score in {pillar}"
+
+    return True, None
+
+
+def save_with_backup(data: dict, output_file: Path) -> bool:
+    """
+    Save new data with backup of previous version.
+    Returns True if saved successfully.
+    """
+    try:
+        # Create backup if current file exists
+        if output_file.exists():
+            backup_file = output_file.with_suffix('.backup.json')
+            shutil.copy(output_file, backup_file)
+            logger.info(f"Created backup: {backup_file}")
+
+        # Write new data
+        with open(output_file, 'w') as f:
+            json.dump(data, f, indent=2)
+
+        logger.info(f"Saved data to {output_file}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to save data: {e}")
+        return False
+
+
 def main():
     """Main aggregation function - Three Core Pillars"""
-    print("Starting CPO intelligence harvest (Three Core Pillars)...", file=sys.stderr)
-    
-    # Load previous state for volatility calculation
+    logger.info("Starting CPO intelligence harvest (Three Core Pillars)...")
+
+    # Load previous state for volatility calculation and fallback
     data_dir = Path(__file__).parent.parent / "data"
     previous_eur_usd = None
+    previous_state = None
     previous_file = data_dir / "intel_snapshot.json"
+
     if previous_file.exists():
         try:
             with open(previous_file, "r") as f:
@@ -1068,53 +1344,115 @@ def main():
                     eu_data = previous_macro.get("regions", {}).get("eu", {})
                     if eu_data.get("status") == "success":
                         previous_eur_usd = eu_data.get("indicators", {}).get("fx_rate")
+            logger.info("Loaded previous state successfully")
         except Exception as e:
-            print(f"Could not load previous state: {e}", file=sys.stderr)
-    
+            harvest_stats.record_warning("previous_state", f"Could not load: {e}")
+
     # Fetch supporting data
     cyber_data = fetch_cisa_kev()
-    
+
     # PILLAR 1: Macro Overview
     macro_data = fetch_macro_overview(previous_eur_usd)
-    
+
     # PILLAR 2: Peers & Competitors
     peers_data = fetch_peers_overview()
-    
+
     # PILLAR 3: Supplier Watchlist
     suppliers_data = process_suppliers(cyber_data)
-    
+
     # Generate additional intelligence data (LIVE DATA)
     macro_economy = fetch_macro_economy()
     peer_group = fetch_peer_group()
-    
+
+    # Calculate overall health status
+    pillar_statuses = [
+        macro_data.get('status'),
+        peers_data.get('status'),
+        suppliers_data.get('status')
+    ]
+    success_count = sum(1 for s in pillar_statuses if s == 'success')
+
+    if success_count == 3:
+        overall_status = "healthy"
+    elif success_count >= 1:
+        overall_status = "partial"
+    else:
+        overall_status = "degraded"
+
     # Build dashboard state with three core pillars + additional intelligence
     dashboard_state = {
         "last_updated": datetime.utcnow().isoformat(),
+        "version": "",  # Will be set after hash calculation
+        "status": overall_status,
         "macro": macro_data,
         "peers": peers_data,
         "suppliers": suppliers_data,
         "macro_economy": macro_economy,
-        "peer_group": peer_group
+        "peer_group": peer_group,
+        "harvest_stats": harvest_stats.summary(),
+        "health": {
+            "pillars": {
+                "macro": macro_data.get('status', 'unknown'),
+                "peers": peers_data.get('status', 'unknown'),
+                "suppliers": suppliers_data.get('status', 'unknown')
+            },
+            "errors_count": len(harvest_stats.errors),
+            "warnings_count": len(harvest_stats.warnings),
+            "circuit_breaker_state": yfinance_circuit_breaker.state
+        }
     }
-    
+
+    # Calculate version hash
+    dashboard_state["version"] = calculate_data_hash(dashboard_state)
+
+    # Validate before saving
+    is_valid, validation_error = validate_dashboard_state(dashboard_state)
+    if not is_valid:
+        logger.error(f"Validation failed: {validation_error}")
+        if previous_state:
+            logger.warning("Using previous state as fallback")
+            # Keep previous data but update timestamp and add error info
+            previous_state["last_updated"] = datetime.utcnow().isoformat()
+            previous_state["status"] = "fallback"
+            previous_state["harvest_stats"] = harvest_stats.summary()
+            dashboard_state = previous_state
+
     # Save to data directory
     data_dir.mkdir(parents=True, exist_ok=True)
     output_file = data_dir / "intel_snapshot.json"
-    with open(output_file, "w") as f:
-        json.dump(dashboard_state, f, indent=2)
-    
-    print(f"Intelligence harvest complete. Saved to {output_file}", file=sys.stderr)
-    print(f"Three Core Pillars:", file=sys.stderr)
-    print(f"  1. Macro: {macro_data.get('rag_score', 'UNKNOWN')} ({macro_data.get('status', 'unknown')})", file=sys.stderr)
-    print(f"  2. Peers: {peers_data.get('rag_score', 'UNKNOWN')} ({peers_data.get('status', 'unknown')})", file=sys.stderr)
-    print(f"  3. Suppliers: {suppliers_data.get('rag_score', 'UNKNOWN')} ({suppliers_data.get('status', 'unknown')})", file=sys.stderr)
-    
+
+    if not save_with_backup(dashboard_state, output_file):
+        logger.error("Failed to save dashboard state")
+        sys.exit(1)
+
+    # Summary output
+    logger.info(f"Intelligence harvest complete. Version: {dashboard_state.get('version', 'N/A')}")
+    logger.info(f"Overall Status: {overall_status}")
+    logger.info("Three Core Pillars:")
+    logger.info(f"  1. Macro: {macro_data.get('rag_score', 'UNKNOWN')} ({macro_data.get('status', 'unknown')})")
+    logger.info(f"  2. Peers: {peers_data.get('rag_score', 'UNKNOWN')} ({peers_data.get('status', 'unknown')})")
+    logger.info(f"  3. Suppliers: {suppliers_data.get('rag_score', 'UNKNOWN')} ({suppliers_data.get('status', 'unknown')})")
+
     # Print detailed summaries
     if peers_data.get('status') == 'success':
-        print(f"  Peers: {peers_data.get('total_peers', 0)} tracked, {peers_data.get('total_red_signals', 0)} red, {peers_data.get('total_amber_signals', 0)} amber signals", file=sys.stderr)
-    
+        logger.info(f"  Peers: {peers_data.get('total_peers', 0)} tracked, {peers_data.get('total_red_signals', 0)} red, {peers_data.get('total_amber_signals', 0)} amber signals")
+
     if suppliers_data.get('status') == 'success':
-        print(f"  Suppliers: {suppliers_data.get('total_suppliers', 0)} total, {suppliers_data.get('suppliers_at_cyber_risk', 0)} cyber risk, {suppliers_data.get('suppliers_at_news_risk', 0)} news risk", file=sys.stderr)
+        logger.info(f"  Suppliers: {suppliers_data.get('total_suppliers', 0)} total, {suppliers_data.get('suppliers_at_cyber_risk', 0)} cyber risk, {suppliers_data.get('suppliers_at_news_risk', 0)} news risk")
+
+    # Harvest stats summary
+    stats = harvest_stats.summary()
+    logger.info(f"Harvest Stats: {stats['total_successes']} successes, {stats['total_errors']} errors, {stats['total_warnings']} warnings")
+    logger.info(f"Duration: {stats['duration_seconds']:.2f}s")
+
+    # Check if we should alert
+    if harvest_stats.should_alert():
+        logger.warning("ALERT: Critical errors detected during harvest!")
+        for error in harvest_stats.errors:
+            logger.warning(f"  - [{error['source']}] {error['error']}")
+        # Exit with error code to trigger GitHub Actions failure notification
+        sys.exit(2)
+
 
 if __name__ == "__main__":
     main()

@@ -51,7 +51,7 @@ function HealthIndicator({ status }: { status: string }) {
 export default function MorningCoffeeDashboard() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [riskFilter, setRiskFilter] = useState<'all' | 'cyber' | 'news' | 'market'>('all');
+  const [riskFilter, setRiskFilter] = useState<'all' | 'cyber' | 'news' | 'operational' | 'critical' | 'high' | 'medium'>('all');
 
   // Use the data freshness hook
   const {
@@ -264,28 +264,38 @@ export default function MorningCoffeeDashboard() {
               <div className="space-y-2 text-sm">
                 <div className="text-2xl font-bold text-gray-900">{suppliers?.total_suppliers || 0}</div>
                 <div className="text-gray-600">Suppliers monitored</div>
+                {/* Show risk counts by severity */}
+                {(suppliers as any)?.total_critical > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'critical' ? 'all' : 'critical')}
+                    className={`block text-red-700 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'critical' ? 'bg-red-100 px-2 py-0.5 rounded' : ''}`}
+                  >
+                    🚨 {(suppliers as any).total_critical} Critical
+                  </button>
+                )}
+                {(suppliers as any)?.total_high > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'high' ? 'all' : 'high')}
+                    className={`block text-red-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'high' ? 'bg-red-100 px-2 py-0.5 rounded' : ''}`}
+                  >
+                    ⚠️ {(suppliers as any).total_high} High Risk
+                  </button>
+                )}
+                {(suppliers as any)?.total_medium > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'medium' ? 'all' : 'medium')}
+                    className={`block text-amber-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'medium' ? 'bg-amber-100 px-2 py-0.5 rounded' : ''}`}
+                  >
+                    📋 {(suppliers as any).total_medium} Medium Risk
+                  </button>
+                )}
+                {/* Show risk type counts */}
                 {suppliers?.suppliers_at_cyber_risk > 0 && (
                   <button
                     onClick={() => setRiskFilter(riskFilter === 'cyber' ? 'all' : 'cyber')}
-                    className={`text-red-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'cyber' ? 'bg-red-100 px-2 py-0.5 rounded' : ''}`}
+                    className={`block text-gray-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'cyber' ? 'bg-gray-100 px-2 py-0.5 rounded' : ''}`}
                   >
-                    🔒 {suppliers.suppliers_at_cyber_risk} Cyber Risk
-                  </button>
-                )}
-                {suppliers?.suppliers_at_news_risk > 0 && (
-                  <button
-                    onClick={() => setRiskFilter(riskFilter === 'news' ? 'all' : 'news')}
-                    className={`text-amber-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'news' ? 'bg-amber-100 px-2 py-0.5 rounded' : ''}`}
-                  >
-                    📰 {suppliers.suppliers_at_news_risk} News Risk
-                  </button>
-                )}
-                {(suppliers as any)?.suppliers_at_market_risk > 0 && (
-                  <button
-                    onClick={() => setRiskFilter(riskFilter === 'market' ? 'all' : 'market')}
-                    className={`text-purple-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'market' ? 'bg-purple-100 px-2 py-0.5 rounded' : ''}`}
-                  >
-                    📉 {(suppliers as any).suppliers_at_market_risk} Market Risk
+                    🔒 {suppliers.suppliers_at_cyber_risk} Cyber
                   </button>
                 )}
               </div>
@@ -464,13 +474,19 @@ export default function MorningCoffeeDashboard() {
               {riskFilter !== 'all' && (
                 <div className="flex items-center gap-2">
                   <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${
-                    riskFilter === 'cyber' ? 'bg-red-100 text-red-800' :
+                    riskFilter === 'critical' ? 'bg-red-200 text-red-900' :
+                    riskFilter === 'high' ? 'bg-red-100 text-red-800' :
+                    riskFilter === 'medium' ? 'bg-amber-100 text-amber-800' :
+                    riskFilter === 'cyber' ? 'bg-gray-100 text-gray-800' :
                     riskFilter === 'news' ? 'bg-amber-100 text-amber-800' :
-                    'bg-purple-100 text-purple-800'
+                    'bg-gray-100 text-gray-800'
                   }`}>
+                    {riskFilter === 'critical' && '🚨 Critical Risk'}
+                    {riskFilter === 'high' && '⚠️ High Risk'}
+                    {riskFilter === 'medium' && '📋 Medium Risk'}
                     {riskFilter === 'cyber' && '🔒 Cyber Risk'}
                     {riskFilter === 'news' && '📰 News Risk'}
-                    {riskFilter === 'market' && '📉 Market Risk'}
+                    {riskFilter === 'operational' && '⚠️ Operational Risk'}
                   </span>
                   <button
                     onClick={() => setRiskFilter('all')}
@@ -499,9 +515,12 @@ export default function MorningCoffeeDashboard() {
                 {suppliersList
                   .filter((supplier: Supplier) => {
                     if (riskFilter === 'all') return true;
+                    if (riskFilter === 'critical') return supplier.risk_level === 'CRITICAL';
+                    if (riskFilter === 'high') return supplier.risk_level === 'HIGH';
+                    if (riskFilter === 'medium') return supplier.risk_level === 'MEDIUM';
                     if (riskFilter === 'cyber') return supplier.cyber_risk;
                     if (riskFilter === 'news') return supplier.news_risk;
-                    if (riskFilter === 'market') return (supplier as any).stock_risk;
+                    if (riskFilter === 'operational') return (supplier as any).operational_risk;
                     return true;
                   })
                   .map((supplier: Supplier, idx: number) => (
@@ -571,13 +590,8 @@ export default function MorningCoffeeDashboard() {
                               </span>
                             )}
                             {supplier.news_risk && (
-                              <span className="px-1.5 py-0.5 bg-amber-600 text-white rounded text-xs">
+                              <span className="px-1.5 py-0.5 bg-amber-600 text-white rounded text-xs" title="News-based risk">
                                 📰
-                              </span>
-                            )}
-                            {(supplier as any).stock_risk && (
-                              <span className="px-1.5 py-0.5 bg-purple-600 text-white rounded text-xs">
-                                📉
                               </span>
                             )}
                           </div>

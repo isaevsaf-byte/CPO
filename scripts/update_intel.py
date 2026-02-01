@@ -795,17 +795,59 @@ def fetch_supplier_stock_data(ticker_symbol):
 
 
 def process_suppliers(cyber_data):
-    """Process supplier watchlist and check against CISA alerts, news, AND stock data"""
+    """
+    Process supplier watchlist and assess SUPPLY CHAIN RISK to BAT.
+
+    Risk assessment is based on threats to SUPPLY CONTINUITY, not stock price movements.
+    A 2-3% stock drop is normal market volatility, NOT a supply risk.
+
+    CRITICAL - Immediate threat to supply:
+      - Bankruptcy, insolvency, liquidation
+      - Factory fire, explosion, facility closure
+      - Government sanctions, bans, seizure
+      - Major cyber attack disrupting operations
+      - Labor strike at production facility
+
+    HIGH - Serious concern:
+      - Fraud/SEC investigation
+      - Major product recall
+      - Stock crash >15% (indicates serious problems)
+
+    MEDIUM - Watch closely:
+      - Stock drop >10% WITH negative news
+      - Major layoffs, restructuring
+      - Supply disruption mentions
+
+    LOW - Normal operations:
+      - Stock fluctuations <10%
+      - No negative operational news
+    """
     suppliers = []
     cisa_vulns = cyber_data.get("recent_vulnerabilities", [])
 
-    # Risk keywords for news analysis
-    CRITICAL_KEYWORDS = ["investigation", "fraud", "sanction", "bankruptcy", "recall",
-                          "strike", "ban", "seize", "breach", "hack", "data leak"]
-    WARNING_KEYWORDS = ["delay", "shortage", "volatile", "drop", "miss", "down",
-                        "lawsuit", "fine", "cut", "layoff", "restructur"]
+    # Keywords indicating REAL supply chain risk to BAT
+    CRITICAL_SUPPLY_KEYWORDS = [
+        "bankruptcy", "bankrupt", "insolvent", "liquidation", "chapter 11",
+        "factory fire", "plant fire", "explosion", "plant closure", "facility closure",
+        "cease operations", "shut down", "shutting down",
+        "sanction", "sanctioned", "banned", "seized", "embargo",
+        "ransomware attack", "cyber attack", "systems down", "operations halted",
+        "strike", "labor strike", "workers strike", "walkout"
+    ]
 
-    suppliers_at_stock_risk = 0  # Track suppliers with stock-based risk
+    HIGH_SUPPLY_KEYWORDS = [
+        "fraud investigation", "sec investigation", "fbi investigation",
+        "accounting fraud", "securities fraud",
+        "major recall", "product recall", "safety recall",
+        "ceo fired", "ceo resign", "cfo resign", "executive exodus"
+    ]
+
+    MEDIUM_SUPPLY_KEYWORDS = [
+        "mass layoff", "major layoff", "workforce reduction",
+        "supply shortage", "supply disruption", "production delay", "shipping delay",
+        "restructuring", "downsizing",
+        "credit downgrade", "debt default"
+    ]
 
     # Check each supplier against CISA alerts
     for supplier in WATCHLIST_DATA:
@@ -834,85 +876,107 @@ def process_suppliers(cyber_data):
         # Get deep dive data (includes stock ticker)
         deep_dive = get_supplier_deep_dive_data(supplier_name, category)
         stock_ticker = deep_dive.get('stock_ticker', 'N/A')
+        bat_exposure = deep_dive.get('bat_exposure', 'Medium')
 
-        # NEW: Fetch live stock data for suppliers with tickers
+        # Fetch live stock data for suppliers with tickers
         news_risk = False
         news_items = []
-        news_text = ""
+        news_headline = ""
         daily_change_pct = None
         current_price = None
-        stock_risk = False
+        operational_risk = False  # True supply chain risk, not just stock movement
+        risk_reason = ""
 
         if stock_ticker and stock_ticker != "N/A":
             daily_change_pct, current_price, latest_headline = fetch_supplier_stock_data(stock_ticker)
 
-            # Check headline for risk keywords
+            # Analyze news headline for SUPPLY CHAIN risk keywords
             if latest_headline:
-                news_text = latest_headline
+                news_headline = latest_headline
                 headline_lower = latest_headline.lower()
 
-                if any(kw in headline_lower for kw in CRITICAL_KEYWORDS):
-                    news_risk = True
-                    news_items.append({"headline": latest_headline, "risk": "CRITICAL"})
-                elif any(kw in headline_lower for kw in WARNING_KEYWORDS):
-                    news_risk = True
-                    news_items.append({"headline": latest_headline, "risk": "WARNING"})
+                # Check for CRITICAL supply risk keywords
+                for kw in CRITICAL_SUPPLY_KEYWORDS:
+                    if kw in headline_lower:
+                        news_risk = True
+                        operational_risk = True
+                        news_items.append({"headline": latest_headline, "risk": "CRITICAL", "keyword": kw})
+                        risk_reason = f"Critical supply risk: '{kw}' detected in news"
+                        break
 
-            # Check stock price movement
-            if daily_change_pct is not None:
-                if daily_change_pct < -5.0:
-                    stock_risk = True
-                    suppliers_at_stock_risk += 1
-                elif daily_change_pct < -2.0:
-                    stock_risk = True
-                    suppliers_at_stock_risk += 1
+                # Check for HIGH supply risk keywords
+                if not operational_risk:
+                    for kw in HIGH_SUPPLY_KEYWORDS:
+                        if kw in headline_lower:
+                            news_risk = True
+                            operational_risk = True
+                            news_items.append({"headline": latest_headline, "risk": "HIGH", "keyword": kw})
+                            risk_reason = f"High supply risk: '{kw}' detected in news"
+                            break
+
+                # Check for MEDIUM supply risk keywords
+                if not operational_risk:
+                    for kw in MEDIUM_SUPPLY_KEYWORDS:
+                        if kw in headline_lower:
+                            news_risk = True
+                            operational_risk = True
+                            news_items.append({"headline": latest_headline, "risk": "MEDIUM", "keyword": kw})
+                            risk_reason = f"Supply concern: '{kw}' detected in news"
+                            break
 
         # Generate slug for URL routing
         slug = supplier_name.lower().replace(" ", "-").replace("(", "").replace(")", "").replace("huizhou-byd-electronic", "byd-electronic")
 
-        # Calculate risk level and signal for suppliers
+        # ================================================================
+        # RISK LEVEL DETERMINATION - Based on BAT supply chain impact
+        # ================================================================
         supplier_risk_level = "LOW"
-        last_signal = "No significant risk signals detected."
+        last_signal = "No supply chain risks detected."
+        risk_analysis = ""
 
-        # Priority 1: Check cyber risk (most critical)
+        # Priority 1: CISA cyber vulnerabilities (critical for IT-dependent suppliers)
         if cyber_risk:
             supplier_risk_level = "CRITICAL" if len(matching_vulns) >= 2 else "HIGH"
-            last_signal = f"🚨 Cyber Risk: {len(matching_vulns)} CISA vulnerability(ies) match {supplier_name}. CVE IDs: {', '.join([v.get('cveID', 'N/A') for v in matching_vulns[:3]])}."
-            risk_analysis = f"Cyber risk identified: {len(matching_vulns)} CISA vulnerability(ies) match {supplier_name}. Review recommended for {category} supply chain continuity. Impact assessment: {deep_dive['bat_exposure']} exposure level requires immediate attention."
+            last_signal = f"🔒 Cyber vulnerability: {len(matching_vulns)} CISA KEV match(es) - {', '.join([v.get('cveID', 'N/A') for v in matching_vulns[:2]])}"
+            risk_analysis = f"CISA Known Exploited Vulnerability detected. {supplier_name} systems may be at risk. {bat_exposure} exposure to BAT requires security assessment."
 
-        # Priority 2: Check news risk
-        elif news_risk:
-            # Determine severity from news items
-            has_critical = any(item.get('risk') == 'CRITICAL' for item in news_items)
-            if has_critical:
+        # Priority 2: News-based operational risk
+        elif operational_risk and news_items:
+            news_severity = news_items[0].get('risk', 'MEDIUM')
+            if news_severity == "CRITICAL":
                 supplier_risk_level = "CRITICAL"
-                last_signal = f"🚨 News Alert: {news_text[:120]}"
+                last_signal = f"🚨 Supply threat: {news_headline[:100]}"
+            elif news_severity == "HIGH":
+                supplier_risk_level = "HIGH"
+                last_signal = f"⚠️ Supply concern: {news_headline[:100]}"
             else:
                 supplier_risk_level = "MEDIUM"
-                last_signal = f"⚠️ News Alert: {news_text[:120]}"
-            risk_analysis = f"News monitoring indicates potential supply chain concerns. {supplier_name} ({category}) flagged in recent industry reports. Standard risk mitigation protocols recommended."
+                last_signal = f"📋 Monitor: {news_headline[:100]}"
+            risk_analysis = f"{risk_reason}. {supplier_name} ({category}) requires monitoring. BAT exposure: {bat_exposure}."
 
-        # Priority 3: Check stock volatility
-        elif stock_risk and daily_change_pct is not None:
-            if daily_change_pct < -5.0:
-                supplier_risk_level = "CRITICAL"
-                last_signal = f"🚨 Market Alert: {supplier_name} stock down {daily_change_pct:.2f}% (severe drop)"
-            elif daily_change_pct < -2.0:
-                supplier_risk_level = "MEDIUM"
-                last_signal = f"📉 Market Alert: {supplier_name} stock down {daily_change_pct:.2f}%"
-            risk_analysis = f"Stock volatility detected for {supplier_name}. Daily change: {daily_change_pct:.2f}%. Monitor for supply chain impact. {deep_dive['bat_exposure']} exposure level."
+        # Priority 3: Severe stock crash (>15%) indicates serious company problems
+        elif daily_change_pct is not None and daily_change_pct < -15.0:
+            supplier_risk_level = "HIGH"
+            last_signal = f"📉 Severe stock crash: {daily_change_pct:.1f}% - investigate cause"
+            risk_analysis = f"Unusual stock decline of {daily_change_pct:.1f}% may indicate serious issues. Recommend investigating {supplier_name} financial health. BAT exposure: {bat_exposure}."
 
-        # Default: No risks detected
+        # Priority 4: Large stock drop (>10%) with Critical/High exposure
+        elif daily_change_pct is not None and daily_change_pct < -10.0 and bat_exposure in ["Critical", "High"]:
+            supplier_risk_level = "MEDIUM"
+            last_signal = f"📉 Stock down {daily_change_pct:.1f}% - {bat_exposure} exposure supplier"
+            risk_analysis = f"Significant stock decline for {bat_exposure.lower()} exposure supplier. Monitor {supplier_name} for any operational impacts."
+
+        # Default: Normal operations
         else:
             supplier_risk_level = "LOW"
-            # Add stock info to signal if available
             if daily_change_pct is not None:
-                last_signal = f"Stable operations. Stock: {daily_change_pct:+.2f}% today."
+                direction = "+" if daily_change_pct >= 0 else ""
+                last_signal = f"✓ Normal operations. Stock: {direction}{daily_change_pct:.1f}%"
             else:
-                last_signal = "No significant risk signals detected."
-            risk_analysis = f"Low risk profile. {supplier_name} maintains stable operations in {category}. No cyber threats, negative news, or stock volatility detected. {deep_dive['bat_exposure']} exposure level managed through standard procurement protocols."
+                last_signal = "✓ Normal operations. No risk signals."
+            risk_analysis = f"No supply chain risks identified. {supplier_name} ({category}) operating normally. BAT exposure: {bat_exposure}."
 
-        # Store additional stock data
+        # Build supplier data
         supplier_data = {
             "name": supplier_name,
             "slug": slug,
@@ -921,27 +985,27 @@ def process_suppliers(cyber_data):
             "matching_vulnerabilities": matching_vulns[:5],
             "news_risk": news_risk,
             "news_items": news_items,
-            "stock_risk": stock_risk,
+            "operational_risk": operational_risk,
             "daily_change_pct": round(daily_change_pct, 2) if daily_change_pct is not None else None,
             "current_price": round(current_price, 2) if current_price is not None else None,
             "risk_analysis": risk_analysis,
             "risk_level": supplier_risk_level,
             "last_signal": last_signal,
-            **deep_dive  # Unpack all deep dive fields
+            **deep_dive
         }
 
         suppliers.append(supplier_data)
 
-    # Calculate RAG score - now includes stock risk
+    # Calculate RAG score based on actual supply risks
     suppliers_at_cyber_risk = sum(1 for s in suppliers if s["cyber_risk"])
     suppliers_at_news_risk = sum(1 for s in suppliers if s["news_risk"])
-    suppliers_at_market_risk = sum(1 for s in suppliers if s.get("stock_risk", False))
+    suppliers_at_operational_risk = sum(1 for s in suppliers if s.get("operational_risk", False))
 
     total_critical = sum(1 for s in suppliers if s["risk_level"] == "CRITICAL")
-    total_medium = sum(1 for s in suppliers if s["risk_level"] == "MEDIUM")
     total_high = sum(1 for s in suppliers if s["risk_level"] == "HIGH")
+    total_medium = sum(1 for s in suppliers if s["risk_level"] == "MEDIUM")
 
-    # RAG score based on severity
+    # RAG score based on actual supply chain risk severity
     if total_critical >= 1 or (total_high + total_medium) >= 3:
         rag_score = "RED"
     elif total_high >= 1 or total_medium >= 1:
@@ -955,7 +1019,10 @@ def process_suppliers(cyber_data):
         "total_suppliers": len(suppliers),
         "suppliers_at_cyber_risk": suppliers_at_cyber_risk,
         "suppliers_at_news_risk": suppliers_at_news_risk,
-        "suppliers_at_market_risk": suppliers_at_market_risk,
+        "suppliers_at_operational_risk": suppliers_at_operational_risk,
+        "total_critical": total_critical,
+        "total_high": total_high,
+        "total_medium": total_medium,
         "suppliers": suppliers,
         "last_fetched": datetime.utcnow().isoformat()
     }

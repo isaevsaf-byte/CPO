@@ -264,10 +264,13 @@ export default function MorningCoffeeDashboard() {
                 <div className="text-2xl font-bold text-gray-900">{suppliers?.total_suppliers || 0}</div>
                 <div className="text-gray-600">Suppliers monitored</div>
                 {suppliers?.suppliers_at_cyber_risk > 0 && (
-                  <div className="text-red-600 font-semibold text-xs">🔴 {suppliers.suppliers_at_cyber_risk} Cyber Risk</div>
+                  <div className="text-red-600 font-semibold text-xs">🔒 {suppliers.suppliers_at_cyber_risk} Cyber Risk</div>
                 )}
                 {suppliers?.suppliers_at_news_risk > 0 && (
-                  <div className="text-amber-600 font-semibold text-xs">⚠️ {suppliers.suppliers_at_news_risk} News Risk</div>
+                  <div className="text-amber-600 font-semibold text-xs">📰 {suppliers.suppliers_at_news_risk} News Risk</div>
+                )}
+                {(suppliers as any)?.suppliers_at_market_risk > 0 && (
+                  <div className="text-purple-600 font-semibold text-xs">📉 {(suppliers as any).suppliers_at_market_risk} Market Risk</div>
                 )}
               </div>
             )}
@@ -492,19 +495,41 @@ export default function MorningCoffeeDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link href={`/details/${encodeURIComponent(supplier.name)}`} className="block">
                         <div className="flex items-center gap-2">
-                          {supplier.cyber_risk && (
+                          {/* Use risk_level as primary indicator */}
+                          {supplier.risk_level === 'CRITICAL' && (
                             <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">
-                              Cyber
+                              Critical
+                            </span>
+                          )}
+                          {supplier.risk_level === 'HIGH' && (
+                            <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">
+                              High
+                            </span>
+                          )}
+                          {supplier.risk_level === 'MEDIUM' && (
+                            <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-semibold">
+                              Medium
+                            </span>
+                          )}
+                          {(supplier.risk_level === 'LOW' || !supplier.risk_level) && (
+                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">
+                              Low
+                            </span>
+                          )}
+                          {/* Show risk type badges */}
+                          {supplier.cyber_risk && (
+                            <span className="px-1.5 py-0.5 bg-red-600 text-white rounded text-xs">
+                              🔒
                             </span>
                           )}
                           {supplier.news_risk && (
-                            <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-semibold">
-                              News
+                            <span className="px-1.5 py-0.5 bg-amber-600 text-white rounded text-xs">
+                              📰
                             </span>
                           )}
-                          {!supplier.cyber_risk && !supplier.news_risk && (
-                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">
-                              Low
+                          {supplier.stock_risk && (
+                            <span className="px-1.5 py-0.5 bg-purple-600 text-white rounded text-xs">
+                              📉
                             </span>
                           )}
                         </div>
@@ -601,25 +626,34 @@ export default function MorningCoffeeDashboard() {
               <div className="mb-6">
                 <h3 className="text-base font-bold text-gray-900 mb-3">Data Frequency</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  Updates daily at 07:00 UTC via automated fetching engine.
+                  Updates every 6 hours via automated GitHub Actions workflow.
                 </p>
               </div>
 
               <div className="mb-6">
                 <h3 className="text-base font-bold text-gray-900 mb-3">Sources</h3>
                 <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>Macro:</strong> Live feeds from Federal Reserve, ECB, and PBoC.</li>
-                  <li><strong>Peers:</strong> Real-time market data (LSE/NYSE) and automated news sentiment analysis via Yahoo Finance.</li>
-                  <li><strong>Cyber Risk:</strong> Direct sync with CISA Known Exploited Vulnerabilities catalog.</li>
-                  <li><strong>Suppliers:</strong> Watchlist of 24 strategic partners monitored for risk signals.</li>
+                  <li><strong>Macro:</strong> ECB for EUR/USD exchange rates. Stock indices (S&P 500, major currencies) via Yahoo Finance.</li>
+                  <li><strong>Peers:</strong> Real-time stock prices and news via Yahoo Finance API. SEC 8-K filings for US-listed peers.</li>
+                  <li><strong>Cyber Risk:</strong> Direct sync with CISA Known Exploited Vulnerabilities (KEV) catalog.</li>
+                  <li><strong>Suppliers:</strong> Watchlist of 24 strategic partners with live stock monitoring, news analysis, and cyber risk detection.</li>
+                </ul>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">Risk Detection</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                  <li><strong>🔒 Cyber Risk:</strong> CISA vulnerability matches against supplier names.</li>
+                  <li><strong>📰 News Risk:</strong> Keywords like &quot;investigation&quot;, &quot;fraud&quot;, &quot;bankruptcy&quot; detected in headlines.</li>
+                  <li><strong>📉 Market Risk:</strong> Stock drops &gt;2% (Medium) or &gt;5% (Critical) trigger alerts.</li>
                 </ul>
               </div>
 
               <div className="mb-6">
                 <h3 className="text-base font-bold text-gray-900 mb-3">How to use</h3>
                 <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>Traffic Light System:</strong> Red cards indicate critical risks (Strikes, Bans, Crashes).</li>
-                  <li><strong>Deep Dive:</strong> Click any card (Region, Peer, or Supplier) to access the Intelligence Dossier and external verification links.</li>
+                  <li><strong>Traffic Light System:</strong> Red = Critical/High risk, Amber = Medium risk, Green = Low risk.</li>
+                  <li><strong>Deep Dive:</strong> Click any card (Region, Peer, or Supplier) to access the Intelligence Dossier.</li>
                 </ul>
               </div>
             </div>

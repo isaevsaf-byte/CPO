@@ -690,39 +690,94 @@ export default function MorningCoffeeDashboard() {
             <div className="px-6 py-6 prose prose-sm max-w-none">
               <p className="text-gray-700 leading-relaxed mb-6">
                 This Intelligence Deck aggregates real-time supply chain signals for British American Tobacco leadership.
+                Risk assessment is based on <strong>threats to supply continuity</strong>, not stock price movements.
               </p>
 
+              {/* Risk Level Legend */}
               <div className="mb-6">
-                <h3 className="text-base font-bold text-gray-900 mb-3">Data Frequency</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  Updates every 6 hours via automated GitHub Actions workflow.
+                <h3 className="text-base font-bold text-gray-900 mb-3">Risk Level Legend</h3>
+                <div className="space-y-3">
+                  {/* CRITICAL */}
+                  <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-bold whitespace-nowrap">🚨 Critical</span>
+                    <div className="text-sm">
+                      <p className="font-semibold text-red-800">Immediate threat to supply</p>
+                      <p className="text-red-700 mt-1">
+                        <strong>Triggers:</strong> Bankruptcy, factory fire/closure, government sanctions, ransomware attack, labor strike
+                      </p>
+                      <p className="text-red-600 mt-1 text-xs italic">
+                        Example: &quot;Supplier X files for Chapter 11 bankruptcy&quot;
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* HIGH */}
+                  <div className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-bold whitespace-nowrap">⚠️ High</span>
+                    <div className="text-sm">
+                      <p className="font-semibold text-orange-800">Serious concern requiring monitoring</p>
+                      <p className="text-orange-700 mt-1">
+                        <strong>Triggers:</strong> Fraud/SEC investigation, major product recall, stock crash &gt;15%, executive exodus
+                      </p>
+                      <p className="text-orange-600 mt-1 text-xs italic">
+                        Example: &quot;SEC opens investigation into Supplier Y accounting practices&quot;
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* MEDIUM */}
+                  <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-bold whitespace-nowrap">📋 Medium</span>
+                    <div className="text-sm">
+                      <p className="font-semibold text-amber-800">Potential concern, watch closely</p>
+                      <p className="text-amber-700 mt-1">
+                        <strong>Triggers:</strong> Mass layoffs, supply disruption news, stock &gt;10% drop (Critical/High exposure suppliers), credit downgrade
+                      </p>
+                      <p className="text-amber-600 mt-1 text-xs italic">
+                        Example: &quot;Supplier Z announces 20% workforce reduction&quot;
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* LOW */}
+                  <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-bold whitespace-nowrap">✓ Low</span>
+                    <div className="text-sm">
+                      <p className="font-semibold text-green-800">Normal operations</p>
+                      <p className="text-green-700 mt-1">
+                        <strong>Status:</strong> No negative operational news. Stock fluctuations &lt;10% are considered normal market volatility.
+                      </p>
+                      <p className="text-green-600 mt-1 text-xs italic">
+                        Note: A 2-5% stock drop alone is NOT a supply risk
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">Data Sources</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                  <li><strong>Macro:</strong> ECB for EUR/USD rates, Yahoo Finance for market indices</li>
+                  <li><strong>Peers:</strong> Real-time stock prices, news headlines, SEC 8-K filings</li>
+                  <li><strong>Cyber:</strong> CISA Known Exploited Vulnerabilities (KEV) catalog</li>
+                  <li><strong>Suppliers:</strong> 24 strategic partners with stock, news, and cyber monitoring</li>
+                </ul>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">Update Frequency</h3>
+                <p className="text-gray-700">
+                  Data refreshes <strong>every 6 hours</strong> via automated pipeline.
                 </p>
               </div>
 
               <div className="mb-6">
-                <h3 className="text-base font-bold text-gray-900 mb-3">Sources</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-3">How to Use</h3>
                 <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>Macro:</strong> ECB for EUR/USD exchange rates. Stock indices (S&P 500, major currencies) via Yahoo Finance.</li>
-                  <li><strong>Peers:</strong> Real-time stock prices and news via Yahoo Finance API. SEC 8-K filings for US-listed peers.</li>
-                  <li><strong>Cyber Risk:</strong> Direct sync with CISA Known Exploited Vulnerabilities (KEV) catalog.</li>
-                  <li><strong>Suppliers:</strong> Watchlist of 24 strategic partners with live stock monitoring, news analysis, and cyber risk detection.</li>
-                </ul>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="text-base font-bold text-gray-900 mb-3">Risk Detection</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>🔒 Cyber Risk:</strong> CISA vulnerability matches against supplier names.</li>
-                  <li><strong>📰 News Risk:</strong> Keywords like &quot;investigation&quot;, &quot;fraud&quot;, &quot;bankruptcy&quot; detected in headlines.</li>
-                  <li><strong>📉 Market Risk:</strong> Stock drops &gt;2% (Medium) or &gt;5% (Critical) trigger alerts.</li>
-                </ul>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="text-base font-bold text-gray-900 mb-3">How to use</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>Traffic Light System:</strong> Red = Critical/High risk, Amber = Medium risk, Green = Low risk.</li>
-                  <li><strong>Deep Dive:</strong> Click any card (Region, Peer, or Supplier) to access the Intelligence Dossier.</li>
+                  <li><strong>Click risk counts</strong> in the Supplier Watchlist card to filter by severity</li>
+                  <li><strong>Click any supplier</strong> row to view detailed intelligence dossier</li>
+                  <li><strong>Hover over risk badges</strong> to see the specific trigger reason</li>
                 </ul>
               </div>
             </div>

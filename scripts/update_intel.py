@@ -686,7 +686,7 @@ def get_supplier_deep_dive_data(supplier_name, category):
         "Fuji": "Japan",
         "SWM (Mativ)": "USA",
         "Delfort": "Austria",
-        "CNT": "China",
+        "CNT": "Germany",
         "ITC": "India",
         "Porton": "China",
         "Tenowo": "Germany",
@@ -732,10 +732,16 @@ def get_supplier_deep_dive_data(supplier_name, category):
         ]
     }
     
+    # URL mapping
+    url_map = {
+        "CNT": "https://nicotineusp.com"
+    }
+    
     exposure = exposure_map.get(supplier_name, "Medium")
     segment = segment_map.get(category, "Combustibles")
     location = location_map.get(supplier_name, "Unknown")
     ticker = ticker_map.get(supplier_name, "N/A")
+    url = url_map.get(supplier_name, None)
     news_summary = " ".join(news_templates.get(exposure, news_templates["Medium"]))
     
     return {
@@ -743,7 +749,8 @@ def get_supplier_deep_dive_data(supplier_name, category):
         "segment": segment,
         "location": location,
         "stock_ticker": ticker,
-        "latest_news_summary": news_summary
+        "latest_news_summary": news_summary,
+        "url": url
     }
 
 def fetch_supplier_stock_data(ticker_symbol):

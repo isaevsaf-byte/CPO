@@ -139,6 +139,7 @@ export interface Supplier {
   news_risk: boolean;
   news_items: any[];
   stock_risk?: boolean;
+  operational_risk?: boolean;
   daily_change_pct: number | null;
   current_price: number | null;
   risk_analysis: string;
@@ -149,6 +150,14 @@ export interface Supplier {
   location: string;
   stock_ticker: string;
   latest_news_summary: string;
+  // Geopolitical risk fields
+  geopolitical_risk: boolean;
+  geopolitical_risk_level: RiskLevel | null;
+  geopolitical_reason: string | null;
+  geopolitical_headlines: string[];
+  geopolitical_escalated: boolean;
+  // Google News headlines for ticker-less suppliers
+  google_news_headlines: string[];
 }
 
 export interface SuppliersData {
@@ -158,6 +167,10 @@ export interface SuppliersData {
   suppliers_at_cyber_risk: number;
   suppliers_at_news_risk: number;
   suppliers_at_market_risk?: number;
+  suppliers_at_geopolitical_risk: number;
+  total_critical: number;
+  total_high: number;
+  total_medium: number;
   suppliers: Supplier[];
   last_fetched: string;
 }

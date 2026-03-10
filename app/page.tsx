@@ -51,7 +51,7 @@ function HealthIndicator({ status }: { status: string }) {
 export default function MorningCoffeeDashboard() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [riskFilter, setRiskFilter] = useState<'all' | 'cyber' | 'news' | 'operational' | 'critical' | 'high' | 'medium'>('all');
+  const [riskFilter, setRiskFilter] = useState<'all' | 'cyber' | 'news' | 'operational' | 'critical' | 'high' | 'medium' | 'geopolitical'>('all');
 
   // Use the data freshness hook
   const {
@@ -84,23 +84,6 @@ export default function MorningCoffeeDashboard() {
       suppliersByCategory[category] = [];
     }
     suppliersByCategory[category].push(supplier);
-  });
-
-  // Group suppliers by risk level
-  const suppliersByRisk: { [key: string]: Supplier[] } = {
-    'High Risk': [],
-    'Medium Risk': [],
-    'Low Risk': []
-  };
-
-  suppliersList.forEach((supplier: Supplier) => {
-    if (supplier.cyber_risk || supplier.news_risk) {
-      suppliersByRisk['High Risk'].push(supplier);
-    } else if (supplier.bat_exposure === 'High' || supplier.bat_exposure === 'Critical') {
-      suppliersByRisk['Medium Risk'].push(supplier);
-    } else {
-      suppliersByRisk['Low Risk'].push(supplier);
-    }
   });
 
   return (
@@ -298,6 +281,14 @@ export default function MorningCoffeeDashboard() {
                     🔒 {suppliers.suppliers_at_cyber_risk} Cyber
                   </button>
                 )}
+                {(suppliers as any)?.suppliers_at_geopolitical_risk > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'geopolitical' ? 'all' : 'geopolitical')}
+                    className={`block text-orange-700 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'geopolitical' ? 'bg-orange-100 px-2 py-0.5 rounded' : ''}`}
+                  >
+                    🌍 {(suppliers as any).suppliers_at_geopolitical_risk} Geopolitical
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -479,6 +470,7 @@ export default function MorningCoffeeDashboard() {
                     riskFilter === 'medium' ? 'bg-amber-100 text-amber-800' :
                     riskFilter === 'cyber' ? 'bg-gray-100 text-gray-800' :
                     riskFilter === 'news' ? 'bg-amber-100 text-amber-800' :
+                    riskFilter === 'geopolitical' ? 'bg-orange-100 text-orange-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
                     {riskFilter === 'critical' && '🚨 Critical Risk'}
@@ -487,6 +479,7 @@ export default function MorningCoffeeDashboard() {
                     {riskFilter === 'cyber' && '🔒 Cyber Risk'}
                     {riskFilter === 'news' && '📰 News Risk'}
                     {riskFilter === 'operational' && '⚠️ Operational Risk'}
+                    {riskFilter === 'geopolitical' && '🌍 Geopolitical Risk'}
                   </span>
                   <button
                     onClick={() => setRiskFilter('all')}
@@ -521,6 +514,7 @@ export default function MorningCoffeeDashboard() {
                     if (riskFilter === 'cyber') return supplier.cyber_risk;
                     if (riskFilter === 'news') return supplier.news_risk;
                     if (riskFilter === 'operational') return (supplier as any).operational_risk;
+                    if (riskFilter === 'geopolitical') return supplier.geopolitical_risk;
                     return true;
                   })
                   .map((supplier: Supplier, idx: number) => (
@@ -585,7 +579,7 @@ export default function MorningCoffeeDashboard() {
                             )}
                             {/* Show risk type badges */}
                             {supplier.cyber_risk && (
-                              <span className="px-1.5 py-0.5 bg-red-600 text-white rounded text-xs">
+                              <span className="px-1.5 py-0.5 bg-red-600 text-white rounded text-xs" title="CISA cyber vulnerability">
                                 🔒
                               </span>
                             )}
@@ -594,11 +588,22 @@ export default function MorningCoffeeDashboard() {
                                 📰
                               </span>
                             )}
+                            {supplier.geopolitical_risk && (
+                              <span className="px-1.5 py-0.5 bg-orange-600 text-white rounded text-xs" title={supplier.geopolitical_reason || 'Geopolitical risk'}>
+                                🌍
+                              </span>
+                            )}
                           </div>
                           {/* Show risk reason for non-LOW risks */}
                           {supplier.risk_level && supplier.risk_level !== 'LOW' && supplier.last_signal && (
                             <div className="text-xs text-gray-600 max-w-xs truncate" title={supplier.last_signal}>
                               {supplier.last_signal}
+                            </div>
+                          )}
+                          {/* Show geopolitical context when risk is geo-escalated */}
+                          {supplier.geopolitical_escalated && supplier.geopolitical_reason && (
+                            <div className="text-xs text-orange-700 max-w-xs truncate" title={supplier.geopolitical_reason}>
+                              🌍 {supplier.geopolitical_reason}
                             </div>
                           )}
                         </div>
@@ -703,7 +708,7 @@ export default function MorningCoffeeDashboard() {
                     <div className="text-sm">
                       <p className="font-semibold text-red-800">Immediate threat to supply</p>
                       <p className="text-red-700 mt-1">
-                        <strong>Triggers:</strong> Bankruptcy, factory fire/closure, government sanctions, ransomware attack, labor strike
+                        <strong>Triggers:</strong> Bankruptcy, factory fire/closure, government sanctions, ransomware attack, labor strike, active war zone
                       </p>
                       <p className="text-red-600 mt-1 text-xs italic">
                         Example: &quot;Supplier X files for Chapter 11 bankruptcy&quot;
@@ -717,7 +722,7 @@ export default function MorningCoffeeDashboard() {
                     <div className="text-sm">
                       <p className="font-semibold text-orange-800">Serious concern requiring monitoring</p>
                       <p className="text-orange-700 mt-1">
-                        <strong>Triggers:</strong> Fraud/SEC investigation, major product recall, stock crash &gt;15%, executive exodus
+                        <strong>Triggers:</strong> Fraud/SEC investigation, major product recall, stock crash &gt;15%, executive exodus, severe regional tensions/sanctions
                       </p>
                       <p className="text-orange-600 mt-1 text-xs italic">
                         Example: &quot;SEC opens investigation into Supplier Y accounting practices&quot;
@@ -731,7 +736,7 @@ export default function MorningCoffeeDashboard() {
                     <div className="text-sm">
                       <p className="font-semibold text-amber-800">Potential concern, watch closely</p>
                       <p className="text-amber-700 mt-1">
-                        <strong>Triggers:</strong> Mass layoffs, supply disruption news, stock &gt;10% drop (Critical/High exposure suppliers), credit downgrade
+                        <strong>Triggers:</strong> Mass layoffs, supply disruption news, stock &gt;10% drop (Critical/High exposure suppliers), credit downgrade, trade war/instability
                       </p>
                       <p className="text-amber-600 mt-1 text-xs italic">
                         Example: &quot;Supplier Z announces 20% workforce reduction&quot;
@@ -761,7 +766,9 @@ export default function MorningCoffeeDashboard() {
                   <li><strong>Macro:</strong> ECB for EUR/USD rates, Yahoo Finance for market indices</li>
                   <li><strong>Peers:</strong> Real-time stock prices, news headlines, SEC 8-K filings</li>
                   <li><strong>Cyber:</strong> CISA Known Exploited Vulnerabilities (KEV) catalog</li>
-                  <li><strong>Suppliers:</strong> 24 strategic partners with stock, news, and cyber monitoring</li>
+                  <li><strong>News:</strong> Yahoo Finance headlines + Google News RSS for broader coverage</li>
+                  <li><strong>Geopolitical:</strong> Conflict zone mapping + live Google News scanning per country</li>
+                  <li><strong>Suppliers:</strong> 24 strategic partners with stock, news, cyber, and geopolitical monitoring</li>
                 </ul>
               </div>
 

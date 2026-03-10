@@ -7,6 +7,7 @@ Runs via GitHub Actions every 6 hours.
 
 import requests
 import json
+import re
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -192,6 +193,190 @@ def calculate_data_hash(data: dict) -> str:
 
     json_str = json.dumps(data_copy, sort_keys=True)
     return hashlib.md5(json_str.encode()).hexdigest()[:12]
+
+# ============================================================================
+# GEOPOLITICAL RISK MAP - Auto-applied based on supplier location
+# Captures wars, armed conflicts, sanctions regimes, and regional instability.
+# Severity levels act as a FLOOR for supplier risk — can only elevate, never reduce.
+# ============================================================================
+GEOPOLITICAL_RISK_MAP = {
+    # CRITICAL — Active war zones, comprehensive sanctions
+    "Ukraine": {"level": "CRITICAL", "reason": "Active armed conflict zone (Russia-Ukraine war)"},
+    "Russia": {"level": "CRITICAL", "reason": "Active conflict, comprehensive Western sanctions regime"},
+    "Yemen": {"level": "CRITICAL", "reason": "Active armed conflict, Houthi attacks disrupting Red Sea shipping"},
+    "Sudan": {"level": "CRITICAL", "reason": "Active civil war, humanitarian crisis"},
+    "Myanmar": {"level": "CRITICAL", "reason": "Civil war, military junta, Western sanctions"},
+    "Syria": {"level": "HIGH", "reason": "Post-conflict instability, sanctions regime"},
+
+    # HIGH — Active military operations, severe tensions, partial sanctions
+    "Israel": {"level": "HIGH", "reason": "Active military operations, regional escalation risk"},
+    "Palestine": {"level": "HIGH", "reason": "Active conflict zone"},
+    "Iran": {"level": "HIGH", "reason": "Comprehensive sanctions regime, regional proxy conflicts"},
+    "North Korea": {"level": "HIGH", "reason": "Nuclear program, comprehensive UN/US sanctions"},
+    "Lebanon": {"level": "HIGH", "reason": "Regional conflict spillover, economic collapse"},
+    "Taiwan": {"level": "HIGH", "reason": "Cross-strait military tensions, invasion risk"},
+
+    # MEDIUM — Elevated tensions, trade restrictions, or instability
+    "China": {"level": "MEDIUM", "reason": "US-China trade war, Taiwan risk, export controls on tech"},
+    "South Korea": {"level": "MEDIUM", "reason": "North Korea proximity, regional military tensions"},
+    "India": {"level": "MEDIUM", "reason": "Border tensions with China and Pakistan"},
+    "South Africa": {"level": "MEDIUM", "reason": "Economic instability, infrastructure challenges, energy crisis"},
+    "Finland": {"level": "MEDIUM", "reason": "NATO frontline state, border with Russia"},
+
+    # LOW — Monitoring only (not added here; absence = no geopolitical flag)
+}
+
+# Risk level numeric priority for comparisons
+RISK_PRIORITY = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
+
+# ============================================================================
+# GOOGLE NEWS RSS — Broader news source for geopolitical & supplier scanning
+# Free, no API key, runs on GitHub Actions at $0
+# ============================================================================
+GOOGLE_NEWS_RSS_BASE = "https://news.google.com/rss/search"
+
+# Geopolitical keywords for country-level scanning
+GEO_SEARCH_KEYWORDS = "war OR conflict OR sanctions OR crisis OR attack OR military OR trade war OR embargo"
+
+# Supply chain keywords for supplier-level scanning
+SUPPLY_SEARCH_KEYWORDS = "supply chain OR disruption OR shutdown OR bankruptcy OR recall OR strike OR cyber attack"
+
+
+def fetch_google_news_rss(query, max_results=5):
+    """
+    Fetch headlines from Google News RSS for a given search query.
+    Free, no API key required. Returns list of headline strings.
+    """
+    import urllib.parse
+    try:
+        encoded_query = urllib.parse.quote(query)
+        url = f"{GOOGLE_NEWS_RSS_BASE}?q={encoded_query}&hl=en&gl=US&ceid=US:en"
+
+        rate_limiter.wait_if_needed()
+        response = requests.get(url, headers=USER_AGENT, timeout=TIMEOUT)
+        response.raise_for_status()
+
+        # Parse RSS XML
+        root = ET.fromstring(response.content)
+        headlines = []
+        for item in root.findall('.//item')[:max_results]:
+            title = item.find('title')
+            pub_date = item.find('pubDate')
+            if title is not None and title.text:
+                headline_data = {
+                    "title": title.text.strip(),
+                    "published": pub_date.text.strip() if pub_date is not None and pub_date.text else ""
+                }
+                headlines.append(headline_data)
+
+        return headlines
+
+    except Exception as e:
+        logger.debug(f"Google News RSS fetch failed for query '{query[:50]}...': {e}")
+        return []
+
+
+def scan_country_geopolitical_news(country):
+    """
+    Scan Google News for geopolitical risk signals affecting a specific country.
+    Returns (risk_detected: bool, risk_level: str, headlines: list, reason: str)
+    """
+    query = f'"{country}" ({GEO_SEARCH_KEYWORDS})'
+    headlines = fetch_google_news_rss(query, max_results=5)
+
+    if not headlines:
+        return False, "LOW", [], ""
+
+    # Analyze headlines for severity
+    critical_kw = ["war", "invasion", "bombing", "missile", "airstrike", "sanctions imposed",
+                   "military offensive", "armed conflict", "blockade", "siege"]
+    high_kw = ["military", "tensions escalat", "sanctions", "nuclear", "proxy war",
+               "ceasefire collapse", "trade ban", "export ban", "embargo"]
+    medium_kw = ["crisis", "instability", "protest", "unrest", "trade war", "tariff",
+                 "diplomatic", "territorial dispute", "border clash"]
+
+    max_level = "LOW"
+    reason = ""
+
+    for h in headlines:
+        title_lower = h["title"].lower()
+
+        for kw in critical_kw:
+            if kw in title_lower:
+                max_level = "CRITICAL" if RISK_PRIORITY.get("CRITICAL", 3) > RISK_PRIORITY.get(max_level, 0) else max_level
+                reason = f"Critical geopolitical event: '{kw}' in recent news"
+                break
+
+        for kw in high_kw:
+            if kw in title_lower:
+                if RISK_PRIORITY.get("HIGH", 2) > RISK_PRIORITY.get(max_level, 0):
+                    max_level = "HIGH"
+                    reason = reason or f"High geopolitical risk: '{kw}' in recent news"
+                break
+
+        for kw in medium_kw:
+            if kw in title_lower:
+                if RISK_PRIORITY.get("MEDIUM", 1) > RISK_PRIORITY.get(max_level, 0):
+                    max_level = "MEDIUM"
+                    reason = reason or f"Elevated geopolitical risk: '{kw}' in recent news"
+                break
+
+    risk_detected = max_level != "LOW"
+    return risk_detected, max_level, headlines, reason
+
+
+def scan_supplier_news_google(supplier_name, country):
+    """
+    Scan Google News for supply chain risk signals for a specific supplier.
+    Used for suppliers WITHOUT a stock ticker (no yfinance news).
+    Returns (headlines: list, risk_level: str, risk_reason: str)
+    """
+    query = f'"{supplier_name}" ({SUPPLY_SEARCH_KEYWORDS})'
+    headlines = fetch_google_news_rss(query, max_results=3)
+
+    if not headlines:
+        return [], "LOW", ""
+
+    # Re-use the same keyword sets from the main supply chain scanner
+    CRITICAL_KW = ["bankruptcy", "bankrupt", "insolvent", "liquidation",
+                   "factory fire", "plant fire", "explosion", "facility closure",
+                   "sanction", "ransomware", "cyber attack", "operations halted",
+                   "strike", "labor strike", "walkout"]
+    HIGH_KW = ["fraud investigation", "sec investigation", "major recall",
+               "product recall", "ceo fired", "ceo resign"]
+    MEDIUM_KW = ["mass layoff", "supply shortage", "supply disruption",
+                 "production delay", "restructuring", "credit downgrade"]
+
+    max_level = "LOW"
+    reason = ""
+
+    for h in headlines:
+        title_lower = h["title"].lower()
+
+        for kw in CRITICAL_KW:
+            if kw in title_lower:
+                max_level = "CRITICAL"
+                reason = f"Critical supply risk from news: '{kw}'"
+                break
+        if max_level == "CRITICAL":
+            break
+
+        for kw in HIGH_KW:
+            if kw in title_lower:
+                if RISK_PRIORITY.get("HIGH", 2) > RISK_PRIORITY.get(max_level, 0):
+                    max_level = "HIGH"
+                    reason = reason or f"High supply risk from news: '{kw}'"
+                break
+
+        for kw in MEDIUM_KW:
+            if kw in title_lower:
+                if RISK_PRIORITY.get("MEDIUM", 1) > RISK_PRIORITY.get(max_level, 0):
+                    max_level = "MEDIUM"
+                    reason = reason or f"Supply concern from news: '{kw}'"
+                break
+
+    return [h["title"] for h in headlines], max_level, reason
+
 
 # SUPPLIER WATCHLIST - Pillar 3
 WATCHLIST_DATA = [
@@ -463,7 +648,7 @@ def fetch_sec_filings_for_peer(peer_name):
         }
 
     try:
-        url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=8-K&output=atom&count=5"
+        url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type=8-K&output=atom&count=10"
         response = fetch_with_retry(url)
 
         root = ET.fromstring(response.content)
@@ -472,6 +657,9 @@ def fetch_sec_filings_for_peer(peer_name):
         filings = []
         red_signals = []
         amber_signals = []
+
+        # Only count signals from filings within the last 30 days
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
 
         for entry in root.findall('atom:entry', namespaces):
             title = entry.find('atom:title', namespaces)
@@ -489,12 +677,36 @@ def fetch_sec_filings_for_peer(peer_name):
             }
             filings.append(filing_data)
 
-            # Check for distress signals
+            # Extract filing date from summary (format: "Filed: YYYY-MM-DD")
+            filing_date = None
+            date_match = re.search(r'Filed:</b>\s*(\d{4}-\d{2}-\d{2})', summary_text)
+            if date_match:
+                try:
+                    filing_date = datetime.strptime(date_match.group(1), '%Y-%m-%d')
+                except ValueError:
+                    pass
+            # Fallback: try published field
+            if filing_date is None and published_text:
+                try:
+                    filing_date = datetime.fromisoformat(published_text.replace('Z', '+00:00').replace('+00:00', ''))
+                except (ValueError, TypeError):
+                    pass
+
+            # Only count as signal if filed within last 30 days
+            is_recent = filing_date is not None and filing_date >= thirty_days_ago
+
+            # Check for distress signals (only recent filings trigger signals)
             summary_upper = summary_text.upper()
             if "ITEM 1.03" in summary_upper or "ITEM 4.02" in summary_upper:
-                red_signals.append(filing_data)
+                if is_recent:
+                    red_signals.append(filing_data)
+                else:
+                    logger.info(f"Ignoring old red signal from {filing_date}: {summary_text[:80]}")
             elif "ITEM 5.02" in summary_upper:
-                amber_signals.append(filing_data)
+                if is_recent:
+                    amber_signals.append(filing_data)
+                else:
+                    logger.info(f"Ignoring old amber signal from {filing_date}: {summary_text[:80]}")
 
         harvest_stats.record_success(source_name)
         return {
@@ -674,14 +886,14 @@ def get_supplier_deep_dive_data(supplier_name, category):
     
     # Location mapping
     location_map = {
-        "AMCOR": "USA",
+        "AMCOR": "Switzerland",
         "GPI": "USA",
         "Stora Enso": "Finland",
         "IP Sun": "China",
         "Sappi": "South Africa",
         "Daicel": "Japan",
         "Eastman": "USA",
-        "Cerdia": "Germany",
+        "Cerdia": "Switzerland",
         "Tae Young Filters": "South Korea",
         "Fuji": "Japan",
         "SWM (Mativ)": "USA",
@@ -696,7 +908,7 @@ def get_supplier_deep_dive_data(supplier_name, category):
         "Texas Instruments": "USA",
         "Infineon": "Germany",
         "Weener": "Netherlands",
-        "Rosti": "Denmark",
+        "Rosti": "Sweden",
         "Jabil": "USA"
     }
     
@@ -756,14 +968,15 @@ def get_supplier_deep_dive_data(supplier_name, category):
 def fetch_supplier_stock_data(ticker_symbol):
     """
     Fetch stock data for a supplier using yfinance.
-    Returns (daily_change_pct, current_price, latest_headline) or (None, None, None) on error.
+    Returns (daily_change_pct, current_price, headlines_list) or (None, None, []) on error.
+    headlines_list contains up to 5 news headline strings.
     """
     if not ticker_symbol or ticker_symbol == "N/A":
-        return None, None, None
+        return None, None, []
 
     # Check circuit breaker
     if not yfinance_circuit_breaker.can_execute():
-        return None, None, None
+        return None, None, []
 
     try:
         rate_limiter.wait_if_needed()
@@ -783,30 +996,36 @@ def fetch_supplier_stock_data(ticker_symbol):
         elif len(hist) == 1:
             current_price = hist['Close'].iloc[-1]
 
-        # Try to get news headline
-        latest_headline = None
+        # Get up to 5 news headlines for broader risk scanning
+        headlines = []
         try:
             news = ticker.news
-            if news and len(news) > 0:
-                latest_headline = news[0].get('title', None)
+            if news:
+                for item in news[:5]:
+                    title = item.get('title', None)
+                    if title:
+                        headlines.append(title)
         except Exception:
             pass
 
         yfinance_circuit_breaker.record_success()
-        return daily_change_pct, current_price, latest_headline
+        return daily_change_pct, current_price, headlines
 
     except Exception as e:
         yfinance_circuit_breaker.record_failure()
         harvest_stats.record_warning(f"supplier_stock_{ticker_symbol}", str(e)[:100])
-        return None, None, None
+        return None, None, []
 
 
 def process_suppliers(cyber_data):
     """
     Process supplier watchlist and assess SUPPLY CHAIN RISK to BAT.
 
-    Risk assessment is based on threats to SUPPLY CONTINUITY, not stock price movements.
-    A 2-3% stock drop is normal market volatility, NOT a supply risk.
+    Risk is assessed from FOUR layers (each can escalate):
+      1. CISA cyber vulnerabilities (KEV catalog)
+      2. Stock price movements (yfinance)
+      3. News scanning (yfinance headlines + Google News RSS)
+      4. Geopolitical risk (conflict zones, sanctions, instability)
 
     CRITICAL - Immediate threat to supply:
       - Bankruptcy, insolvency, liquidation
@@ -814,23 +1033,76 @@ def process_suppliers(cyber_data):
       - Government sanctions, bans, seizure
       - Major cyber attack disrupting operations
       - Labor strike at production facility
+      - Stock crash >5% (indicates serious problems)
+      - Supplier in active war zone
 
     HIGH - Serious concern:
       - Fraud/SEC investigation
       - Major product recall
-      - Stock crash >15% (indicates serious problems)
+      - Stock drop >3% for Critical/High exposure suppliers
+      - Supplier in high-tension region (military buildup, severe sanctions)
 
     MEDIUM - Watch closely:
-      - Stock drop >10% WITH negative news
+      - Stock drop >3% for Medium exposure suppliers
+      - Stock drop >1.5% for Critical/High exposure suppliers
       - Major layoffs, restructuring
       - Supply disruption mentions
+      - Supplier in region with trade war, instability, or border tensions
 
     LOW - Normal operations:
-      - Stock fluctuations <10%
+      - Stock fluctuations within normal range
       - No negative operational news
+      - No geopolitical risk signals
     """
     suppliers = []
     cisa_vulns = cyber_data.get("recent_vulnerabilities", [])
+
+    # ================================================================
+    # PRE-SCAN: Batch Google News geopolitical scan per unique country
+    # This avoids redundant HTTP requests (one per country, not per supplier)
+    # ================================================================
+    unique_countries = set()
+    for supplier in WATCHLIST_DATA:
+        deep_dive_tmp = get_supplier_deep_dive_data(supplier["name"], supplier["category"])
+        country = deep_dive_tmp.get("location", "Unknown")
+        if country and country != "Unknown":
+            unique_countries.add(country)
+
+    logger.info(f"Scanning {len(unique_countries)} unique countries for geopolitical risk via Google News...")
+    country_news_cache = {}
+    for country in unique_countries:
+        # First check static map
+        static_risk = GEOPOLITICAL_RISK_MAP.get(country, None)
+        # Then scan live news for this country
+        news_detected, news_level, news_headlines, news_reason = scan_country_geopolitical_news(country)
+
+        # Combine static map + live news: take the higher of the two
+        if static_risk:
+            static_level = static_risk["level"]
+            static_reason = static_risk["reason"]
+        else:
+            static_level = "LOW"
+            static_reason = ""
+
+        # Final country-level geopolitical risk = max(static, live_news)
+        if RISK_PRIORITY.get(news_level, 0) > RISK_PRIORITY.get(static_level, 0):
+            final_level = news_level
+            final_reason = news_reason
+        else:
+            final_level = static_level
+            final_reason = static_reason
+
+        country_news_cache[country] = {
+            "level": final_level,
+            "reason": final_reason,
+            "headlines": [h["title"] for h in news_headlines] if news_headlines else [],
+            "static_risk": static_risk is not None
+        }
+
+        if final_level != "LOW":
+            logger.info(f"  🌍 {country}: {final_level} — {final_reason}")
+
+    logger.info(f"Geopolitical scan complete. {sum(1 for v in country_news_cache.values() if v['level'] != 'LOW')} countries with elevated risk.")
 
     # Keywords indicating REAL supply chain risk to BAT
     CRITICAL_SUPPLY_KEYWORDS = [
@@ -864,21 +1136,45 @@ def process_suppliers(cyber_data):
         cyber_risk = False
         matching_vulns = []
 
-        # Check if supplier name appears in any CISA vulnerability
+        # Broader CISA matching: include aliases and known product names
+        # so we don't only match on exact parent company name
+        CISA_ALIASES = {
+            "AMCOR": ["AMCOR", "AMCR"],
+            "Jabil": ["JABIL", "JABIL INC"],
+            "Texas Instruments": ["TEXAS INSTRUMENTS", "TI"],
+            "Infineon": ["INFINEON", "INFINEON TECHNOLOGIES"],
+            "Eastman": ["EASTMAN", "EASTMAN CHEMICAL"],
+            "Stora Enso": ["STORA ENSO", "STORAENSO"],
+            "Smoore": ["SMOORE", "SMOORE INTERNATIONAL"],
+            "EVE Energy": ["EVE ENERGY", "EVE"],
+            "Huizhou BYD Electronic": ["BYD", "BYD ELECTRONIC", "HUIZHOU BYD"],
+            "SWM (Mativ)": ["MATIV", "SWM", "SCHWEITZER-MAUDUIT"],
+            "ITC": ["ITC LIMITED", "ITC LTD"],
+            "Sappi": ["SAPPI", "SAPPI LIMITED"],
+            "GPI": ["GRAPHIC PACKAGING", "GPI", "GRAPHIC PACKAGING INTERNATIONAL"],
+            "Daicel": ["DAICEL", "DAICEL CORPORATION"],
+        }
+        search_terms = [supplier_name_upper]
+        for alias in CISA_ALIASES.get(supplier_name, []):
+            if alias.upper() not in search_terms:
+                search_terms.append(alias.upper())
+
+        # Check if any search term appears in CISA vulnerability fields
         for vuln in cisa_vulns:
             vendor = vuln.get('vendorProject', '').upper()
             product = vuln.get('product', '').upper()
             description = vuln.get('vulnerabilityName', '').upper()
+            combined = f"{vendor} {product} {description}"
 
-            if (supplier_name_upper in vendor or
-                supplier_name_upper in product or
-                supplier_name_upper in description):
-                cyber_risk = True
-                matching_vulns.append({
-                    "cveID": vuln.get('cveID', ''),
-                    "vulnerabilityName": vuln.get('vulnerabilityName', ''),
-                    "dateAdded": vuln.get('dateAdded', '')
-                })
+            for term in search_terms:
+                if term in combined:
+                    cyber_risk = True
+                    matching_vulns.append({
+                        "cveID": vuln.get('cveID', ''),
+                        "vulnerabilityName": vuln.get('vulnerabilityName', ''),
+                        "dateAdded": vuln.get('dateAdded', '')
+                    })
+                    break  # Don't double-count same vuln
 
         # Get deep dive data (includes stock ticker)
         deep_dive = get_supplier_deep_dive_data(supplier_name, category)
@@ -895,19 +1191,22 @@ def process_suppliers(cyber_data):
         risk_reason = ""
 
         if stock_ticker and stock_ticker != "N/A":
-            daily_change_pct, current_price, latest_headline = fetch_supplier_stock_data(stock_ticker)
+            daily_change_pct, current_price, headlines_list = fetch_supplier_stock_data(stock_ticker)
 
-            # Analyze news headline for SUPPLY CHAIN risk keywords
-            if latest_headline:
-                news_headline = latest_headline
-                headline_lower = latest_headline.lower()
+            # Analyze ALL news headlines (up to 5) for SUPPLY CHAIN risk keywords
+            for headline in headlines_list:
+                if not headline:
+                    continue
+                if not news_headline:
+                    news_headline = headline  # Keep first headline for display
+                headline_lower = headline.lower()
 
                 # Check for CRITICAL supply risk keywords
                 for kw in CRITICAL_SUPPLY_KEYWORDS:
                     if kw in headline_lower:
                         news_risk = True
                         operational_risk = True
-                        news_items.append({"headline": latest_headline, "risk": "CRITICAL", "keyword": kw})
+                        news_items.append({"headline": headline, "risk": "CRITICAL", "keyword": kw})
                         risk_reason = f"Critical supply risk: '{kw}' detected in news"
                         break
 
@@ -917,7 +1216,7 @@ def process_suppliers(cyber_data):
                         if kw in headline_lower:
                             news_risk = True
                             operational_risk = True
-                            news_items.append({"headline": latest_headline, "risk": "HIGH", "keyword": kw})
+                            news_items.append({"headline": headline, "risk": "HIGH", "keyword": kw})
                             risk_reason = f"High supply risk: '{kw}' detected in news"
                             break
 
@@ -927,15 +1226,46 @@ def process_suppliers(cyber_data):
                         if kw in headline_lower:
                             news_risk = True
                             operational_risk = True
-                            news_items.append({"headline": latest_headline, "risk": "MEDIUM", "keyword": kw})
+                            news_items.append({"headline": headline, "risk": "MEDIUM", "keyword": kw})
                             risk_reason = f"Supply concern: '{kw}' detected in news"
                             break
+
+                # Stop scanning once we find the highest-severity match
+                if operational_risk:
+                    break
+
+        # ================================================================
+        # LAYER 3: Google News for ticker-less suppliers
+        # Suppliers without stock tickers get ZERO news from yfinance.
+        # Use Google News RSS to close this blind spot.
+        # ================================================================
+        google_news_headlines = []
+        google_news_risk_level = "LOW"
+        google_news_reason = ""
+
+        if (not stock_ticker or stock_ticker == "N/A") and not operational_risk:
+            location = deep_dive.get("location", "Unknown")
+            google_news_headlines, google_news_risk_level, google_news_reason = scan_supplier_news_google(supplier_name, location)
+
+            # If Google News found operational risk, integrate it
+            if google_news_risk_level != "LOW" and google_news_headlines:
+                news_risk = True
+                operational_risk = True
+                risk_reason = google_news_reason
+                news_headline = google_news_headlines[0] if google_news_headlines else ""
+                news_items.append({
+                    "headline": news_headline,
+                    "risk": google_news_risk_level,
+                    "keyword": google_news_reason,
+                    "source": "google_news"
+                })
 
         # Generate slug for URL routing
         slug = supplier_name.lower().replace(" ", "-").replace("(", "").replace(")", "").replace("huizhou-byd-electronic", "byd-electronic")
 
         # ================================================================
         # RISK LEVEL DETERMINATION - Based on BAT supply chain impact
+        # Layers 1-3: Cyber, Stock, News (sets initial risk level)
         # ================================================================
         supplier_risk_level = "LOW"
         last_signal = "No supply chain risks detected."
@@ -947,7 +1277,7 @@ def process_suppliers(cyber_data):
             last_signal = f"🔒 Cyber vulnerability: {len(matching_vulns)} CISA KEV match(es) - {', '.join([v.get('cveID', 'N/A') for v in matching_vulns[:2]])}"
             risk_analysis = f"CISA Known Exploited Vulnerability detected. {supplier_name} systems may be at risk. {bat_exposure} exposure to BAT requires security assessment."
 
-        # Priority 2: News-based operational risk
+        # Priority 2: News-based operational risk (yfinance + Google News)
         elif operational_risk and news_items:
             news_severity = news_items[0].get('risk', 'MEDIUM')
             if news_severity == "CRITICAL":
@@ -961,17 +1291,28 @@ def process_suppliers(cyber_data):
                 last_signal = f"📋 Monitor: {news_headline[:100]}"
             risk_analysis = f"{risk_reason}. {supplier_name} ({category}) requires monitoring. BAT exposure: {bat_exposure}."
 
-        # Priority 3: Severe stock crash (>15%) indicates serious company problems
-        elif daily_change_pct is not None and daily_change_pct < -15.0:
-            supplier_risk_level = "HIGH"
+        # Priority 3: Severe stock crash (>5%) indicates serious company problems
+        elif daily_change_pct is not None and daily_change_pct < -5.0:
+            supplier_risk_level = "CRITICAL"
             last_signal = f"📉 Severe stock crash: {daily_change_pct:.1f}% - investigate cause"
-            risk_analysis = f"Unusual stock decline of {daily_change_pct:.1f}% may indicate serious issues. Recommend investigating {supplier_name} financial health. BAT exposure: {bat_exposure}."
+            risk_analysis = f"Severe stock decline of {daily_change_pct:.1f}% may indicate serious issues at {supplier_name}. BAT exposure: {bat_exposure}."
 
-        # Priority 4: Large stock drop (>10%) with Critical/High exposure
-        elif daily_change_pct is not None and daily_change_pct < -10.0 and bat_exposure in ["Critical", "High"]:
+        # Priority 4: Significant stock drop (>3%) — escalate for Critical/High exposure
+        elif daily_change_pct is not None and daily_change_pct < -3.0:
+            if bat_exposure in ["Critical", "High"]:
+                supplier_risk_level = "HIGH"
+                last_signal = f"📉 Stock down {daily_change_pct:.1f}% - {bat_exposure} exposure supplier"
+                risk_analysis = f"Significant stock decline for {bat_exposure.lower()} exposure supplier. Investigate {supplier_name} for operational impacts. BAT exposure: {bat_exposure}."
+            else:
+                supplier_risk_level = "MEDIUM"
+                last_signal = f"📉 Stock down {daily_change_pct:.1f}% - monitoring"
+                risk_analysis = f"Notable stock decline for {supplier_name}. Monitor for any operational impacts. BAT exposure: {bat_exposure}."
+
+        # Priority 5: Moderate stock drop (>1.5%) — flag for Critical/High exposure
+        elif daily_change_pct is not None and daily_change_pct < -1.5 and bat_exposure in ["Critical", "High"]:
             supplier_risk_level = "MEDIUM"
             last_signal = f"📉 Stock down {daily_change_pct:.1f}% - {bat_exposure} exposure supplier"
-            risk_analysis = f"Significant stock decline for {bat_exposure.lower()} exposure supplier. Monitor {supplier_name} for any operational impacts."
+            risk_analysis = f"Stock decline for {bat_exposure.lower()} exposure supplier. Monitor {supplier_name} for any operational impacts."
 
         # Default: Normal operations
         else:
@@ -982,6 +1323,28 @@ def process_suppliers(cyber_data):
             else:
                 last_signal = "✓ Normal operations. No risk signals."
             risk_analysis = f"No supply chain risks identified. {supplier_name} ({category}) operating normally. BAT exposure: {bat_exposure}."
+
+        # ================================================================
+        # LAYER 4: GEOPOLITICAL RISK OVERLAY
+        # Acts as a FLOOR — can only elevate risk, never reduce it.
+        # Combines static conflict map + live Google News country scan.
+        # ================================================================
+        location = deep_dive.get("location", "Unknown")
+        geo_data = country_news_cache.get(location, {"level": "LOW", "reason": "", "headlines": [], "static_risk": False})
+        geo_risk_level = geo_data["level"]
+        geo_reason = geo_data["reason"]
+        geo_headlines = geo_data["headlines"]
+        geopolitical_risk = geo_risk_level != "LOW"
+
+        # Elevate risk if geopolitical risk is HIGHER than current assessment
+        geo_escalated = False
+        if RISK_PRIORITY.get(geo_risk_level, 0) > RISK_PRIORITY.get(supplier_risk_level, 0):
+            pre_geo_level = supplier_risk_level
+            supplier_risk_level = geo_risk_level
+            geo_escalated = True
+            last_signal = f"🌍 Geopolitical: {geo_reason}"
+            risk_analysis = f"Geopolitical risk in {location}: {geo_reason}. {supplier_name} ({category}) located in affected region. BAT exposure: {bat_exposure}. Previous risk: {pre_geo_level}."
+            logger.info(f"  ↑ {supplier_name}: {pre_geo_level} → {supplier_risk_level} (geopolitical: {location})")
 
         # Build supplier data
         supplier_data = {
@@ -998,6 +1361,14 @@ def process_suppliers(cyber_data):
             "risk_analysis": risk_analysis,
             "risk_level": supplier_risk_level,
             "last_signal": last_signal,
+            # NEW: Geopolitical risk fields
+            "geopolitical_risk": geopolitical_risk,
+            "geopolitical_risk_level": geo_risk_level if geopolitical_risk else None,
+            "geopolitical_reason": geo_reason if geopolitical_risk else None,
+            "geopolitical_headlines": geo_headlines[:3] if geopolitical_risk else [],
+            "geopolitical_escalated": geo_escalated,
+            # NEW: Google News headlines for ticker-less suppliers
+            "google_news_headlines": google_news_headlines[:3],
             **deep_dive
         }
 
@@ -1007,6 +1378,8 @@ def process_suppliers(cyber_data):
     suppliers_at_cyber_risk = sum(1 for s in suppliers if s["cyber_risk"])
     suppliers_at_news_risk = sum(1 for s in suppliers if s["news_risk"])
     suppliers_at_operational_risk = sum(1 for s in suppliers if s.get("operational_risk", False))
+    suppliers_at_geopolitical_risk = sum(1 for s in suppliers if s.get("geopolitical_risk", False))
+    suppliers_geo_escalated = sum(1 for s in suppliers if s.get("geopolitical_escalated", False))
 
     total_critical = sum(1 for s in suppliers if s["risk_level"] == "CRITICAL")
     total_high = sum(1 for s in suppliers if s["risk_level"] == "HIGH")
@@ -1020,6 +1393,9 @@ def process_suppliers(cyber_data):
     else:
         rag_score = "GREEN"
 
+    logger.info(f"Supplier risk summary: {total_critical} CRITICAL, {total_high} HIGH, {total_medium} MEDIUM, {len(suppliers) - total_critical - total_high - total_medium} LOW")
+    logger.info(f"Risk sources: {suppliers_at_cyber_risk} cyber, {suppliers_at_news_risk} news, {suppliers_at_geopolitical_risk} geopolitical ({suppliers_geo_escalated} escalated)")
+
     return {
         "status": "success",
         "rag_score": rag_score,
@@ -1027,6 +1403,7 @@ def process_suppliers(cyber_data):
         "suppliers_at_cyber_risk": suppliers_at_cyber_risk,
         "suppliers_at_news_risk": suppliers_at_news_risk,
         "suppliers_at_operational_risk": suppliers_at_operational_risk,
+        "suppliers_at_geopolitical_risk": suppliers_at_geopolitical_risk,
         "total_critical": total_critical,
         "total_high": total_high,
         "total_medium": total_medium,
@@ -1227,84 +1604,6 @@ def fetch_macro_economy():
     }
 
 # ============================================================================
-# RISK CALCULATION LOGIC
-# ============================================================================
-
-def calculate_risk_with_signal(text, daily_change_percent):
-    """
-    Calculate risk level and generate explicit signal message.
-    "No Ghost Risks" Rule: If risk is not LOW, signal MUST state the reason.
-    
-    Args:
-        text: News headline or text to analyze
-        daily_change_percent: Daily stock price change percentage (float or None)
-    
-    Returns:
-        tuple: (risk_level: str, signal: str)
-    """
-    CRITICAL_TERMS = ["strike", "ban", "recall", "sanction", "seize", "bankruptcy", 
-                      "fraud", "investigation", "breach"]
-    WARNING_TERMS = ["delay", "shortage", "volatile", "drop", "miss", "down", 
-                     "lawsuit", "fine", "cut"]
-    
-    text_lower = str(text).lower() if text else ""
-    text_original = str(text) if text else ""
-    
-    # Check for CRITICAL terms in text
-    has_critical_term = any(term in text_lower for term in CRITICAL_TERMS)
-    critical_term_found = None
-    if has_critical_term:
-        for term in CRITICAL_TERMS:
-            if term in text_lower:
-                critical_term_found = term
-                break
-    
-    # Check for WARNING terms in text
-    has_warning_term = any(term in text_lower for term in WARNING_TERMS)
-    warning_term_found = None
-    if has_warning_term:
-        for term in WARNING_TERMS:
-            if term in text_lower:
-                warning_term_found = term
-                break
-    
-    # STEP 1: Stock Check (Priority)
-    if daily_change_percent is not None and daily_change_percent < -5.0:
-        signal = f"⚠️ Severe market drop: {daily_change_percent:.2f}% intraday."
-        # News can override stock risk
-        if has_critical_term:
-            return ("CRITICAL", f"🚨 News Alert: {text_original[:100]}")
-        return ("CRITICAL", signal)
-    
-    if daily_change_percent is not None and daily_change_percent < -2.0:
-        signal = f"📉 Volatility alert: Stock down {daily_change_percent:.2f}%."
-        # News can override stock risk
-        if has_critical_term:
-            return ("CRITICAL", f"🚨 News Alert: {text_original[:100]}")
-        if has_warning_term:
-            return ("MEDIUM", f"⚠️ Potential Issue: {text_original[:100]}")
-        return ("MEDIUM", signal)
-    
-    if daily_change_percent is not None and daily_change_percent < -0.5:
-        signal = f"📉 Volatility alert: Stock down {daily_change_percent:.2f}%."
-        # News can override stock risk
-        if has_critical_term:
-            return ("CRITICAL", f"🚨 News Alert: {text_original[:100]}")
-        if has_warning_term:
-            return ("MEDIUM", f"⚠️ Potential Issue: {text_original[:100]}")
-        return ("MEDIUM", signal)
-    
-    # STEP 2: News Check
-    if has_critical_term:
-        return ("CRITICAL", f"🚨 News Alert: {text_original[:100]}")
-    
-    if has_warning_term:
-        return ("MEDIUM", f"⚠️ Potential Issue: {text_original[:100]}")
-    
-    # STEP 3: Default - No risks found
-    return ("LOW", "No significant risk signals detected.")
-
-# ============================================================================
 # PEER GROUP DATA GENERATION (LIVE DATA)
 # ============================================================================
 
@@ -1370,14 +1669,19 @@ def fetch_peer_group():
                 current_price = info['currentPrice']
                 stock_move = "N/A (no historical data)"
 
-            # Get latest news headline
+            # Get up to 5 news headlines for broader scanning
             latest_headline = None
+            all_headlines = []
             real_headline_found = False
             try:
                 news = ticker.news
-                if news and len(news) > 0:
-                    latest_headline = news[0].get('title', None)
-                    if latest_headline:
+                if news:
+                    for item in news[:5]:
+                        title = item.get('title', None)
+                        if title:
+                            all_headlines.append(title)
+                    if all_headlines:
+                        latest_headline = all_headlines[0]
                         real_headline_found = True
             except Exception as e:
                 logger.warning(f"News fetch error for {peer_config['name']}: {e}")
@@ -1394,23 +1698,29 @@ def fetch_peer_group():
             news_risk_detected = False
             stock_risk_detected = False
 
-            # STEP 1: Check news for risk keywords (if real headline found)
-            if real_headline_found and latest_headline:
-                headline_lower = latest_headline.lower()
+            # STEP 1: Check ALL news headlines for risk keywords
+            if real_headline_found:
+                for hl in all_headlines:
+                    hl_lower = hl.lower()
 
-                # Check for CRITICAL keywords
-                has_critical = any(keyword in headline_lower for keyword in CRITICAL_KEYWORDS)
-                if has_critical:
-                    risk_level = "CRITICAL"
-                    last_signal = f"🚨 News Alert: {latest_headline[:120]}"
-                    news_risk_detected = True
-                else:
+                    # Check for CRITICAL keywords
+                    has_critical = any(keyword in hl_lower for keyword in CRITICAL_KEYWORDS)
+                    if has_critical:
+                        risk_level = "CRITICAL"
+                        last_signal = f"🚨 News Alert: {hl[:120]}"
+                        news_risk_detected = True
+                        break
+
                     # Check for WARNING keywords
-                    has_warning = any(keyword in headline_lower for keyword in WARNING_KEYWORDS)
+                    has_warning = any(keyword in hl_lower for keyword in WARNING_KEYWORDS)
                     if has_warning:
                         risk_level = "MEDIUM"
-                        last_signal = f"⚠️ News Alert: {latest_headline[:120]}"
+                        last_signal = f"⚠️ News Alert: {hl[:120]}"
                         news_risk_detected = True
+                        # Don't break — keep scanning for CRITICAL in remaining headlines
+
+                if not news_risk_detected:
+                    pass  # No risk keywords found in any headline
 
             # STEP 2: Check stock movement (ALWAYS check, can escalate risk)
             if daily_change_pct is not None:
@@ -1582,6 +1892,45 @@ def main():
     # Generate additional intelligence data (LIVE DATA)
     macro_economy = fetch_macro_economy()
     peer_group = fetch_peer_group()
+
+    # ================================================================
+    # MERGE live peer_group risk data INTO peers pillar RAG score
+    # peer_group has real-time stock + news data that the SEC-only
+    # peers pillar misses. Escalate the pillar RAG if live data shows risk.
+    # ================================================================
+    peer_group_critical = sum(1 for p in peer_group if p.get("risk_level") == "CRITICAL")
+    peer_group_high = sum(1 for p in peer_group if p.get("risk_level") in ("HIGH", "CRITICAL"))
+    peer_group_medium = sum(1 for p in peer_group if p.get("risk_level") == "MEDIUM")
+
+    if peer_group_critical >= 1:
+        if peers_data.get("rag_score") != "RED":
+            logger.info(f"Escalating peers RAG to RED: {peer_group_critical} peer(s) at CRITICAL from live data")
+            peers_data["rag_score"] = "RED"
+    elif peer_group_high >= 1 or peer_group_medium >= 2:
+        if peers_data.get("rag_score") == "GREEN":
+            logger.info(f"Escalating peers RAG to AMBER: live peer data shows elevated risk")
+            peers_data["rag_score"] = "AMBER"
+
+    # ================================================================
+    # MERGE live macro_economy trend data INTO macro pillar RAG score
+    # The pillar 1 macro only uses ECB FX rate; macro_economy has live
+    # S&P 500, EUR/USD, and CNY/USD from yfinance.
+    # ================================================================
+    declining_regions = 0
+    for region_key in ["us", "eu", "china"]:
+        region_data = macro_economy.get(region_key, {})
+        trend = region_data.get("trend", "N/A")
+        if trend in ("Declining", "Weakening"):
+            declining_regions += 1
+
+    if declining_regions >= 2:
+        if macro_data.get("rag_score") != "RED":
+            logger.info(f"Escalating macro RAG to RED: {declining_regions} regions declining")
+            macro_data["rag_score"] = "RED"
+    elif declining_regions >= 1:
+        if macro_data.get("rag_score") == "GREEN":
+            logger.info(f"Escalating macro RAG to AMBER: {declining_regions} region(s) declining")
+            macro_data["rag_score"] = "AMBER"
 
     # Calculate overall health status
     pillar_statuses = [

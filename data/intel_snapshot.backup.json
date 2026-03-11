@@ -1,10 +1,10 @@
 {
-  "last_updated": "2026-03-10T12:32:51.264825",
-  "version": "d69a9af78cba",
+  "last_updated": "2026-03-10T18:35:19.259062",
+  "version": "1e1f91959e81",
   "status": "healthy",
   "macro": {
     "status": "success",
-    "rag_score": "GREEN",
+    "rag_score": "AMBER",
     "regions": {
       "us": {
         "status": "success",
@@ -15,18 +15,18 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators placeholder",
-        "last_fetched": "2026-03-10T12:32:44.150932"
+        "last_fetched": "2026-03-10T18:33:16.457369"
       },
       "eu": {
         "status": "success",
         "region": "EU",
         "indicators": {
-          "fx_rate": 1.1555,
+          "fx_rate": 1.1641,
           "inflation": "Placeholder - HICP data",
           "policy": "Placeholder - ECB policy updates"
         },
-        "summary": "EU economic indicators - EUR/USD: 1.1555",
-        "last_fetched": "2026-03-10T12:32:44.839443"
+        "summary": "EU economic indicators - EUR/USD: 1.1641",
+        "last_fetched": "2026-03-10T18:33:17.213229"
       },
       "china": {
         "status": "success",
@@ -37,18 +37,18 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators placeholder",
-        "last_fetched": "2026-03-10T12:32:44.840439"
+        "last_fetched": "2026-03-10T18:33:17.214178"
       }
     },
-    "volatility_pct": 0.0,
-    "last_fetched": "2026-03-10T12:32:44.840450"
+    "volatility_pct": 0.7442665512764987,
+    "last_fetched": "2026-03-10T18:33:17.214191"
   },
   "peers": {
     "status": "success",
-    "rag_score": "AMBER",
+    "rag_score": "GREEN",
     "total_peers": 5,
     "total_red_signals": 0,
-    "total_amber_signals": 1,
+    "total_amber_signals": 0,
     "peers": [
       {
         "name": "BAT",
@@ -62,7 +62,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-03-10T12:32:44.840456"
+          "last_fetched": "2026-03-10T18:33:17.214196"
         },
         "news": {
           "status": "placeholder",
@@ -74,8 +74,8 @@
         "name": "PMI",
         "full_name": "Philip Morris International",
         "type": "Tobacco Competitor",
-        "rag_score": "AMBER",
-        "summary": "WARNING: 1 warning signal(s) detected. Recent director departures or management changes noted.",
+        "rag_score": "GREEN",
+        "summary": "Neutral: Regulation FD disclosure filed. Routine operational update.",
         "sec_filings": {
           "status": "success",
           "filings": [
@@ -131,8 +131,8 @@
             }
           ],
           "red_signals": 0,
-          "amber_signals": 1,
-          "last_fetched": "2026-03-10T12:32:44.985904"
+          "amber_signals": 0,
+          "last_fetched": "2026-03-10T18:33:17.361856"
         },
         "news": {
           "status": "placeholder",
@@ -152,7 +152,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-03-10T12:32:44.986930"
+          "last_fetched": "2026-03-10T18:33:17.362984"
         },
         "news": {
           "status": "placeholder",
@@ -172,7 +172,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-03-10T12:32:44.986939"
+          "last_fetched": "2026-03-10T18:33:17.362993"
         },
         "news": {
           "status": "placeholder",
@@ -192,7 +192,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-03-10T12:32:44.986943"
+          "last_fetched": "2026-03-10T18:33:17.362997"
         },
         "news": {
           "status": "placeholder",
@@ -201,16 +201,17 @@
         }
       }
     ],
-    "last_fetched": "2026-03-10T12:32:44.986946"
+    "last_fetched": "2026-03-10T18:33:17.363001"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "GREEN",
+    "rag_score": "RED",
     "total_suppliers": 24,
-    "suppliers_at_cyber_risk": 0,
-    "suppliers_at_news_risk": 0,
-    "suppliers_at_operational_risk": 0,
-    "total_critical": 0,
+    "suppliers_at_cyber_risk": 1,
+    "suppliers_at_news_risk": 1,
+    "suppliers_at_operational_risk": 1,
+    "suppliers_at_geopolitical_risk": 24,
+    "total_critical": 24,
     "total_high": 0,
     "total_medium": 0,
     "suppliers": [
@@ -223,14 +224,24 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.26,
-        "current_price": 42.3,
-        "risk_analysis": "No supply chain risks identified. AMCOR (Printed Packaging) operating normally. BAT exposure: Critical.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -2.3%",
+        "daily_change_pct": -0.09,
+        "current_price": 42.26,
+        "risk_analysis": "Geopolitical risk in Switzerland: Critical geopolitical event: 'war' in recent news. AMCOR (Printed Packaging) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "U.S. and Israeli war in Iran, which Trump says will be 'short term,' has global reach - Los Angeles Times - Los Angeles Times",
+          "Swiss defence minister criticises war-waging countries - SWI swissinfo.ch",
+          "Switzerland says US-Israeli strikes on Iran violate international law - Anadolu Ajans\u0131"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Critical",
         "segment": "Combustibles",
-        "location": "USA",
+        "location": "Switzerland",
         "stock_ticker": "AMCR",
         "latest_news_summary": "AMCOR continues to be a strategic partner for BAT's new category expansion. Recent capacity investments align with Vuse production ramp-up. Supply chain monitoring shows stable operations. AMCOR maintains quality certifications and on-time delivery metrics above 98%.",
         "url": null
@@ -244,11 +255,21 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.24,
-        "current_price": 318.07,
-        "risk_analysis": "No supply chain risks identified. GPI (Printed Packaging) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.2%",
+        "daily_change_pct": -0.95,
+        "current_price": 315.04,
+        "risk_analysis": "Geopolitical risk in USA: Critical geopolitical event: 'war' in recent news. GPI (Printed Packaging) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Opinion | Trump Has No Idea How to End the War With Iran - The New York Times",
+          "One week into Iran war, the dangers for the US and Trump multiply - RFI",
+          "What is Trump's approval rating in Florida as Iran war continues? - Tallahassee Democrat"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "High",
         "segment": "Combustibles",
         "location": "USA",
@@ -265,11 +286,21 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 3.39,
-        "current_price": 10.67,
-        "risk_analysis": "No supply chain risks identified. Stora Enso (Printing Substrates) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +3.4%",
+        "daily_change_pct": 2.96,
+        "current_price": 10.62,
+        "risk_analysis": "Geopolitical risk in Finland: Critical geopolitical event: 'war' in recent news. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Finland warns end of Ukraine war could bring more Russian spying - Euractiv",
+          "There\u2019s No One Stopping the Iran War, Finland\u2019s President Says - Bloomberg",
+          "Finland Warns of Russian and Chinese Espionage - Odessa Journal"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "Finland",
@@ -288,9 +319,19 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. IP Sun (Printing Substrates) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in China: Critical geopolitical event: 'war' in recent news. IP Sun (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "China Stockpiled More Oil Before War Broke Out in Iran - The New York Times",
+          "9 countries that could get involved next in the Iran war - Axios",
+          "Funding war, courting crisis: Why China\u2019s support for Russia requires a European response - European Council on Foreign Relations"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "China",
@@ -307,11 +348,21 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.06,
-        "current_price": 200.1,
-        "risk_analysis": "No supply chain risks identified. Sappi (Printing Substrates) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.1%",
+        "daily_change_pct": -1.78,
+        "current_price": 196.54,
+        "risk_analysis": "Geopolitical risk in South Africa: Critical geopolitical event: 'war' in recent news. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "\u2018Our children were sold off\u2019: The South Africans sent to fight Russia\u2019s war - Al Jazeera",
+          "South Africa Needs to be More Forceful in Decrying US/Zionist Axis of War - Palestine Chronicle",
+          "Conflict-ravaged Sudan hit hard by Iran war fallout - The Africa Report"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "South Africa",
@@ -330,9 +381,19 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Daicel (Filter Materials) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in Japan: Critical geopolitical event: 'war' in recent news. Daicel (Filter Materials) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Can the U.S. ask for Japan\u2019s help in the Iran war? - The Japan Times",
+          "Unlike Past U.S. Conflicts, Iran Attack Is Opposed by Most Americans - The New York Times",
+          "Opinion | Beijing\u2019s Trade War Against Japan - WSJ"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "Japan",
@@ -349,11 +410,21 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.04,
-        "current_price": 69.6,
-        "risk_analysis": "No supply chain risks identified. Eastman (Filter Materials) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.0%",
+        "daily_change_pct": 0.28,
+        "current_price": 69.79,
+        "risk_analysis": "Geopolitical risk in USA: Critical geopolitical event: 'war' in recent news. Eastman (Filter Materials) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Opinion | Trump Has No Idea How to End the War With Iran - The New York Times",
+          "One week into Iran war, the dangers for the US and Trump multiply - RFI",
+          "What is Trump's approval rating in Florida as Iran war continues? - Tallahassee Democrat"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "USA",
@@ -372,12 +443,22 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Cerdia (Filter Materials) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in Switzerland: Critical geopolitical event: 'war' in recent news. Cerdia (Filter Materials) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "U.S. and Israeli war in Iran, which Trump says will be 'short term,' has global reach - Los Angeles Times - Los Angeles Times",
+          "Swiss defence minister criticises war-waging countries - SWI swissinfo.ch",
+          "Switzerland says US-Israeli strikes on Iran violate international law - Anadolu Ajans\u0131"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
-        "location": "Germany",
+        "location": "Switzerland",
         "stock_ticker": "N/A",
         "latest_news_summary": "Cerdia maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active.",
         "url": null
@@ -393,9 +474,19 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Tae Young Filters (Filter Materials) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in South Korea: Critical geopolitical event: 'war' in recent news. Tae Young Filters (Filter Materials) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "North Korea denounces \u2018muscle-flexing\u2019 US-South Korean military exercises - Al Jazeera",
+          "South Korea opposed to U.S. moving air defense systems in the country to Middle East: President Lee - CNBC",
+          "North Korean leader\u2019s sister criticizes U.S. and South Korea for proceeding with joint drills - NBC News"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "South Korea",
@@ -409,14 +500,35 @@
         "category": "Capsules",
         "cyber_risk": false,
         "matching_vulnerabilities": [],
-        "news_risk": false,
-        "news_items": [],
-        "operational_risk": false,
+        "news_risk": true,
+        "news_items": [
+          {
+            "headline": "Japan prepares long-range strike capability with new missile systems - Defence Blog",
+            "risk": "CRITICAL",
+            "keyword": "Critical supply risk from news: 'strike'",
+            "source": "google_news"
+          }
+        ],
+        "operational_risk": true,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Fuji (Capsules) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Critical supply risk from news: 'strike'. Fuji (Capsules) requires monitoring. BAT exposure: Medium.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83d\udea8 Supply threat: Japan prepares long-range strike capability with new missile systems - Defence Blog",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Can the U.S. ask for Japan\u2019s help in the Iran war? - The Japan Times",
+          "Unlike Past U.S. Conflicts, Iran Attack Is Opposed by Most Americans - The New York Times",
+          "Opinion | Beijing\u2019s Trade War Against Japan - WSJ"
+        ],
+        "geopolitical_escalated": false,
+        "google_news_headlines": [
+          "Japan prepares long-range strike capability with new missile systems - Defence Blog",
+          "CISA advisories detail ICS flaws in Delta, Fuji Electric, SunPower, Hitachi Energy hardware; provide mitigation - Industrial Cyber",
+          "Salesforce Extortion Group Leaks Data After FBI Disruption - BankInfoSecurity"
+        ],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "Japan",
@@ -433,11 +545,21 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.28,
-        "current_price": 9.26,
-        "risk_analysis": "No supply chain risks identified. SWM (Mativ) (Fine Papers) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.3%",
+        "daily_change_pct": -2.57,
+        "current_price": 9.02,
+        "risk_analysis": "Geopolitical risk in USA: Critical geopolitical event: 'war' in recent news. SWM (Mativ) (Fine Papers) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Opinion | Trump Has No Idea How to End the War With Iran - The New York Times",
+          "One week into Iran war, the dangers for the US and Trump multiply - RFI",
+          "What is Trump's approval rating in Florida as Iran war continues? - Tallahassee Democrat"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "USA",
@@ -456,9 +578,19 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Delfort (Fine Papers) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in Austria: Critical geopolitical event: 'war' in recent news. Delfort (Fine Papers) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "How does war in Iran impact life in Austria? - The Local Austria",
+          "\u2018I saw the writing on the wall\u2019: Austria offers safe haven for US academics as Trump wages war on universities - The Guardian",
+          "HRF Files Complaint Against IDF Suspect Y. Akriv in Austria - THE HIND RAJAB FOUNDATION"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "Austria",
@@ -477,9 +609,19 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. CNT (Nicotine) operating normally. BAT exposure: Critical.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in Germany: Critical geopolitical event: 'war' in recent news. CNT (Nicotine) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Germany\u2019s Merz raises concern over Iran war: No plan for \u2018swift and convincing conclusion\u2019 - The Hill",
+          "Germany's Merz sees no plan for bringing Iran war to swift end - Reuters",
+          "Germany\u2019s Merz warns against \u2018endless war\u2019 in Iran - politico.eu"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Critical",
         "segment": "Combustibles",
         "location": "Germany",
@@ -498,9 +640,19 @@
         "operational_risk": false,
         "daily_change_pct": 1.0,
         "current_price": 309.05,
-        "risk_analysis": "No supply chain risks identified. ITC (Nicotine) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.0%",
+        "risk_analysis": "Geopolitical risk in India: Critical geopolitical event: 'war' in recent news. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Iran war deals double blow to Indian airlines already hit by Pakistan airspace ban - Reuters",
+          "India's restaurants are under threat from the LPG supply crunch caused by the Iran war - CNBC",
+          "Indian firms hit by disrupted gas supplies because of US-Israel war on Iran - BBC"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "High",
         "segment": "Combustibles",
         "location": "India",
@@ -519,9 +671,23 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Porton (Nicotine) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in China: Critical geopolitical event: 'war' in recent news. Porton (Nicotine) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "China Stockpiled More Oil Before War Broke Out in Iran - The New York Times",
+          "9 countries that could get involved next in the Iran war - Axios",
+          "Funding war, courting crisis: Why China\u2019s support for Russia requires a European response - European Council on Foreign Relations"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [
+          "Scientists at secret military base at centre of Novichok murder probe fear their details may have been stolen by cyber criminals - National Security News",
+          "Secret Bases: Porton Down (U.K.) - Grey Dynamics",
+          "Jazz set to lose rights to Erwinaze after partner cancels deal - BioPharma Dive"
+        ],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "China",
@@ -540,9 +706,19 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Tenowo (Modern/Traditional Oral Fleece) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in Germany: Critical geopolitical event: 'war' in recent news. Tenowo (Modern/Traditional Oral Fleece) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Germany\u2019s Merz raises concern over Iran war: No plan for \u2018swift and convincing conclusion\u2019 - The Hill",
+          "Germany's Merz sees no plan for bringing Iran war to swift end - Reuters",
+          "Germany\u2019s Merz warns against \u2018endless war\u2019 in Iran - politico.eu"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "New Categories (Vuse/Glo)",
         "location": "Germany",
@@ -561,9 +737,21 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Huizhou BYD Electronic (EMS) operating normally. BAT exposure: Critical.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in China: Critical geopolitical event: 'war' in recent news. Huizhou BYD Electronic (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "China Stockpiled More Oil Before War Broke Out in Iran - The New York Times",
+          "9 countries that could get involved next in the Iran war - Axios",
+          "Funding war, courting crisis: Why China\u2019s support for Russia requires a European response - European Council on Foreign Relations"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [
+          "Since Feb'15, 7 mobile firms, 123 electronic goods from China have failed Indian standards: MEITY - MediaNama"
+        ],
         "bat_exposure": "Critical",
         "segment": "New Categories (Vuse/Glo)",
         "location": "China",
@@ -582,9 +770,19 @@
         "operational_risk": false,
         "daily_change_pct": 1.31,
         "current_price": 11.59,
-        "risk_analysis": "No supply chain risks identified. Smoore (EMS) operating normally. BAT exposure: Critical.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.3%",
+        "risk_analysis": "Geopolitical risk in China: Critical geopolitical event: 'war' in recent news. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "China Stockpiled More Oil Before War Broke Out in Iran - The New York Times",
+          "9 countries that could get involved next in the Iran war - Axios",
+          "Funding war, courting crisis: Why China\u2019s support for Russia requires a European response - European Council on Foreign Relations"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Critical",
         "segment": "New Categories (Vuse/Glo)",
         "location": "China",
@@ -603,9 +801,19 @@
         "operational_risk": false,
         "daily_change_pct": 1.12,
         "current_price": 62.98,
-        "risk_analysis": "No supply chain risks identified. EVE Energy (Batteries) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.1%",
+        "risk_analysis": "Geopolitical risk in China: Critical geopolitical event: 'war' in recent news. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "China Stockpiled More Oil Before War Broke Out in Iran - The New York Times",
+          "9 countries that could get involved next in the Iran war - Axios",
+          "Funding war, courting crisis: Why China\u2019s support for Russia requires a European response - European Council on Foreign Relations"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "High",
         "segment": "New Categories (Vuse/Glo)",
         "location": "China",
@@ -617,16 +825,52 @@
         "name": "Texas Instruments",
         "slug": "texas-instruments",
         "category": "EE Component",
-        "cyber_risk": false,
-        "matching_vulnerabilities": [],
+        "cyber_risk": true,
+        "matching_vulnerabilities": [
+          {
+            "cveID": "CVE-2025-26399",
+            "vulnerabilityName": "SolarWinds Web Help Desk Deserialization of Untrusted Data Vulnerability",
+            "dateAdded": "2026-03-09"
+          },
+          {
+            "cveID": "CVE-2026-1603",
+            "vulnerabilityName": "Ivanti Endpoint Manager (EPM) Authentication Bypass Vulnerability",
+            "dateAdded": "2026-03-09"
+          },
+          {
+            "cveID": "CVE-2017-7921",
+            "vulnerabilityName": "Hikvision Multiple Products Improper Authentication Vulnerability",
+            "dateAdded": "2026-03-05"
+          },
+          {
+            "cveID": "CVE-2021-22681",
+            "vulnerabilityName": "Rockwell Multiple Products Insufficient Protected Credentials Vulnerability",
+            "dateAdded": "2026-03-05"
+          },
+          {
+            "cveID": "CVE-2023-43000",
+            "vulnerabilityName": "Apple Multiple products Use-After-Free Vulnerability",
+            "dateAdded": "2026-03-05"
+          }
+        ],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.54,
-        "current_price": 196.2,
-        "risk_analysis": "No supply chain risks identified. Texas Instruments (EE Component) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.5%",
+        "daily_change_pct": 1.29,
+        "current_price": 198.74,
+        "risk_analysis": "CISA Known Exploited Vulnerability detected. Texas Instruments systems may be at risk. High exposure to BAT requires security assessment.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83d\udd12 Cyber vulnerability: 6 CISA KEV match(es) - CVE-2025-26399, CVE-2026-1603",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Opinion | Trump Has No Idea How to End the War With Iran - The New York Times",
+          "One week into Iran war, the dangers for the US and Trump multiply - RFI",
+          "What is Trump's approval rating in Florida as Iran war continues? - Tallahassee Democrat"
+        ],
+        "geopolitical_escalated": false,
+        "google_news_headlines": [],
         "bat_exposure": "High",
         "segment": "New Categories (Vuse/Glo)",
         "location": "USA",
@@ -643,11 +887,21 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 5.3,
-        "current_price": 41.01,
-        "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +5.3%",
+        "daily_change_pct": 6.07,
+        "current_price": 41.31,
+        "risk_analysis": "Geopolitical risk in Germany: Critical geopolitical event: 'war' in recent news. Infineon (EE Component) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Germany\u2019s Merz raises concern over Iran war: No plan for \u2018swift and convincing conclusion\u2019 - The Hill",
+          "Germany's Merz sees no plan for bringing Iran war to swift end - Reuters",
+          "Germany\u2019s Merz warns against \u2018endless war\u2019 in Iran - politico.eu"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "High",
         "segment": "New Categories (Vuse/Glo)",
         "location": "Germany",
@@ -666,9 +920,19 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Weener (Mechanical) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in Netherlands: Critical geopolitical event: 'war' in recent news. Weener (Mechanical) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Dutch prime minister says strikes on Iran not in line with international law - politico.eu",
+          "Netherlands to Provide $3.5 Billion Annually in Military and Financial Aid to Ukraine - UNITED24 Media",
+          "PM Jetten warns Dutch military losses possible in Iran war; Said EU needs to unite - NL Times"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "New Categories (Vuse/Glo)",
         "location": "Netherlands",
@@ -687,12 +951,24 @@
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Rosti (Mechanical) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Geopolitical risk in Sweden: Critical geopolitical event: 'war' in recent news. Rosti (Mechanical) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Sweden to Build Fuel, Food Stockpiles as Conflict Worries Grow - Bloomberg",
+          "Sweden confirms Russian drone intercepted near French aircraft carrier - Al Jazeera",
+          "Sweden pledges another $1.4 billion in military aid to Ukraine - Reuters"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [
+          "Haiki+ strengthens integrated lead-acid battery recycling chain - Materia Rinnovabile | Renewable Matter"
+        ],
         "bat_exposure": "Medium",
         "segment": "New Categories (Vuse/Glo)",
-        "location": "Denmark",
+        "location": "Sweden",
         "stock_ticker": "N/A",
         "latest_news_summary": "Rosti maintains standard operations. Regular quality audits completed successfully. Supply chain intelligence indicates no material risks. Standard monitoring protocols active.",
         "url": null
@@ -706,11 +982,21 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 2.64,
-        "current_price": 247.46,
-        "risk_analysis": "No supply chain risks identified. Jabil (Mechanical) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +2.6%",
+        "daily_change_pct": 1.74,
+        "current_price": 251.76,
+        "risk_analysis": "Geopolitical risk in USA: Critical geopolitical event: 'war' in recent news. Jabil (Mechanical) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83c\udf0d Geopolitical: Critical geopolitical event: 'war' in recent news",
+        "geopolitical_risk": true,
+        "geopolitical_risk_level": "CRITICAL",
+        "geopolitical_reason": "Critical geopolitical event: 'war' in recent news",
+        "geopolitical_headlines": [
+          "Opinion | Trump Has No Idea How to End the War With Iran - The New York Times",
+          "One week into Iran war, the dangers for the US and Trump multiply - RFI",
+          "What is Trump's approval rating in Florida as Iran war continues? - Tallahassee Democrat"
+        ],
+        "geopolitical_escalated": true,
+        "google_news_headlines": [],
         "bat_exposure": "Medium",
         "segment": "New Categories (Vuse/Glo)",
         "location": "USA",
@@ -719,20 +1005,20 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-03-10T12:32:49.061020"
+    "last_fetched": "2026-03-10T18:34:26.559542"
   },
   "macro_economy": {
     "us": {
-      "cpi": "3.2%",
-      "rate": "5.50%",
-      "trend": "Growing",
-      "summary": "S&P 500 growing: +0.83% change. Market reflects positive economic momentum. Fed maintains current policy stance as inflation trends toward target. Industrial output strong, consumer confidence elevated. Economic indicators suggest sustained growth trajectory."
+      "cpi": "N/A",
+      "rate": "N/A",
+      "trend": "N/A",
+      "summary": "Unable to fetch S&P 500 data. Market may be closed."
     },
     "eu": {
       "cpi": "2.6%",
       "rate": "4.50%",
       "trend": "Strengthening",
-      "summary": "EUR/USD strengthening: +0.92% change. Euro gaining against USD. ECB policy decisions supporting currency stability. Manufacturing PMI showing signs of recovery in key markets. Inflation moderating toward target, economic activity picking up. Strong euro reflects improved economic fundamentals."
+      "summary": "EUR/USD strengthening: +1.01% change. Euro gaining against USD. ECB policy decisions supporting currency stability. Manufacturing PMI showing signs of recovery in key markets. Inflation moderating toward target, economic activity picking up. Strong euro reflects improved economic fundamentals."
     },
     "china": {
       "cpi": "0.3%",
@@ -746,13 +1032,13 @@
       "name": "British American Tobacco",
       "ticker": "BTI",
       "region": "Global/US ADR",
-      "sentiment": "Neutral",
+      "sentiment": "Positive",
       "latest_headline": "Primary listing LSE; traded as BTI (NYSE). Monitoring filings.",
-      "stock_move": "+0.79%",
-      "current_price": 58.33000183105469,
-      "daily_change_pct": 0.79,
+      "stock_move": "+2.41%",
+      "current_price": 59.73500061035156,
+      "daily_change_pct": 2.41,
       "risk_level": "LOW",
-      "last_signal": "Stock: +0.79% | Primary listing LSE; traded as BTI (NYSE). Monitoring filings.",
+      "last_signal": "Stock: +2.41% | Primary listing LSE; traded as BTI (NYSE). Monitoring filings.",
       "news_risk": false,
       "stock_risk": false
     },
@@ -760,13 +1046,13 @@
       "name": "Philip Morris Int.",
       "ticker": "PM",
       "region": "US",
-      "sentiment": "Positive",
+      "sentiment": "Neutral",
       "latest_headline": "US-listed (NYSE). Monitoring SEC filings (8-K).",
-      "stock_move": "+1.92%",
-      "current_price": 173.25,
-      "daily_change_pct": 1.92,
+      "stock_move": "+0.13%",
+      "current_price": 173.4700927734375,
+      "daily_change_pct": 0.13,
       "risk_level": "LOW",
-      "last_signal": "Stock: +1.92% | US-listed (NYSE). Monitoring SEC filings (8-K).",
+      "last_signal": "Stock: +0.13% | US-listed (NYSE). Monitoring SEC filings (8-K).",
       "news_risk": false,
       "stock_risk": false
     },
@@ -776,11 +1062,11 @@
       "region": "UK",
       "sentiment": "Neutral",
       "latest_headline": "UK-listed (LSE). Monitoring regulatory news.",
-      "stock_move": "+0.51%",
-      "current_price": 3159.0,
-      "daily_change_pct": 0.51,
+      "stock_move": "+0.45%",
+      "current_price": 3157.0,
+      "daily_change_pct": 0.45,
       "risk_level": "LOW",
-      "last_signal": "Stock: +0.51% | UK-listed (LSE). Monitoring regulatory news.",
+      "last_signal": "Stock: +0.45% | UK-listed (LSE). Monitoring regulatory news.",
       "news_risk": false,
       "stock_risk": false
     },
@@ -802,10 +1088,10 @@
   "harvest_stats": {
     "total_errors": 0,
     "total_warnings": 0,
-    "total_successes": 10,
+    "total_successes": 9,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 7.221079
+    "duration_seconds": 122.973135
   },
   "health": {
     "pillars": {

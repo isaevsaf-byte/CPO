@@ -514,7 +514,7 @@ export default function MorningCoffeeDashboard() {
                     if (riskFilter === 'cyber') return supplier.cyber_risk;
                     if (riskFilter === 'news') return supplier.news_risk;
                     if (riskFilter === 'operational') return (supplier as any).operational_risk;
-                    if (riskFilter === 'geopolitical') return supplier.geopolitical_risk;
+                    if (riskFilter === 'geopolitical') return supplier.geopolitical_risk != null;
                     return true;
                   })
                   .map((supplier: Supplier, idx: number) => (
@@ -589,7 +589,7 @@ export default function MorningCoffeeDashboard() {
                               </span>
                             )}
                             {supplier.geopolitical_risk && (
-                              <span className="px-1.5 py-0.5 bg-orange-600 text-white rounded text-xs" title={supplier.geopolitical_reason || 'Geopolitical risk'}>
+                              <span className="px-1.5 py-0.5 bg-orange-600 text-white rounded text-xs" title={supplier.geopolitical_risk?.reason || 'Geopolitical risk'}>
                                 🌍
                               </span>
                             )}
@@ -601,9 +601,9 @@ export default function MorningCoffeeDashboard() {
                             </div>
                           )}
                           {/* Show geopolitical context when risk is geo-escalated */}
-                          {supplier.geopolitical_escalated && supplier.geopolitical_reason && (
-                            <div className="text-xs text-orange-700 max-w-xs truncate" title={supplier.geopolitical_reason}>
-                              🌍 {supplier.geopolitical_reason}
+                          {supplier.geopolitical_risk?.escalated && supplier.geopolitical_risk?.reason && (
+                            <div className="text-xs text-orange-700 max-w-xs truncate" title={supplier.geopolitical_risk.reason}>
+                              🌍 {supplier.geopolitical_risk.reason}
                             </div>
                           )}
                         </div>

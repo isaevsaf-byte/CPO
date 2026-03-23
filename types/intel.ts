@@ -150,12 +150,14 @@ export interface Supplier {
   location: string;
   stock_ticker: string;
   latest_news_summary: string;
-  // Geopolitical risk fields
-  geopolitical_risk: boolean;
-  geopolitical_risk_level: RiskLevel | null;
-  geopolitical_reason: string | null;
-  geopolitical_headlines: string[];
-  geopolitical_escalated: boolean;
+  // Geopolitical risk (null when no risk detected)
+  geopolitical_risk: {
+    detected: boolean;
+    level: RiskLevel | null;
+    reason: string | null;
+    headlines: string[];
+    escalated: boolean;
+  } | null;
   // Google News headlines for ticker-less suppliers
   google_news_headlines: string[];
 }

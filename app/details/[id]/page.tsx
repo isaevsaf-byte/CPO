@@ -427,15 +427,15 @@ export default function CompanyDetailPage() {
                     <div className="text-amber-600 font-semibold">&#9888; Active</div>
                   </div>
                 )}
-                {isSupplier && getCompanyProp<boolean>('geopolitical_risk') && (
+                {isSupplier && getCompanyProp<any>('geopolitical_risk') && (
                   <div>
                     <div className="text-gray-500">Geopolitical Risk</div>
                     <div className="text-orange-600 font-semibold">
-                      &#127758; {getCompanyProp<string>('geopolitical_risk_level') || 'Active'}
+                      &#127758; {getCompanyProp<any>('geopolitical_risk')?.level || 'Active'}
                     </div>
-                    {getCompanyProp<string>('geopolitical_reason') && (
+                    {getCompanyProp<any>('geopolitical_risk')?.reason && (
                       <div className="text-xs text-orange-700 mt-1 max-w-xs">
-                        {getCompanyProp<string>('geopolitical_reason')}
+                        {getCompanyProp<any>('geopolitical_risk').reason}
                       </div>
                     )}
                   </div>

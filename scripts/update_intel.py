@@ -1068,15 +1068,12 @@ def process_suppliers(cyber_data):
         if country and country != "Unknown":
             unique_countries.add(country)
 
-    logger.info(f"Scanning {len(unique_countries)} unique countries for geopolitical risk via Google News...")
+    logger.info(f"Scanning {len(unique_countries)} unique countries for geopolitical risk...")
     country_news_cache = {}
     for country in unique_countries:
-        # First check static map
+        # Check static risk map
         static_risk = GEOPOLITICAL_RISK_MAP.get(country, None)
-        # Then scan live news for this country
-        news_detected, news_level, news_headlines, news_reason = scan_country_geopolitical_news(country)
 
-        # Combine static map + live news: take the higher of the two
         if static_risk:
             static_level = static_risk["level"]
             static_reason = static_risk["reason"]
@@ -1084,9 +1081,25 @@ def process_suppliers(cyber_data):
             static_level = "LOW"
             static_reason = ""
 
+        # Only run live Google News scan for countries already in the risk map.
+        # Scanning stable countries (USA, Switzerland, Japan, etc.) produces
+        # false positives because global headlines about "war" or "sanctions"
+        # mention every country in passing.
+        news_level = "LOW"
+        news_headlines = []
+        news_reason = ""
+        if static_risk:
+            news_detected, news_level, news_headlines, news_reason = scan_country_geopolitical_news(country)
+
         # Final country-level geopolitical risk = max(static, live_news)
+        # But cap news escalation to one level above static risk to prevent
+        # false positives (e.g. "Finland" + generic "war" headline → CRITICAL).
+        LEVEL_ORDER = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
         if RISK_PRIORITY.get(news_level, 0) > RISK_PRIORITY.get(static_level, 0):
-            final_level = news_level
+            static_idx = LEVEL_ORDER.index(static_level) if static_level in LEVEL_ORDER else 0
+            max_allowed_idx = min(static_idx + 1, len(LEVEL_ORDER) - 1)
+            capped_news_level = news_level if LEVEL_ORDER.index(news_level) <= max_allowed_idx else LEVEL_ORDER[max_allowed_idx]
+            final_level = capped_news_level
             final_reason = news_reason
         else:
             final_level = static_level
@@ -1361,12 +1374,14 @@ def process_suppliers(cyber_data):
             "risk_analysis": risk_analysis,
             "risk_level": supplier_risk_level,
             "last_signal": last_signal,
-            # NEW: Geopolitical risk fields
-            "geopolitical_risk": geopolitical_risk,
-            "geopolitical_risk_level": geo_risk_level if geopolitical_risk else None,
-            "geopolitical_reason": geo_reason if geopolitical_risk else None,
-            "geopolitical_headlines": geo_headlines[:3] if geopolitical_risk else [],
-            "geopolitical_escalated": geo_escalated,
+            # Geopolitical risk fields
+            "geopolitical_risk": {
+                "detected": geopolitical_risk,
+                "level": geo_risk_level if geopolitical_risk else None,
+                "reason": geo_reason if geopolitical_risk else None,
+                "headlines": geo_headlines[:3] if geopolitical_risk else [],
+                "escalated": geo_escalated,
+            } if geopolitical_risk else None,
             # NEW: Google News headlines for ticker-less suppliers
             "google_news_headlines": google_news_headlines[:3],
             **deep_dive
@@ -1378,7 +1393,7 @@ def process_suppliers(cyber_data):
     suppliers_at_cyber_risk = sum(1 for s in suppliers if s["cyber_risk"])
     suppliers_at_news_risk = sum(1 for s in suppliers if s["news_risk"])
     suppliers_at_operational_risk = sum(1 for s in suppliers if s.get("operational_risk", False))
-    suppliers_at_geopolitical_risk = sum(1 for s in suppliers if s.get("geopolitical_risk", False))
+    suppliers_at_geopolitical_risk = sum(1 for s in suppliers if s.get("geopolitical_risk") is not None)
     suppliers_geo_escalated = sum(1 for s in suppliers if s.get("geopolitical_escalated", False))
 
     total_critical = sum(1 for s in suppliers if s["risk_level"] == "CRITICAL")

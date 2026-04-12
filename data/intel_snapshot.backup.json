@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-04-11T12:31:34.963774",
-  "version": "67464c71559c",
+  "last_updated": "2026-04-11T18:27:40.955105",
+  "version": "b41d01636583",
   "status": "healthy",
   "macro": {
     "status": "success",
@@ -15,7 +15,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators placeholder",
-        "last_fetched": "2026-04-11T12:30:26.345980"
+        "last_fetched": "2026-04-11T18:26:32.727177"
       },
       "eu": {
         "status": "success",
@@ -26,7 +26,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1711",
-        "last_fetched": "2026-04-11T12:30:26.866343"
+        "last_fetched": "2026-04-11T18:26:33.523097"
       },
       "china": {
         "status": "success",
@@ -37,11 +37,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators placeholder",
-        "last_fetched": "2026-04-11T12:30:26.867265"
+        "last_fetched": "2026-04-11T18:26:33.523826"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-04-11T12:30:26.867278"
+    "last_fetched": "2026-04-11T18:26:33.523839"
   },
   "peers": {
     "status": "success",
@@ -62,7 +62,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-04-11T12:30:26.867284"
+          "last_fetched": "2026-04-11T18:26:33.523845"
         },
         "news": {
           "status": "placeholder",
@@ -132,7 +132,7 @@
           ],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-04-11T12:30:26.977969"
+          "last_fetched": "2026-04-11T18:26:33.697447"
         },
         "news": {
           "status": "placeholder",
@@ -152,7 +152,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-04-11T12:30:26.978911"
+          "last_fetched": "2026-04-11T18:26:33.698441"
         },
         "news": {
           "status": "placeholder",
@@ -172,7 +172,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-04-11T12:30:26.978920"
+          "last_fetched": "2026-04-11T18:26:33.698449"
         },
         "news": {
           "status": "placeholder",
@@ -192,7 +192,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-04-11T12:30:26.978924"
+          "last_fetched": "2026-04-11T18:26:33.698453"
         },
         "news": {
           "status": "placeholder",
@@ -201,17 +201,17 @@
         }
       }
     ],
-    "last_fetched": "2026-04-11T12:30:26.978928"
+    "last_fetched": "2026-04-11T18:26:33.698456"
   },
   "suppliers": {
     "status": "success",
     "rag_score": "RED",
     "total_suppliers": 24,
     "suppliers_at_cyber_risk": 1,
-    "suppliers_at_news_risk": 0,
-    "suppliers_at_operational_risk": 0,
+    "suppliers_at_news_risk": 1,
+    "suppliers_at_operational_risk": 1,
     "suppliers_at_geopolitical_risk": 9,
-    "total_critical": 1,
+    "total_critical": 2,
     "total_high": 9,
     "total_medium": 0,
     "suppliers": [
@@ -313,9 +313,9 @@
           "level": "HIGH",
           "reason": "Critical geopolitical event: 'war' in recent news",
           "headlines": [
+            "U.S. Intelligence Shows China Taking a More Active Role in Iran War - The New York Times",
             "What China Just Learned From the Iran War - The Atlantic",
-            "FO Talks: Is America Building a $1.5 Trillion War Machine to Fight China? - Fair Observer",
-            "\u2018Fortress China\u2019 shows cracks as Iran war strains supply chains - Financial Times"
+            "Resource Competition With China Lay Behind Trump\u2019s Iran War - Jacobin"
           ],
           "escalated": true
         },
@@ -348,7 +348,7 @@
           "headlines": [
             "\u2018Hello to the New World Superpower\u2019: Iran\u2019s Africa Missions Troll Trump - The New York Times",
             "Sudan: 14 million displaced; hunger and attacks on health continue as war enters fourth year - UN News",
-            "False Promises: Russian Military Trafficking in Africa - Foreign Policy Research Institute"
+            "Africa\u2019s Need for Energy Independence Is Laid Bare by War - Bloomberg.com"
           ],
           "escalated": true
         },
@@ -412,16 +412,24 @@
         "category": "Filter Materials",
         "cyber_risk": false,
         "matching_vulnerabilities": [],
-        "news_risk": false,
-        "news_items": [],
-        "operational_risk": false,
+        "news_risk": true,
+        "news_items": [
+          {
+            "headline": "How Western-made materials for cigarettes wind up in Russian missiles that strike Ukraine - The Kyiv Independent",
+            "risk": "CRITICAL",
+            "keyword": "Critical supply risk from news: 'strike'",
+            "source": "google_news"
+          }
+        ],
+        "operational_risk": true,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Cerdia (Filter Materials) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "Critical supply risk from news: 'strike'. Cerdia (Filter Materials) requires monitoring. BAT exposure: Medium.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83d\udea8 Supply threat: How Western-made materials for cigarettes wind up in Russian missiles that strike Ukraine - The Kyiv",
         "geopolitical_risk": null,
         "google_news_headlines": [
+          "How Western-made materials for cigarettes wind up in Russian missiles that strike Ukraine - The Kyiv Independent",
           "The Chemical Trail Behind Russia\u2019s Infamous Kalibr Missiles Leads Back to Europe - UNITED24 Media"
         ],
         "bat_exposure": "Medium",
@@ -451,8 +459,8 @@
           "reason": "Critical geopolitical event: 'war' in recent news",
           "headlines": [
             "Trump faults Japan, South Korea and Australia for not helping in war against Iran - Stars and Stripes",
-            "North Korea Tests New Weapons, Drawing Lessons from Iran War - The New York Times",
-            "US, South Korea Join Forces to Find Aircraft Lost in Korean War - Military.com"
+            "US, South Korea Join Forces to Find Aircraft Lost in Korean War - Military.com",
+            "North Korea Tests New Weapons, Drawing Lessons from Iran War - The New York Times"
           ],
           "escalated": true
         },
@@ -583,7 +591,7 @@
           "headlines": [
             "America\u2019s Iran War Is Costing It India - Institute for Global Affairs",
             "India\u2019s Silent Response to the Iran War - Politics Today",
-            "Inside India newsletter: Tariffs and Iran war threaten India's $100 billion garments export goal - CNBC"
+            "DW News. . India is turning to more polluting fuels as war-driven gas shortages disrupt LPG supplies. Conflict in the Middle East has hit shipping through the Strait of Hormuz, leaving homes and businesses scrambling. With supplies tight, demand for dirtier fue - Facebook"
           ],
           "escalated": true
         },
@@ -614,9 +622,9 @@
           "level": "HIGH",
           "reason": "Critical geopolitical event: 'war' in recent news",
           "headlines": [
+            "U.S. Intelligence Shows China Taking a More Active Role in Iran War - The New York Times",
             "What China Just Learned From the Iran War - The Atlantic",
-            "FO Talks: Is America Building a $1.5 Trillion War Machine to Fight China? - Fair Observer",
-            "\u2018Fortress China\u2019 shows cracks as Iran war strains supply chains - Financial Times"
+            "Resource Competition With China Lay Behind Trump\u2019s Iran War - Jacobin"
           ],
           "escalated": true
         },
@@ -672,9 +680,9 @@
           "level": "HIGH",
           "reason": "Critical geopolitical event: 'war' in recent news",
           "headlines": [
+            "U.S. Intelligence Shows China Taking a More Active Role in Iran War - The New York Times",
             "What China Just Learned From the Iran War - The Atlantic",
-            "FO Talks: Is America Building a $1.5 Trillion War Machine to Fight China? - Fair Observer",
-            "\u2018Fortress China\u2019 shows cracks as Iran war strains supply chains - Financial Times"
+            "Resource Competition With China Lay Behind Trump\u2019s Iran War - Jacobin"
           ],
           "escalated": true
         },
@@ -707,9 +715,9 @@
           "level": "HIGH",
           "reason": "Critical geopolitical event: 'war' in recent news",
           "headlines": [
+            "U.S. Intelligence Shows China Taking a More Active Role in Iran War - The New York Times",
             "What China Just Learned From the Iran War - The Atlantic",
-            "FO Talks: Is America Building a $1.5 Trillion War Machine to Fight China? - Fair Observer",
-            "\u2018Fortress China\u2019 shows cracks as Iran war strains supply chains - Financial Times"
+            "Resource Competition With China Lay Behind Trump\u2019s Iran War - Jacobin"
           ],
           "escalated": false
         },
@@ -740,9 +748,9 @@
           "level": "HIGH",
           "reason": "Critical geopolitical event: 'war' in recent news",
           "headlines": [
+            "U.S. Intelligence Shows China Taking a More Active Role in Iran War - The New York Times",
             "What China Just Learned From the Iran War - The Atlantic",
-            "FO Talks: Is America Building a $1.5 Trillion War Machine to Fight China? - Fair Observer",
-            "\u2018Fortress China\u2019 shows cracks as Iran war strains supply chains - Financial Times"
+            "Resource Competition With China Lay Behind Trump\u2019s Iran War - Jacobin"
           ],
           "escalated": true
         },
@@ -883,7 +891,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-04-11T12:31:31.779076"
+    "last_fetched": "2026-04-11T18:27:38.158207"
   },
   "macro_economy": {
     "us": {
@@ -969,7 +977,7 @@
     "total_successes": 10,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 68.770957
+    "duration_seconds": 68.374719
   },
   "health": {
     "pillars": {

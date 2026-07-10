@@ -75,10 +75,16 @@ class HarvestStats:
 
     def should_alert(self) -> bool:
         """Determine if errors are critical enough to warrant alerting"""
-        critical_sources = ['cisa_kev', 'sec_edgar', 'ecb_fx']
+        # ofac_sdn added: a silently-failing sanctions feed is arguably the
+        # single highest-stakes gap this pipeline could have. Matched with
+        # startswith rather than equality: recorded source names are
+        # suffixed per-entity (e.g. "sec_edgar_Philip Morris Int."), so the
+        # previous exact-match check against bare "sec_edgar" never fired —
+        # SEC EDGAR failures were silently never considered alert-worthy.
+        critical_sources = ['cisa_kev', 'sec_edgar', 'ecb_fx', 'ofac_sdn']
         return (
             len(self.errors) >= 3 or
-            any(e['source'] in critical_sources for e in self.errors)
+            any(e['source'].startswith(cs) for e in self.errors for cs in critical_sources)
         )
 
     def summary(self) -> dict:
@@ -186,13 +192,20 @@ def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None) ->
 
 def calculate_data_hash(data: dict) -> str:
     """Generate a short hash of the data for version checking"""
-    # Exclude timestamps from hash to detect actual data changes
+    # Exclude fields that change every run by construction, so this hash
+    # reflects actual data changes rather than firing every single harvest.
     data_copy = json.loads(json.dumps(data))  # Deep copy
-    # Remove fields that change every run
     if 'last_updated' in data_copy:
         del data_copy['last_updated']
     if 'harvest_stats' in data_copy:
         del data_copy['harvest_stats']
+    # rag_history always gets a new timestamped entry appended every run
+    # (see main()) — leaving it in means version changes on every harvest
+    # regardless of whether anything else changed, which defeats the
+    # frontend's "New data available" check (useDataFreshness compares
+    # version to detect real changes worth refreshing for).
+    if 'rag_history' in data_copy:
+        del data_copy['rag_history']
 
     json_str = json.dumps(data_copy, sort_keys=True)
     return hashlib.md5(json_str.encode()).hexdigest()[:12]
@@ -267,10 +280,15 @@ def _keyword_hit(text_lower: str, keyword: str) -> bool:
 
 
 def _mentions_subject(text_lower: str, subject: str) -> bool:
-    """Require the entity/country name to literally appear in the headline
-    itself — Google News matches query terms against the full article, so a
-    returned headline's title may not actually be about the search subject."""
-    return subject.lower() in text_lower
+    """Require the entity/country name to appear as a whole word in the
+    headline itself — Google News matches query terms against the full
+    article, so a returned headline's title may not actually be about the
+    search subject. Whole-word, not substring: a bare substring check let
+    a "Chinatown" crime headline count as mentioning "China", and a
+    "Prussia" history headline count as mentioning "Russia" — the exact
+    same class of false positive fixed elsewhere for supplier names
+    (see supplier_search_terms/supplier_terms_hit)."""
+    return re.search(r'\b' + re.escape(subject.lower()) + r'\b', text_lower) is not None
 
 
 def _parse_pub_date(pub_date_str: str):
@@ -789,19 +807,24 @@ def match_supplier_sanctions(supplier_name: str, sdn_names: list) -> list:
 # ============================================================================
 
 def fetch_macro_us():
-    """Fetch US Macro Economic Indicators"""
+    """
+    US Macro Economic Indicators — NOT YET WIRED UP to a real source
+    (would need FRED API, BLS, etc.). Reports status "placeholder" rather
+    than "success": the region previously claimed success with entirely
+    hardcoded text, which silently counted toward the Macro pillar's
+    healthy-region tally and rendered a green checkmark next to indicators
+    nothing had actually checked.
+    """
     try:
-        # Placeholder: In production, fetch from FRED API, BLS, etc.
-        # For now, return structure with FX rate (USD/EUR inverse of EUR/USD)
         return {
-            "status": "success",
+            "status": "placeholder",
             "region": "US",
             "indicators": {
                 "fx_rate": "Placeholder - USD/EUR",
                 "inflation": "Placeholder - CPI data",
                 "policy": "Placeholder - Fed policy updates"
             },
-            "summary": "US economic indicators placeholder",
+            "summary": "US economic indicators not yet integrated (placeholder data)",
             "last_fetched": datetime.utcnow().isoformat()
         }
     except Exception as e:
@@ -853,18 +876,21 @@ def fetch_macro_eu():
         }
 
 def fetch_macro_china():
-    """Fetch China Macro Economic Indicators"""
+    """
+    China Macro Economic Indicators — NOT YET WIRED UP to a real source
+    (would need an official PBOC/NBS feed). See fetch_macro_us() for why
+    this reports "placeholder" rather than "success".
+    """
     try:
-        # Placeholder: In production, fetch from official Chinese economic data sources
         return {
-            "status": "success",
+            "status": "placeholder",
             "region": "China",
             "indicators": {
                 "fx_rate": "Placeholder - CNY/USD",
                 "inflation": "Placeholder - CPI data",
                 "policy": "Placeholder - PBOC policy updates"
             },
-            "summary": "China economic indicators placeholder",
+            "summary": "China economic indicators not yet integrated (placeholder data)",
             "last_fetched": datetime.utcnow().isoformat()
         }
     except Exception as e:
@@ -882,7 +908,13 @@ def fetch_macro_overview(previous_eur_usd=None):
     eu_data = fetch_macro_eu()
     china_data = fetch_macro_china()
     
-    # Calculate overall RAG score
+    # Calculate overall RAG score. Only EU has a real live feed right now —
+    # US and China are placeholder/not-yet-integrated (see fetch_macro_us
+    # and fetch_macro_china) and report status "placeholder", not
+    # "success", so they no longer count here. This pillar can't reach a
+    # "3 of 3 healthy" GREEN this way until real US/China sources are
+    # wired up; GREEN is still reachable via the EUR/USD volatility check
+    # below when EU data is available and stable.
     regions_ok = sum(1 for r in [us_data, eu_data, china_data] if r.get("status") == "success")
     if regions_ok == 3:
         rag_score = "GREEN"
@@ -1052,18 +1084,18 @@ def generate_peer_summary(peer_name, filings_data):
         if recent_filing:
             filing_summary = recent_filing.get("summary", "")
             if "ITEM 2.02" in filing_summary.upper():
-                return f"Neutral: Q3 earnings results reported. No material risks identified in last 48h."
+                return f"Neutral: Q3 earnings results reported. No material risks identified in last 30 days."
             elif "ITEM 7.01" in filing_summary.upper():
                 return f"Neutral: Regulation FD disclosure filed. Routine operational update."
             elif "ITEM 1.01" in filing_summary.upper():
                 return f"Neutral: Material definitive agreement entered. Standard business activity."
             else:
-                return f"Neutral: {len(filings)} recent filing(s) processed. No material risks in last 48h."
+                return f"Neutral: {len(filings)} recent filing(s) processed. No material risks in last 30 days."
         else:
-            return f"Neutral: Recent filings reviewed. No material risks identified in last 48h."
+            return f"Neutral: Recent filings reviewed. No material risks identified in last 30 days."
     
     elif status == "success" and len(filings) == 0:
-        return f"Neutral: No material filings in last 48h. Standard operational status."
+        return f"Neutral: No material filings in last 30 days. Standard operational status."
     
     elif status == "skipped":
         reason = filings_data.get("reason", "Not US-listed")
@@ -1079,7 +1111,7 @@ def generate_peer_summary(peer_name, filings_data):
         return f"Neutral: Data fetch error encountered ({error_msg[:50]}). Monitoring via alternative sources."
     
     # Default neutral summary
-    return f"Neutral: Standard monitoring active. No material risks identified in last 48h."
+    return f"Neutral: Standard monitoring active. No material risks identified in last 30 days."
 
 def fetch_peers_overview(peer_group):
     """

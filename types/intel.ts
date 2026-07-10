@@ -247,28 +247,6 @@ export interface IntelSnapshot {
 // Utility Types
 // ============================================================================
 
-export interface DataFreshnessInfo {
-  lastUpdate: Date;
-  hoursSinceUpdate: number;
-  isStale: boolean;
-  version: string;
-  status: OverallStatus;
-}
-
-export function getDataFreshness(intel: IntelSnapshot): DataFreshnessInfo {
-  const lastUpdate = new Date(intel?.last_updated || new Date());
-  const now = new Date();
-  const hoursSinceUpdate = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
-
-  return {
-    lastUpdate,
-    hoursSinceUpdate,
-    isStale: hoursSinceUpdate > 24,
-    version: intel?.version || 'unknown',
-    status: intel?.status || 'degraded'
-  };
-}
-
 // ============================================================================
 // RAG Color Utilities
 // ============================================================================

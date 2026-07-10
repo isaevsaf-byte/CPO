@@ -549,6 +549,39 @@ PEERS_LIST = [
     {"name": "Our Company", "full_name": "Our Company", "type": "Self-Reference"}
 ]
 
+# ============================================================================
+# SUPPLIER NAME ALIASES — shared across CISA, CPSC recall, and sanctions
+# matching so a supplier registered under a trading name or subsidiary
+# still gets flagged (e.g. "Huizhou BYD Electronic" -> "BYD").
+# ============================================================================
+SUPPLIER_ALIASES = {
+    "AMCOR": ["AMCOR", "AMCR"],
+    "Jabil": ["JABIL", "JABIL INC"],
+    "Texas Instruments": ["TEXAS INSTRUMENTS", "TI"],
+    "Infineon": ["INFINEON", "INFINEON TECHNOLOGIES"],
+    "Eastman": ["EASTMAN", "EASTMAN CHEMICAL"],
+    "Stora Enso": ["STORA ENSO", "STORAENSO"],
+    "Smoore": ["SMOORE", "SMOORE INTERNATIONAL"],
+    "EVE Energy": ["EVE ENERGY", "EVE"],
+    "Huizhou BYD Electronic": ["BYD", "BYD ELECTRONIC", "HUIZHOU BYD"],
+    "SWM (Mativ)": ["MATIV", "SWM", "SCHWEITZER-MAUDUIT"],
+    "ITC": ["ITC LIMITED", "ITC LTD"],
+    "Sappi": ["SAPPI", "SAPPI LIMITED"],
+    "GPI": ["GRAPHIC PACKAGING", "GPI", "GRAPHIC PACKAGING INTERNATIONAL"],
+    "Daicel": ["DAICEL", "DAICEL CORPORATION"],
+}
+
+
+def supplier_search_terms(supplier_name: str) -> list:
+    """Uppercase supplier name plus any known aliases, for substring matching
+    against vendor/manufacturer/party name fields in external datasets."""
+    terms = [supplier_name.upper()]
+    for alias in SUPPLIER_ALIASES.get(supplier_name, []):
+        if alias.upper() not in terms:
+            terms.append(alias.upper())
+    return terms
+
+
 def fetch_cisa_kev():
     """Fetch CISA Known Exploited Vulnerabilities Catalog with retry logic"""
     source_name = "cisa_kev"
@@ -593,6 +626,63 @@ def fetch_cisa_kev():
             "recent_vulnerabilities": [],
             "last_fetched": datetime.utcnow().isoformat()
         }
+
+
+def fetch_cpsc_recalls():
+    """
+    Fetch recent CPSC (Consumer Product Safety Commission) recalls via the
+    free, no-auth saferproducts.gov REST API. Looks back 90 days — recalls
+    are relatively rare events and a supplier match is a real signal, so a
+    wider window than the 7-day CISA lookback is reasonable here.
+    Degrades gracefully: any failure returns status "error" with an empty
+    recall list rather than raising, so one flaky feed doesn't take down
+    the rest of the harvest.
+    """
+    source_name = "cpsc_recalls"
+    try:
+        cutoff = (datetime.utcnow() - timedelta(days=90)).strftime('%Y-%m-%d')
+        url = f"https://www.saferproducts.gov/RestWebServices/Recall?RecallDateStart={cutoff}&format=json"
+        response = fetch_with_retry(url)
+        data = response.json()
+        recalls = data if isinstance(data, list) else []
+
+        harvest_stats.record_success(source_name)
+        return {
+            "status": "success",
+            "total_recalls": len(recalls),
+            "recalls": recalls,
+            "last_fetched": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        harvest_stats.record_error(source_name, str(e))
+        return {
+            "status": "error",
+            "error": str(e),
+            "total_recalls": 0,
+            "recalls": [],
+            "last_fetched": datetime.utcnow().isoformat()
+        }
+
+
+def match_supplier_recalls(supplier_name: str, recalls: list) -> list:
+    """Match a supplier's name/aliases against CPSC recall manufacturer names.
+    Returns matching recall summaries (empty list if none)."""
+    search_terms = supplier_search_terms(supplier_name)
+    matches = []
+    for recall in recalls:
+        manufacturers = recall.get("Manufacturers", []) or []
+        names = " | ".join(m.get("Name", "") for m in manufacturers if isinstance(m, dict)).upper()
+        if any(term in names for term in search_terms):
+            products = recall.get("Products", []) or []
+            product_name = products[0].get("Name") if products and isinstance(products[0], dict) else "product"
+            matches.append({
+                "recallNumber": recall.get("RecallNumber", ""),
+                "recallDate": recall.get("RecallDate", ""),
+                "description": (recall.get("Description") or "")[:200],
+                "product": product_name,
+                "url": recall.get("URL", ""),
+            })
+    return matches
 
 # ============================================================================
 # PILLAR 1: MACRO OVERVIEW (US, EU, China)
@@ -1124,15 +1214,16 @@ def fetch_supplier_stock_data(ticker_symbol):
         return None, None, []
 
 
-def process_suppliers(cyber_data):
+def process_suppliers(cyber_data, recalls_data=None):
     """
     Process supplier watchlist and assess SUPPLY CHAIN RISK to BAT.
 
-    Risk is assessed from FOUR layers (each can escalate):
+    Risk is assessed from FIVE layers (each can escalate):
       1. CISA cyber vulnerabilities (KEV catalog)
-      2. Stock price movements (yfinance)
-      3. News scanning (yfinance headlines + Google News RSS)
-      4. Geopolitical risk (conflict zones, sanctions, instability)
+      2. CPSC safety recalls (saferproducts.gov)
+      3. Stock price movements (yfinance)
+      4. News scanning (yfinance headlines + Google News RSS)
+      5. Geopolitical risk (conflict zones, sanctions, instability)
 
     CRITICAL - Immediate threat to supply:
       - Bankruptcy, insolvency, liquidation
@@ -1163,6 +1254,7 @@ def process_suppliers(cyber_data):
     """
     suppliers = []
     cisa_vulns = cyber_data.get("recent_vulnerabilities", [])
+    cpsc_recalls = (recalls_data or {}).get("recalls", [])
 
     # ================================================================
     # PRE-SCAN: Batch Google News geopolitical scan per unique country
@@ -1263,26 +1355,7 @@ def process_suppliers(cyber_data):
 
         # Broader CISA matching: include aliases and known product names
         # so we don't only match on exact parent company name
-        CISA_ALIASES = {
-            "AMCOR": ["AMCOR", "AMCR"],
-            "Jabil": ["JABIL", "JABIL INC"],
-            "Texas Instruments": ["TEXAS INSTRUMENTS", "TI"],
-            "Infineon": ["INFINEON", "INFINEON TECHNOLOGIES"],
-            "Eastman": ["EASTMAN", "EASTMAN CHEMICAL"],
-            "Stora Enso": ["STORA ENSO", "STORAENSO"],
-            "Smoore": ["SMOORE", "SMOORE INTERNATIONAL"],
-            "EVE Energy": ["EVE ENERGY", "EVE"],
-            "Huizhou BYD Electronic": ["BYD", "BYD ELECTRONIC", "HUIZHOU BYD"],
-            "SWM (Mativ)": ["MATIV", "SWM", "SCHWEITZER-MAUDUIT"],
-            "ITC": ["ITC LIMITED", "ITC LTD"],
-            "Sappi": ["SAPPI", "SAPPI LIMITED"],
-            "GPI": ["GRAPHIC PACKAGING", "GPI", "GRAPHIC PACKAGING INTERNATIONAL"],
-            "Daicel": ["DAICEL", "DAICEL CORPORATION"],
-        }
-        search_terms = [supplier_name_upper]
-        for alias in CISA_ALIASES.get(supplier_name, []):
-            if alias.upper() not in search_terms:
-                search_terms.append(alias.upper())
+        search_terms = supplier_search_terms(supplier_name)
 
         # Check if any search term appears in CISA vulnerability fields
         for vuln in cisa_vulns:
@@ -1300,6 +1373,10 @@ def process_suppliers(cyber_data):
                         "dateAdded": vuln.get('dateAdded', '')
                     })
                     break  # Don't double-count same vuln
+
+        # Check for CPSC safety recalls against this supplier
+        matching_recalls = match_supplier_recalls(supplier_name, cpsc_recalls)
+        recall_risk = len(matching_recalls) > 0
 
         # Get deep dive data (includes stock ticker)
         deep_dive = get_supplier_deep_dive_data(supplier_name, category)
@@ -1402,6 +1479,14 @@ def process_suppliers(cyber_data):
             last_signal = f"🔒 Cyber vulnerability: {len(matching_vulns)} CISA KEV match(es) - {', '.join([v.get('cveID', 'N/A') for v in matching_vulns[:2]])}"
             risk_analysis = f"CISA Known Exploited Vulnerability detected. {supplier_name} systems may be at risk. {bat_exposure} exposure to BAT requires security assessment."
 
+        # Priority 1.5: CPSC safety recall (a real, already-happened event —
+        # ranked above news/stock signals but below an active cyber breach)
+        elif recall_risk:
+            supplier_risk_level = "CRITICAL" if len(matching_recalls) >= 2 else "HIGH"
+            first_recall = matching_recalls[0]
+            last_signal = f"⚠️ CPSC recall: {first_recall['product']} ({first_recall['recallNumber']})"
+            risk_analysis = f"CPSC safety recall on file for {supplier_name}: {first_recall['description']}. {bat_exposure} exposure to BAT requires supplier quality review."
+
         # Priority 2: News-based operational risk (yfinance + Google News)
         elif operational_risk and news_items:
             news_severity = news_items[0].get('risk', 'MEDIUM')
@@ -1494,6 +1579,8 @@ def process_suppliers(cyber_data):
             "category": category,
             "cyber_risk": cyber_risk,
             "matching_vulnerabilities": matching_vulns[:5],
+            "recall_risk": recall_risk,
+            "matching_recalls": matching_recalls[:5],
             "news_risk": news_risk,
             "news_items": news_items,
             "operational_risk": operational_risk,
@@ -1521,6 +1608,7 @@ def process_suppliers(cyber_data):
 
     # Calculate RAG score based on actual supply risks
     suppliers_at_cyber_risk = sum(1 for s in suppliers if s["cyber_risk"])
+    suppliers_at_recall_risk = sum(1 for s in suppliers if s["recall_risk"])
     suppliers_at_news_risk = sum(1 for s in suppliers if s["news_risk"])
     suppliers_at_operational_risk = sum(1 for s in suppliers if s.get("operational_risk", False))
     suppliers_at_geopolitical_risk = sum(1 for s in suppliers if s.get("geopolitical_risk") is not None)
@@ -1563,13 +1651,14 @@ def process_suppliers(cyber_data):
 
     logger.info(f"Supplier risk summary: {total_critical} CRITICAL, {total_high} HIGH, {total_medium} MEDIUM, {len(suppliers) - total_critical - total_high - total_medium} LOW")
     logger.info(f"  of which actionable (excl. structural-only geo floor): {actionable_critical} CRITICAL, {actionable_high} HIGH, {actionable_medium} MEDIUM; high-exposure hit: {high_exposure_hit}")
-    logger.info(f"Risk sources: {suppliers_at_cyber_risk} cyber, {suppliers_at_news_risk} news, {suppliers_at_geopolitical_risk} geopolitical ({suppliers_geo_escalated} escalated)")
+    logger.info(f"Risk sources: {suppliers_at_cyber_risk} cyber, {suppliers_at_recall_risk} recall, {suppliers_at_news_risk} news, {suppliers_at_geopolitical_risk} geopolitical ({suppliers_geo_escalated} escalated)")
 
     return {
         "status": "success",
         "rag_score": rag_score,
         "total_suppliers": len(suppliers),
         "suppliers_at_cyber_risk": suppliers_at_cyber_risk,
+        "suppliers_at_recall_risk": suppliers_at_recall_risk,
         "suppliers_at_news_risk": suppliers_at_news_risk,
         "suppliers_at_operational_risk": suppliers_at_operational_risk,
         "suppliers_at_geopolitical_risk": suppliers_at_geopolitical_risk,
@@ -2076,6 +2165,7 @@ def main():
 
     # Fetch supporting data
     cyber_data = fetch_cisa_kev()
+    recalls_data = fetch_cpsc_recalls()
 
     # PILLAR 1: Macro Overview
     macro_data = fetch_macro_overview(previous_eur_usd)
@@ -2084,7 +2174,7 @@ def main():
     peers_data = fetch_peers_overview()
 
     # PILLAR 3: Supplier Watchlist
-    suppliers_data = process_suppliers(cyber_data)
+    suppliers_data = process_suppliers(cyber_data, recalls_data)
 
     # Generate additional intelligence data (LIVE DATA)
     macro_economy = fetch_macro_economy()

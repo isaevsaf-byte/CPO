@@ -1073,9 +1073,12 @@ def generate_peer_summary(peer_name, filings_data):
         else:
             return f"CRITICAL: {red_signals} distress signal(s) detected in recent SEC filings. Review required."
     
-    # AMBER RISK: Warning signals
+    # Routine leadership-change filings (Item 5.02). SEC filings don't
+    # distinguish a planned retirement from a scandal-driven exit, so this
+    # is shown as context, not treated as a risk signal (does not affect
+    # the peers RAG score).
     if amber_signals > 0:
-        return f"WARNING: {amber_signals} warning signal(s) detected. Recent director departures or management changes noted."
+        return f"Informational: {amber_signals} leadership-change filing(s) noted (director/officer departure, Item 5.02). Not counted as a risk signal."
     
     # NEUTRAL: No risks but provide meaningful summary
     if status == "success" and len(filings) > 0:
@@ -1132,9 +1135,13 @@ def fetch_peers_overview(peer_group):
     live_high = sum(1 for p in peer_group if p.get("risk_level") in ("HIGH", "CRITICAL"))
     live_medium = sum(1 for p in peer_group if p.get("risk_level") == "MEDIUM")
 
+    # total_amber_signals (routine SEC leadership-change filings) deliberately
+    # does NOT drive this rollup — see the sec_amber handling in
+    # fetch_peer_group(). Only genuine distress (red signals) or a real
+    # market/news move (live_high, or 2+ peers moving at once) counts.
     if total_red_signals > 0 or live_critical > 0:
         rag_score = "RED"
-    elif total_amber_signals > 0 or live_high >= 1 or live_medium >= 2:
+    elif live_high >= 1 or live_medium >= 2:
         rag_score = "AMBER"
     else:
         rag_score = "GREEN"
@@ -2168,8 +2175,12 @@ def fetch_peer_group():
                     pass  # No risk keywords found in any headline
 
             # STEP 2: Check stock movement (ALWAYS check, can escalate risk)
+            # Peers are competitors, not suppliers — a peer's stock wobbling
+            # a point or two on an ordinary day isn't procurement-relevant,
+            # so only genuinely large moves are treated as a risk signal here
+            # (raised from -1%/-2% after this proved too noisy in practice).
             if daily_change_pct is not None:
-                if daily_change_pct < -5.0:
+                if daily_change_pct < -6.0:
                     # Severe drop - CRITICAL regardless of news
                     if risk_level != "CRITICAL":
                         risk_level = "CRITICAL"
@@ -2177,19 +2188,13 @@ def fetch_peer_group():
                     else:
                         last_signal += f" | Stock down {daily_change_pct:.2f}%"
                     stock_risk_detected = True
-                elif daily_change_pct < -2.0:
+                elif daily_change_pct < -3.0:
                     # Significant drop - at least MEDIUM
                     if risk_level == "LOW":
                         risk_level = "MEDIUM"
                         last_signal = f"📉 Market drop: Stock down {daily_change_pct:.2f}%"
                     elif risk_level == "MEDIUM" and not news_risk_detected:
                         last_signal = f"📉 Market drop: Stock down {daily_change_pct:.2f}%"
-                    stock_risk_detected = True
-                elif daily_change_pct < -1.0:
-                    # Minor drop - flag if no other risk
-                    if risk_level == "LOW":
-                        risk_level = "MEDIUM"
-                        last_signal = f"📉 Volatility: Stock down {daily_change_pct:.2f}%"
                     stock_risk_detected = True
 
             # STEP 3: Default signal if no risk detected
@@ -2225,9 +2230,14 @@ def fetch_peer_group():
             if sec_red > 0 and RISK_PRIORITY.get(risk_level, 0) < RISK_PRIORITY.get("HIGH", 2):
                 risk_level = "HIGH"
                 last_signal = f"📄 SEC filing: {sec_red} distress signal(s) (Item 1.03/4.02) | {last_signal}"
-            elif sec_amber > 0 and RISK_PRIORITY.get(risk_level, 0) < RISK_PRIORITY.get("MEDIUM", 1):
-                risk_level = "MEDIUM"
-                last_signal = f"📄 SEC filing: {sec_amber} management change signal(s) | {last_signal}"
+            elif sec_amber > 0:
+                # Item 5.02 covers ANY officer/director departure — a planned
+                # retirement files the same item code as a scandal-driven
+                # exit, and the filing itself doesn't say which. Since we
+                # can't tell those apart, this is shown as context only and
+                # no longer escalates risk_level or the peers RAG score
+                # (previously any single filing forced MEDIUM/amber).
+                last_signal = f"{last_signal} (note: {sec_amber} routine leadership-change filing(s) also on record)"
 
             peer_data.append({
                 "name": peer_config["name"],

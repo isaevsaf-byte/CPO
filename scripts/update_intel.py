@@ -565,22 +565,48 @@ SUPPLIER_ALIASES = {
 }
 
 
+# Bare names that collide with a much more prominent, unrelated company of
+# the exact same name — e.g. "Eastman" alone is at least as likely to mean
+# Eastman Kodak (which has its own well-documented ransomware history) as
+# it is to mean our actual supplier, Eastman Chemical. "Fuji" has no safer
+# alternative on file (no fuller legal name is recorded for this supplier),
+# so it's kept as a last resort below, but it's listed here so this
+# ambiguity is documented rather than silently assumed to be safe.
+AMBIGUOUS_BARE_NAMES = {"EASTMAN", "FUJI"}
+
+
 def supplier_search_terms(supplier_name: str, min_len: int = 4) -> list:
     """
     Uppercase supplier name plus any known aliases, for whole-word matching
     against vendor/manufacturer/party name fields in external datasets.
-    Terms under min_len characters are dropped: short aliases like "TI"
-    (Texas Instruments) or "EVE" (EVE Energy) are common English letter
-    sequences that turn up inside completely unrelated words (e.g. "TI"
-    inside "authoriza-TI-on" falsely flagged a Langflow CVE as a Texas
-    Instruments vulnerability; "FUJI" inside "FUJIAN" — a Chinese province
-    name — falsely flagged an unrelated furniture recall against Fuji).
+
+    Two safety filters, applied with fallbacks so a supplier never ends up
+    with zero coverage just because its only name on file is short/risky:
+      1. Terms under min_len characters are dropped when a longer, safer
+         term is available. Short aliases like "TI" (Texas Instruments) or
+         "EVE" (EVE Energy) are common English letter sequences that turn
+         up inside completely unrelated words (e.g. "TI" inside
+         "authoriza-TI-on" falsely flagged a Langflow CVE as a Texas
+         Instruments vulnerability). If dropping short terms would leave
+         nothing (e.g. "CNT" has no longer alias on file), they're kept
+         rather than leaving that supplier with no screening at all —
+         whole-word matching (see supplier_terms_hit) still applies.
+      2. AMBIGUOUS_BARE_NAMES are dropped whenever a safer alternative
+         term exists for that supplier, same fallback logic.
     """
-    terms = [supplier_name.upper()]
+    all_terms = [supplier_name.upper()]
     for alias in SUPPLIER_ALIASES.get(supplier_name, []):
-        if alias.upper() not in terms:
-            terms.append(alias.upper())
-    return [t for t in terms if len(t) >= min_len]
+        au = alias.upper()
+        if au not in all_terms:
+            all_terms.append(au)
+
+    safe_terms = [t for t in all_terms if t not in AMBIGUOUS_BARE_NAMES]
+    filtered = [t for t in safe_terms if len(t) >= min_len]
+    if filtered:
+        return filtered
+    if safe_terms:
+        return safe_terms
+    return all_terms
 
 
 def supplier_terms_hit(text_upper: str, search_terms: list) -> bool:

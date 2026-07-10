@@ -131,7 +131,7 @@ export default function MorningCoffeeDashboard() {
     <div className="min-h-screen bg-slate-50">
       {/* BAT Header */}
       <header className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-[100rem] mx-auto px-6 py-6">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold">BAT Global Supply Watchtower</h1>
@@ -182,7 +182,7 @@ export default function MorningCoffeeDashboard() {
       {/* New Version Available Banner */}
       {hasNewVersion && (
         <div className="bg-blue-600 text-white px-4 py-3">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="max-w-[100rem] mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-lg">&#128260;</span>
               <span className="font-medium">New data available! Click refresh to see the latest intelligence.</span>
@@ -206,7 +206,7 @@ export default function MorningCoffeeDashboard() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-[100rem] mx-auto px-6 py-8">
         {/* Overall Status Rollup — single "should I worry today" answer,
             derived from the worst of the three pillar RAG scores below */}
         {typedIntel?.overall_rag && (
@@ -649,7 +649,7 @@ export default function MorningCoffeeDashboard() {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">BAT Exposure</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Segment</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Risk Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[320px]">Risk Status</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -756,14 +756,17 @@ export default function MorningCoffeeDashboard() {
                           </div>
                           {/* Show risk reason for non-LOW risks */}
                           {supplier.risk_level && supplier.risk_level !== 'LOW' && supplier.last_signal && (
-                            <div className="text-xs text-gray-600 max-w-xs truncate" title={supplier.last_signal}>
+                            <div className="text-xs text-gray-600 max-w-md" title={supplier.last_signal}>
                               {supplier.last_signal}
                             </div>
                           )}
-                          {/* Show geopolitical context when risk is geo-escalated */}
-                          {supplier.geopolitical_risk?.escalated && supplier.geopolitical_risk?.reason && (
-                            <div className="text-xs text-orange-700 max-w-xs truncate" title={supplier.geopolitical_risk.reason}>
-                              🌍 {supplier.geopolitical_risk.reason}
+                          {/* Show geopolitical context as extra info only when it's NOT
+                              already the reason shown above — when escalated=true, the
+                              line above already says the same thing ("🌍 Geopolitical: X"),
+                              so repeating it here was pure duplication. */}
+                          {supplier.geopolitical_risk?.reason && !supplier.geopolitical_risk?.escalated && (
+                            <div className="text-xs text-orange-700 max-w-md" title={supplier.geopolitical_risk.reason}>
+                              🌍 Also in a flagged region: {supplier.geopolitical_risk.reason}
                             </div>
                           )}
                         </div>
@@ -779,7 +782,7 @@ export default function MorningCoffeeDashboard() {
       </div>
 
       <footer className="mt-12 bg-gray-900 text-gray-300 py-6">
-        <div className="max-w-7xl mx-auto px-6 text-center text-sm">
+        <div className="max-w-[100rem] mx-auto px-6 text-center text-sm">
           <p>BAT Global Supply Watchtower • Built with the "Flat Data" pattern</p>
           <p className="mt-2">Zero infrastructure cost • Unbreakable stability • Official data sources only</p>
         </div>

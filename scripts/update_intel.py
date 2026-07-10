@@ -1298,9 +1298,13 @@ def fetch_supplier_stock_data(ticker_symbol):
         if len(hist) >= 2:
             current = hist['Close'].iloc[-1]
             previous = hist['Close'].iloc[-2]
-            if previous and not math.isnan(previous):
+            # Guard against NaN in either side — a gap in the price history
+            # (common on thinly-traded listings) can leave `current` NaN
+            # even when `previous` is fine, which previously slipped through
+            # as a literal "nan%" baked into last_signal text.
+            if previous and not math.isnan(previous) and not math.isnan(current):
                 daily_change_pct = ((current - previous) / previous) * 100
-            current_price = current
+            current_price = current if not math.isnan(current) else None
         elif len(hist) == 1:
             current_price = hist['Close'].iloc[-1]
 
@@ -2110,10 +2114,15 @@ def fetch_peer_group():
             if len(hist) >= 2:
                 current = hist['Close'].iloc[-1]
                 previous = hist['Close'].iloc[-2]
-                if previous and not math.isnan(previous):
+                # Guard against NaN in either side — a gap in the price
+                # history (common on thinly-traded listings, e.g. Japan
+                # Tobacco's Tokyo listing) can leave `current` NaN even when
+                # `previous` is fine, which previously slipped through as a
+                # literal "nan%" baked into stock_move/last_signal text.
+                if previous and not math.isnan(previous) and not math.isnan(current):
                     daily_change_pct = ((current - previous) / previous) * 100
                     stock_move = f"{daily_change_pct:+.2f}%"
-                current_price = current
+                current_price = current if not math.isnan(current) else None
             elif len(hist) == 1:
                 current_price = hist['Close'].iloc[-1]
                 stock_move = "N/A (single day)"

@@ -1216,7 +1216,12 @@ def process_suppliers(cyber_data):
             "level": final_level,
             "reason": final_reason,
             "headlines": [h["title"] for h in news_headlines] if news_headlines else [],
-            "static_risk": static_risk is not None
+            "static_risk": static_risk is not None,
+            # True only when live news actually pushed the level above the
+            # standing structural floor this cycle — i.e. something changed
+            # today, as opposed to an always-on baseline like "China: trade
+            # tensions" or "Finland: NATO border state" that never varies.
+            "escalated_by_live_news": final_level != static_level,
         }
 
         if final_level != "LOW":
@@ -1450,7 +1455,7 @@ def process_suppliers(cyber_data):
         # Combines static conflict map + live Google News country scan.
         # ================================================================
         location = deep_dive.get("location", "Unknown")
-        geo_data = country_news_cache.get(location, {"level": "LOW", "reason": "", "headlines": [], "static_risk": False})
+        geo_data = country_news_cache.get(location, {"level": "LOW", "reason": "", "headlines": [], "static_risk": False, "escalated_by_live_news": False})
         geo_risk_level = geo_data["level"]
         geo_reason = geo_data["reason"]
         geo_headlines = geo_data["headlines"]
@@ -1458,13 +1463,29 @@ def process_suppliers(cyber_data):
 
         # Elevate risk if geopolitical risk is HIGHER than current assessment
         geo_escalated = False
+        # Did the risk_level end up here purely from the standing structural
+        # baseline (no cyber/news/stock signal, no live-news escalation)?
+        # Used downstream to keep chronic ambient risk from permanently
+        # pinning the pillar RAG to AMBER/RED — it's still shown per-supplier.
+        geo_baseline_only = False
         if RISK_PRIORITY.get(geo_risk_level, 0) > RISK_PRIORITY.get(supplier_risk_level, 0):
             pre_geo_level = supplier_risk_level
             supplier_risk_level = geo_risk_level
             geo_escalated = True
+            geo_baseline_only = not geo_data.get("escalated_by_live_news", False)
             last_signal = f"🌍 Geopolitical: {geo_reason}"
             risk_analysis = f"Geopolitical risk in {location}: {geo_reason}. {supplier_name} ({category}) located in affected region. BAT exposure: {bat_exposure}. Previous risk: {pre_geo_level}."
             logger.info(f"  ↑ {supplier_name}: {pre_geo_level} → {supplier_risk_level} (geopolitical: {location})")
+
+        # A supplier's risk only moves the pillar-level RAG dial when
+        # something actually happened this cycle (cyber CVE, adverse news,
+        # a stock move, or a live-news-corroborated geopolitical escalation)
+        # — not merely because it sits in a country with a standing
+        # structural risk floor that hasn't changed (e.g. China trade
+        # tensions, Finland's NATO border). Those are still shown on the
+        # supplier's own card, just excluded from the rollup so the pillar
+        # RAG isn't permanently pinned to AMBER/RED by geography alone.
+        counts_toward_rag = not (geo_escalated and geo_baseline_only)
 
         # Build supplier data
         supplier_data = {
@@ -1481,6 +1502,7 @@ def process_suppliers(cyber_data):
             "risk_analysis": risk_analysis,
             "risk_level": supplier_risk_level,
             "last_signal": last_signal,
+            "counts_toward_rag": counts_toward_rag,
             # Geopolitical risk fields
             "geopolitical_risk": {
                 "detected": geopolitical_risk,
@@ -1488,6 +1510,7 @@ def process_suppliers(cyber_data):
                 "reason": geo_reason if geopolitical_risk else None,
                 "headlines": geo_headlines[:3] if geopolitical_risk else [],
                 "escalated": geo_escalated,
+                "baseline_only": geo_baseline_only,
             } if geopolitical_risk else None,
             # NEW: Google News headlines for ticker-less suppliers
             "google_news_headlines": google_news_headlines[:3],
@@ -1507,15 +1530,39 @@ def process_suppliers(cyber_data):
     total_high = sum(1 for s in suppliers if s["risk_level"] == "HIGH")
     total_medium = sum(1 for s in suppliers if s["risk_level"] == "MEDIUM")
 
-    # RAG score based on actual supply chain risk severity
-    if total_critical >= 1 or (total_high + total_medium) >= 3:
+    # ================================================================
+    # RAG ROLLUP — actionable signals only, weighted by BAT exposure
+    #
+    # total_critical/high/medium above count every supplier in that risk
+    # bucket, including ones sitting there purely on a standing structural
+    # floor (e.g. every China-based supplier is permanently "MEDIUM" for
+    # trade-war exposure). Left unfiltered, that ambient baseline alone
+    # is enough to permanently pin this pillar to AMBER/RED regardless of
+    # whether anything actually happened — which trains the reader to
+    # ignore the color. The rollup below only counts suppliers whose
+    # current risk_level reflects a real signal (cyber, news, stock move,
+    # or a live-news-corroborated geopolitical escalation), and treats a
+    # hit on a Critical/High-BAT-exposure supplier as more consequential
+    # than the same hit on a Low-exposure one.
+    # ================================================================
+    actionable = [s for s in suppliers if s.get("counts_toward_rag", True)]
+    actionable_critical = sum(1 for s in actionable if s["risk_level"] == "CRITICAL")
+    actionable_high = sum(1 for s in actionable if s["risk_level"] == "HIGH")
+    actionable_medium = sum(1 for s in actionable if s["risk_level"] == "MEDIUM")
+    high_exposure_hit = any(
+        s["risk_level"] in ("CRITICAL", "HIGH") and s.get("bat_exposure") in ("Critical", "High")
+        for s in actionable
+    )
+
+    if actionable_critical >= 1 or high_exposure_hit or (actionable_high + actionable_medium) >= 3:
         rag_score = "RED"
-    elif total_high >= 1 or total_medium >= 1:
+    elif actionable_high >= 1 or actionable_medium >= 1:
         rag_score = "AMBER"
     else:
         rag_score = "GREEN"
 
     logger.info(f"Supplier risk summary: {total_critical} CRITICAL, {total_high} HIGH, {total_medium} MEDIUM, {len(suppliers) - total_critical - total_high - total_medium} LOW")
+    logger.info(f"  of which actionable (excl. structural-only geo floor): {actionable_critical} CRITICAL, {actionable_high} HIGH, {actionable_medium} MEDIUM; high-exposure hit: {high_exposure_hit}")
     logger.info(f"Risk sources: {suppliers_at_cyber_risk} cyber, {suppliers_at_news_risk} news, {suppliers_at_geopolitical_risk} geopolitical ({suppliers_geo_escalated} escalated)")
 
     return {
@@ -1529,6 +1576,13 @@ def process_suppliers(cyber_data):
         "total_critical": total_critical,
         "total_high": total_high,
         "total_medium": total_medium,
+        # Actionable = excludes suppliers whose risk_level reflects only a
+        # standing structural/geopolitical floor with no real signal this
+        # cycle. This is what actually drives rag_score above; total_* is
+        # kept as the plain per-supplier bucket count for the UI filters.
+        "actionable_critical": actionable_critical,
+        "actionable_high": actionable_high,
+        "actionable_medium": actionable_medium,
         "suppliers": suppliers,
         "last_fetched": datetime.utcnow().isoformat()
     }

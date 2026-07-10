@@ -130,12 +130,24 @@ export interface MatchingVulnerability {
   dateAdded: string;
 }
 
+export interface RecallMatch {
+  recallNumber: string;
+  recallDate: string;
+  description: string;
+  product: string;
+  url: string;
+}
+
 export interface Supplier {
   name: string;
   slug: string;
   category: string;
+  sanctions_hit?: boolean;
+  sanctions_matches?: string[];
   cyber_risk: boolean;
   matching_vulnerabilities: MatchingVulnerability[];
+  recall_risk?: boolean;
+  matching_recalls?: RecallMatch[];
   news_risk: boolean;
   news_items: any[];
   stock_risk?: boolean;
@@ -145,6 +157,7 @@ export interface Supplier {
   risk_analysis: string;
   risk_level: RiskLevel;
   last_signal: string;
+  counts_toward_rag?: boolean;
   bat_exposure: Exposure;
   segment: string;
   location: string;
@@ -157,6 +170,7 @@ export interface Supplier {
     reason: string | null;
     headlines: string[];
     escalated: boolean;
+    baseline_only?: boolean;
   } | null;
   // Google News headlines for ticker-less suppliers
   google_news_headlines: string[];
@@ -166,13 +180,18 @@ export interface SuppliersData {
   status: Status;
   rag_score: RAGScore;
   total_suppliers: number;
+  suppliers_at_sanctions_risk?: number;
   suppliers_at_cyber_risk: number;
+  suppliers_at_recall_risk?: number;
   suppliers_at_news_risk: number;
   suppliers_at_market_risk?: number;
   suppliers_at_geopolitical_risk: number;
   total_critical: number;
   total_high: number;
   total_medium: number;
+  actionable_critical?: number;
+  actionable_high?: number;
+  actionable_medium?: number;
   suppliers: Supplier[];
   last_fetched: string;
 }
@@ -213,6 +232,16 @@ export interface HealthStatus {
   circuit_breaker_state: 'closed' | 'open' | 'half-open';
 }
 
+export interface OverallRag {
+  score: RAGScore;
+  driven_by: string[];
+  pillar_scores: {
+    macro: RAGScore;
+    peers: RAGScore;
+    suppliers: RAGScore;
+  };
+}
+
 // ============================================================================
 // Main Intel Snapshot Type
 // ============================================================================
@@ -221,6 +250,7 @@ export interface IntelSnapshot {
   last_updated: string;
   version: string;
   status: OverallStatus;
+  overall_rag?: OverallRag;
   macro: MacroData;
   peers: PeersData;
   suppliers: SuppliersData;

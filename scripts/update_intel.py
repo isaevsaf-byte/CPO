@@ -2324,11 +2324,33 @@ def main():
     else:
         overall_status = "degraded"
 
+    # ================================================================
+    # OVERALL RAG — single "should I worry today" rollup across all three
+    # pillars, computed AFTER the cross-pillar escalation merges above so
+    # it reflects each pillar's final score. This is distinct from
+    # `status`/`overall_status` above, which tracks fetch health (did the
+    # data sources respond), not risk severity. Without this, a CPO has to
+    # mentally combine three separate cards on every visit.
+    # ================================================================
+    RAG_PRIORITY_ORDER = {"GREEN": 0, "AMBER": 1, "RED": 2}
+    pillar_rag_scores = {
+        "macro": macro_data.get("rag_score", "GREEN"),
+        "peers": peers_data.get("rag_score", "GREEN"),
+        "suppliers": suppliers_data.get("rag_score", "GREEN"),
+    }
+    worst_rag = max(pillar_rag_scores.values(), key=lambda v: RAG_PRIORITY_ORDER.get(v, 0))
+    overall_rag = {
+        "score": worst_rag,
+        "driven_by": [pillar for pillar, score in pillar_rag_scores.items() if score == worst_rag],
+        "pillar_scores": pillar_rag_scores,
+    }
+
     # Build dashboard state with three core pillars + additional intelligence
     dashboard_state = {
         "last_updated": datetime.utcnow().isoformat(),
         "version": "",  # Will be set after hash calculation
         "status": overall_status,
+        "overall_rag": overall_rag,
         "macro": macro_data,
         "peers": peers_data,
         "suppliers": suppliers_data,

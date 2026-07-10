@@ -51,7 +51,7 @@ function HealthIndicator({ status }: { status: string }) {
 export default function MorningCoffeeDashboard() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [riskFilter, setRiskFilter] = useState<'all' | 'cyber' | 'news' | 'operational' | 'critical' | 'high' | 'medium' | 'geopolitical'>('all');
+  const [riskFilter, setRiskFilter] = useState<'all' | 'cyber' | 'news' | 'operational' | 'critical' | 'high' | 'medium' | 'geopolitical' | 'sanctions' | 'recall'>('all');
 
   // Use the data freshness hook
   const {
@@ -166,6 +166,43 @@ export default function MorningCoffeeDashboard() {
       )}
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Overall Status Rollup — single "should I worry today" answer,
+            derived from the worst of the three pillar RAG scores below */}
+        {typedIntel?.overall_rag && (
+          <div className={`mb-8 rounded-xl border-2 p-6 flex flex-wrap items-center justify-between gap-4 ${
+            typedIntel.overall_rag.score === 'RED' ? 'bg-red-50 border-red-300' :
+            typedIntel.overall_rag.score === 'AMBER' ? 'bg-amber-50 border-amber-300' :
+            'bg-green-50 border-green-300'
+          }`}>
+            <div className="flex items-center gap-4">
+              <span className="text-4xl" aria-hidden="true">
+                {typedIntel.overall_rag.score === 'RED' ? '🔴' : typedIntel.overall_rag.score === 'AMBER' ? '🟡' : '🟢'}
+              </span>
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">Overall Status</div>
+                <div className={`text-2xl font-bold ${
+                  typedIntel.overall_rag.score === 'RED' ? 'text-red-800' :
+                  typedIntel.overall_rag.score === 'AMBER' ? 'text-amber-800' :
+                  'text-green-800'
+                }`}>
+                  {typedIntel.overall_rag.score === 'RED' ? 'Action needed today' :
+                   typedIntel.overall_rag.score === 'AMBER' ? 'Monitor closely' :
+                   'All clear'}
+                </div>
+              </div>
+            </div>
+            {typedIntel.overall_rag.score !== 'GREEN' && typedIntel.overall_rag.driven_by?.length > 0 && (
+              <div className="text-sm text-gray-700">
+                Driven by:{' '}
+                <span className="font-semibold capitalize">
+                  {typedIntel.overall_rag.driven_by.join(', ')}
+                </span>
+                <span className="text-gray-500"> — see below for detail</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Three Core Pillars Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* PILLAR 1: MACRO OVERVIEW */}
@@ -247,6 +284,15 @@ export default function MorningCoffeeDashboard() {
               <div className="space-y-2 text-sm">
                 <div className="text-2xl font-bold text-gray-900">{suppliers?.total_suppliers || 0}</div>
                 <div className="text-gray-600">Suppliers monitored</div>
+                {/* Sanctions match is the single most severe signal — shown first */}
+                {(suppliers as any)?.suppliers_at_sanctions_risk > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'sanctions' ? 'all' : 'sanctions')}
+                    className={`block text-white bg-red-700 font-bold text-xs px-2 py-1 rounded hover:bg-red-800 cursor-pointer ${riskFilter === 'sanctions' ? 'ring-2 ring-red-900' : ''}`}
+                  >
+                    🚫 {(suppliers as any).suppliers_at_sanctions_risk} Sanctions Match — verify now
+                  </button>
+                )}
                 {/* Show risk counts by severity */}
                 {(suppliers as any)?.total_critical > 0 && (
                   <button
@@ -279,6 +325,14 @@ export default function MorningCoffeeDashboard() {
                     className={`block text-gray-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'cyber' ? 'bg-gray-100 px-2 py-0.5 rounded' : ''}`}
                   >
                     🔒 {suppliers.suppliers_at_cyber_risk} Cyber
+                  </button>
+                )}
+                {(suppliers as any)?.suppliers_at_recall_risk > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'recall' ? 'all' : 'recall')}
+                    className={`block text-amber-700 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'recall' ? 'bg-amber-100 px-2 py-0.5 rounded' : ''}`}
+                  >
+                    ⚠️ {(suppliers as any).suppliers_at_recall_risk} CPSC Recall
                   </button>
                 )}
                 {(suppliers as any)?.suppliers_at_geopolitical_risk > 0 && (
@@ -465,18 +519,22 @@ export default function MorningCoffeeDashboard() {
               {riskFilter !== 'all' && (
                 <div className="flex items-center gap-2">
                   <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${
+                    riskFilter === 'sanctions' ? 'bg-red-700 text-white' :
                     riskFilter === 'critical' ? 'bg-red-200 text-red-900' :
                     riskFilter === 'high' ? 'bg-red-100 text-red-800' :
                     riskFilter === 'medium' ? 'bg-amber-100 text-amber-800' :
                     riskFilter === 'cyber' ? 'bg-gray-100 text-gray-800' :
+                    riskFilter === 'recall' ? 'bg-amber-100 text-amber-800' :
                     riskFilter === 'news' ? 'bg-amber-100 text-amber-800' :
                     riskFilter === 'geopolitical' ? 'bg-orange-100 text-orange-800' :
                     'bg-gray-100 text-gray-800'
                   }`}>
+                    {riskFilter === 'sanctions' && '🚫 Sanctions Match'}
                     {riskFilter === 'critical' && '🚨 Critical Risk'}
                     {riskFilter === 'high' && '⚠️ High Risk'}
                     {riskFilter === 'medium' && '📋 Medium Risk'}
                     {riskFilter === 'cyber' && '🔒 Cyber Risk'}
+                    {riskFilter === 'recall' && '⚠️ CPSC Recall'}
                     {riskFilter === 'news' && '📰 News Risk'}
                     {riskFilter === 'operational' && '⚠️ Operational Risk'}
                     {riskFilter === 'geopolitical' && '🌍 Geopolitical Risk'}
@@ -511,7 +569,9 @@ export default function MorningCoffeeDashboard() {
                     if (riskFilter === 'critical') return supplier.risk_level === 'CRITICAL';
                     if (riskFilter === 'high') return supplier.risk_level === 'HIGH';
                     if (riskFilter === 'medium') return supplier.risk_level === 'MEDIUM';
+                    if (riskFilter === 'sanctions') return (supplier as any).sanctions_hit;
                     if (riskFilter === 'cyber') return supplier.cyber_risk;
+                    if (riskFilter === 'recall') return (supplier as any).recall_risk;
                     if (riskFilter === 'news') return supplier.news_risk;
                     if (riskFilter === 'operational') return (supplier as any).operational_risk;
                     if (riskFilter === 'geopolitical') return supplier.geopolitical_risk != null;
@@ -578,9 +638,19 @@ export default function MorningCoffeeDashboard() {
                               </span>
                             )}
                             {/* Show risk type badges */}
+                            {supplier.sanctions_hit && (
+                              <span className="px-1.5 py-0.5 bg-red-800 text-white rounded text-xs" title={`OFAC SDN match — verify: ${supplier.sanctions_matches?.[0] || ''}`}>
+                                🚫
+                              </span>
+                            )}
                             {supplier.cyber_risk && (
                               <span className="px-1.5 py-0.5 bg-red-600 text-white rounded text-xs" title="CISA cyber vulnerability">
                                 🔒
+                              </span>
+                            )}
+                            {supplier.recall_risk && (
+                              <span className="px-1.5 py-0.5 bg-amber-700 text-white rounded text-xs" title={`CPSC recall: ${supplier.matching_recalls?.[0]?.product || ''}`}>
+                                ⚠️
                               </span>
                             )}
                             {supplier.news_risk && (
@@ -708,7 +778,7 @@ export default function MorningCoffeeDashboard() {
                     <div className="text-sm">
                       <p className="font-semibold text-red-800">Immediate threat to supply</p>
                       <p className="text-red-700 mt-1">
-                        <strong>Triggers:</strong> Bankruptcy, factory fire/closure, government sanctions, ransomware attack, labor strike, active war zone
+                        <strong>Triggers:</strong> OFAC sanctions list match, 2+ CPSC recalls, bankruptcy, factory fire/closure, ransomware attack, labor strike, active war zone
                       </p>
                       <p className="text-red-600 mt-1 text-xs italic">
                         Example: &quot;Supplier X files for Chapter 11 bankruptcy&quot;
@@ -766,9 +836,11 @@ export default function MorningCoffeeDashboard() {
                   <li><strong>Macro:</strong> ECB for EUR/USD rates, Yahoo Finance for market indices</li>
                   <li><strong>Peers:</strong> Real-time stock prices, news headlines, SEC 8-K filings</li>
                   <li><strong>Cyber:</strong> CISA Known Exploited Vulnerabilities (KEV) catalog</li>
+                  <li><strong>Sanctions:</strong> OFAC Specially Designated Nationals (SDN) list — whole-word name match, flagged for manual compliance verification</li>
+                  <li><strong>Safety Recalls:</strong> CPSC saferproducts.gov recall database (last 90 days)</li>
                   <li><strong>News:</strong> Yahoo Finance headlines + Google News RSS for broader coverage</li>
                   <li><strong>Geopolitical:</strong> Conflict zone mapping + live Google News scanning per country</li>
-                  <li><strong>Suppliers:</strong> 24 strategic partners with stock, news, cyber, and geopolitical monitoring</li>
+                  <li><strong>Suppliers:</strong> 24 strategic partners with stock, news, cyber, sanctions, recall, and geopolitical monitoring</li>
                 </ul>
               </div>
 

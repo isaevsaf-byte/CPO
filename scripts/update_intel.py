@@ -7,6 +7,7 @@ Runs via GitHub Actions every 6 hours.
 
 import requests
 import json
+import math
 import re
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
@@ -991,7 +992,8 @@ def fetch_supplier_stock_data(ticker_symbol):
         if len(hist) >= 2:
             current = hist['Close'].iloc[-1]
             previous = hist['Close'].iloc[-2]
-            daily_change_pct = ((current - previous) / previous) * 100
+            if previous and not math.isnan(previous):
+                daily_change_pct = ((current - previous) / previous) * 100
             current_price = current
         elif len(hist) == 1:
             current_price = hist['Close'].iloc[-1]
@@ -1674,8 +1676,9 @@ def fetch_peer_group():
             if len(hist) >= 2:
                 current = hist['Close'].iloc[-1]
                 previous = hist['Close'].iloc[-2]
-                daily_change_pct = ((current - previous) / previous) * 100
-                stock_move = f"{daily_change_pct:+.2f}%"
+                if previous and not math.isnan(previous):
+                    daily_change_pct = ((current - previous) / previous) * 100
+                    stock_move = f"{daily_change_pct:+.2f}%"
                 current_price = current
             elif len(hist) == 1:
                 current_price = hist['Close'].iloc[-1]
@@ -1846,6 +1849,21 @@ def validate_dashboard_state(data: dict) -> tuple:
     return True, None
 
 
+def _sanitize_non_finite_floats(obj):
+    """
+    Recursively replace NaN/Infinity floats with None.
+    Python's json.dump writes these as bare NaN/Infinity tokens by default,
+    which are not valid JSON and break strict parsers (e.g. webpack's JSON loader).
+    """
+    if isinstance(obj, dict):
+        return {k: _sanitize_non_finite_floats(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize_non_finite_floats(v) for v in obj]
+    if isinstance(obj, float) and not math.isfinite(obj):
+        return None
+    return obj
+
+
 def save_with_backup(data: dict, output_file: Path) -> bool:
     """
     Save new data with backup of previous version.
@@ -1859,8 +1877,9 @@ def save_with_backup(data: dict, output_file: Path) -> bool:
             logger.info(f"Created backup: {backup_file}")
 
         # Write new data
+        data = _sanitize_non_finite_floats(data)
         with open(output_file, 'w') as f:
-            json.dump(data, f, indent=2)
+            json.dump(data, f, indent=2, allow_nan=False)
 
         logger.info(f"Saved data to {output_file}")
         return True

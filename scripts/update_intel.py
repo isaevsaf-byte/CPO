@@ -2345,12 +2345,32 @@ def main():
         "pillar_scores": pillar_rag_scores,
     }
 
+    # ================================================================
+    # RAG HISTORY — every harvest overwrote the last with no memory of
+    # what came before, so there was no way to tell whether today's RED
+    # was new or has been sitting there for a week. The "database" here
+    # is the flat JSON file itself, so the trend is carried forward inside
+    # it: each run appends its scores to whatever history the previous
+    # snapshot already had, trimmed to a rolling window.
+    # ================================================================
+    MAX_RAG_HISTORY = 80  # ~20 days at the 6-hour harvest cadence
+    rag_history = list((previous_state or {}).get("rag_history", []))
+    rag_history.append({
+        "timestamp": datetime.utcnow().isoformat(),
+        "macro": pillar_rag_scores["macro"],
+        "peers": pillar_rag_scores["peers"],
+        "suppliers": pillar_rag_scores["suppliers"],
+        "overall": worst_rag,
+    })
+    rag_history = rag_history[-MAX_RAG_HISTORY:]
+
     # Build dashboard state with three core pillars + additional intelligence
     dashboard_state = {
         "last_updated": datetime.utcnow().isoformat(),
         "version": "",  # Will be set after hash calculation
         "status": overall_status,
         "overall_rag": overall_rag,
+        "rag_history": rag_history,
         "macro": macro_data,
         "peers": peers_data,
         "suppliers": suppliers_data,

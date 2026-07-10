@@ -48,6 +48,24 @@ function HealthIndicator({ status }: { status: string }) {
   );
 }
 
+// How many consecutive most-recent history entries share the current
+// overall score — tells a CPO whether today's status is a new blip or
+// something that's been sitting there for days.
+function currentStreakLength(history: { overall: string }[] | undefined): number {
+  if (!history || history.length === 0) return 0;
+  const current = history[history.length - 1].overall;
+  let streak = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].overall !== current) break;
+    streak++;
+  }
+  return streak;
+}
+
+function ragDotColor(score: string): string {
+  return score === 'RED' ? 'bg-red-500' : score === 'AMBER' ? 'bg-amber-400' : 'bg-green-500';
+}
+
 export default function MorningCoffeeDashboard() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -198,6 +216,27 @@ export default function MorningCoffeeDashboard() {
                   {typedIntel.overall_rag.driven_by.join(', ')}
                 </span>
                 <span className="text-gray-500"> — see below for detail</span>
+              </div>
+            )}
+            {typedIntel.rag_history && typedIntel.rag_history.length > 1 && (
+              <div className="w-full flex items-center gap-3 pt-3 mt-1 border-t border-black/10">
+                <span className="text-xs text-gray-500 whitespace-nowrap">
+                  Last {typedIntel.rag_history.length} checks:
+                </span>
+                <div className="flex items-center gap-1" title="Each dot is one harvest cycle (~6h apart), oldest to newest">
+                  {typedIntel.rag_history.slice(-28).map((entry, idx) => (
+                    <span
+                      key={idx}
+                      className={`inline-block w-2.5 h-2.5 rounded-full ${ragDotColor(entry.overall)}`}
+                      title={`${formatTimestamp(entry.timestamp)}: ${entry.overall}`}
+                    />
+                  ))}
+                </div>
+                {currentStreakLength(typedIntel.rag_history) > 1 && (
+                  <span className="text-xs text-gray-600 whitespace-nowrap">
+                    ({typedIntel.overall_rag.score} for {currentStreakLength(typedIntel.rag_history)} consecutive checks)
+                  </span>
+                )}
               </div>
             )}
           </div>

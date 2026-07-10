@@ -242,6 +242,14 @@ export interface OverallRag {
   };
 }
 
+export interface RagHistoryEntry {
+  timestamp: string;
+  macro: RAGScore;
+  peers: RAGScore;
+  suppliers: RAGScore;
+  overall: RAGScore;
+}
+
 // ============================================================================
 // Main Intel Snapshot Type
 // ============================================================================
@@ -251,6 +259,7 @@ export interface IntelSnapshot {
   version: string;
   status: OverallStatus;
   overall_rag?: OverallRag;
+  rag_history?: RagHistoryEntry[];
   macro: MacroData;
   peers: PeersData;
   suppliers: SuppliersData;

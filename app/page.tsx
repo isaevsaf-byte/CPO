@@ -780,6 +780,30 @@ export default function MorningCoffeeDashboard() {
                 Risk assessment is based on <strong>threats to supply continuity</strong>, not stock price movements.
               </p>
 
+              {/* Overall Status & Trend — plain-language explainer for the new banner/dots */}
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">The Traffic Light at the Top</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  The banner at the very top of the page gives you one answer to &quot;do I need to worry today?&quot;
+                  🟢 <strong>green</strong> means everything looks normal, 🟡 <strong>amber</strong> means something
+                  is worth keeping an eye on, and 🔴 <strong>red</strong> means something needs attention now.
+                  It automatically takes the worst of the three sections below it (Global Economy, Peers &amp;
+                  Competitors, Suppliers) — you don&apos;t need to check all three yourself.
+                </p>
+                <p className="text-gray-700 leading-relaxed mt-2">
+                  Next to it, a row of small dots shows the last several checks (the system checks in every
+                  6 hours), so you can tell at a glance whether today&apos;s color is something brand new or
+                  has been sitting there for a while.
+                </p>
+                <p className="text-gray-700 leading-relaxed mt-2">
+                  One thing worth knowing: some suppliers sit in countries with long-standing, ongoing
+                  tension (for example, general trade friction between the US and China) — that&apos;s shown
+                  on the supplier&apos;s own card so you have the context, but it no longer by itself turns the
+                  whole board red. Only a real, fresh development does that. This keeps the red light meaningful
+                  instead of being on all the time for reasons that never change.
+                </p>
+              </div>
+
               {/* Risk Level Legend */}
               <div className="mb-6">
                 <h3 className="text-base font-bold text-gray-900 mb-3">Risk Level Legend</h3>
@@ -790,7 +814,7 @@ export default function MorningCoffeeDashboard() {
                     <div className="text-sm">
                       <p className="font-semibold text-red-800">Immediate threat to supply</p>
                       <p className="text-red-700 mt-1">
-                        <strong>Triggers:</strong> OFAC sanctions list match, 2+ CPSC recalls, bankruptcy, factory fire/closure, ransomware attack, labor strike, active war zone
+                        <strong>Triggers:</strong> name match on the US sanctions watchlist, 2+ product safety recalls, bankruptcy, factory fire/closure, ransomware attack, labor strike, active war zone
                       </p>
                       <p className="text-red-600 mt-1 text-xs italic">
                         Example: &quot;Supplier X files for Chapter 11 bankruptcy&quot;
@@ -843,16 +867,16 @@ export default function MorningCoffeeDashboard() {
               </div>
 
               <div className="mb-6">
-                <h3 className="text-base font-bold text-gray-900 mb-3">Data Sources</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-3">Where the Information Comes From</h3>
                 <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>Macro:</strong> ECB for EUR/USD rates, Yahoo Finance for market indices</li>
-                  <li><strong>Peers:</strong> Real-time stock prices, news headlines, SEC 8-K filings</li>
-                  <li><strong>Cyber:</strong> CISA Known Exploited Vulnerabilities (KEV) catalog</li>
-                  <li><strong>Sanctions:</strong> OFAC Specially Designated Nationals (SDN) list — whole-word name match, flagged for manual compliance verification</li>
-                  <li><strong>Safety Recalls:</strong> CPSC saferproducts.gov recall database (last 90 days)</li>
-                  <li><strong>News:</strong> Yahoo Finance headlines + Google News RSS for broader coverage</li>
-                  <li><strong>Geopolitical:</strong> Conflict zone mapping + live Google News scanning per country</li>
-                  <li><strong>Suppliers:</strong> 24 strategic partners with stock, news, cyber, sanctions, recall, and geopolitical monitoring</li>
+                  <li><strong>Global Economy:</strong> official European Central Bank exchange rates and market data, for the US, EU, and China</li>
+                  <li><strong>Competitors:</strong> live stock prices, news headlines, and official regulatory filings for PMI, Imperial, and Japan Tobacco</li>
+                  <li><strong>Cyber Security:</strong> the US government&apos;s public list of security flaws currently being exploited by attackers</li>
+                  <li><strong>Sanctions:</strong> the US Treasury&apos;s official watchlist of people and companies barred from doing business — a match here is flagged for a compliance team to double-check by hand, since name-matching software can occasionally get it wrong</li>
+                  <li><strong>Product Safety Recalls:</strong> the US Consumer Product Safety Commission&apos;s public recall database, checked for the last 90 days</li>
+                  <li><strong>News:</strong> financial news headlines plus a broader news search for wider coverage</li>
+                  <li><strong>Geopolitical Risk:</strong> a curated list of conflict zones and sanctioned regions, cross-checked against live news so a country isn&apos;t flagged just because it&apos;s mentioned near an unrelated headline</li>
+                  <li><strong>Suppliers:</strong> all 24 strategic partners are checked against every category above — stock movement, news, cyber, sanctions, recalls, and geopolitical risk</li>
                 </ul>
               </div>
 

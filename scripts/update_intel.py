@@ -1563,6 +1563,16 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
         else:
             corroboration_note = "No recent news data was available to check against this move."
 
+        # True only for the >3%/>1.5% HIGH/MEDIUM stock-price branches
+        # (Priority 4/5) below — an uncorroborated price move at that
+        # tier is common enough that it shouldn't, on its own, carry the
+        # same "flip the whole board red" weight as a confirmed cyber
+        # breach, sanctions match, or negative-news hit on the same
+        # exposure tier (see high_exposure_hit further down). The rarer
+        # >5% crash (Priority 3) is left out of this — a move that large
+        # is a strong enough signal on its own regardless of exposure.
+        price_move_only = False
+
         # Priority 0: Sanctions match — automatic CRITICAL, takes priority
         # over everything else. Transacting with a sanctioned party is a
         # legal blocker, not a graded operational risk.
@@ -1617,6 +1627,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
 
         # Priority 4: Significant stock drop (>3%) — escalate for Critical/High exposure
         elif daily_change_pct is not None and daily_change_pct < -3.0:
+            price_move_only = True
             if bat_exposure in ["Critical", "High"]:
                 supplier_risk_level = "HIGH"
                 last_signal = f"📉 Stock down {daily_change_pct:.1f}% (no confirmed cause) - {bat_exposure} exposure supplier"
@@ -1628,6 +1639,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
 
         # Priority 5: Moderate stock drop (>1.5%) — flag for Critical/High exposure
         elif daily_change_pct is not None and daily_change_pct < -1.5 and bat_exposure in ["Critical", "High"]:
+            price_move_only = True
             supplier_risk_level = "MEDIUM"
             last_signal = f"📉 Stock down {daily_change_pct:.1f}% (no confirmed cause) - {bat_exposure} exposure supplier"
             risk_analysis = f"Stock decline for {bat_exposure.lower()}-exposure supplier {supplier_name}. {corroboration_note}"
@@ -1666,6 +1678,10 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
             supplier_risk_level = geo_risk_level
             geo_escalated = True
             geo_baseline_only = not geo_data.get("escalated_by_live_news", False)
+            # The displayed risk is now geo-driven, not price-driven — geo
+            # has its own counts_toward_rag handling below, so this flag
+            # shouldn't still exclude it from the price-move carve-out logic.
+            price_move_only = False
             last_signal = f"🌍 Geopolitical: {geo_reason}"
             risk_analysis = f"Geopolitical risk in {location}: {geo_reason}. {supplier_name} ({category}) located in affected region. BAT exposure: {bat_exposure}. Previous risk: {pre_geo_level}."
             logger.info(f"  ↑ {supplier_name}: {pre_geo_level} → {supplier_risk_level} (geopolitical: {location})")
@@ -1700,6 +1716,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
             "risk_level": supplier_risk_level,
             "last_signal": last_signal,
             "counts_toward_rag": counts_toward_rag,
+            "price_move_only": price_move_only,
             # Geopolitical risk fields
             "geopolitical_risk": {
                 "detected": geopolitical_risk,
@@ -1748,8 +1765,17 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
     actionable_critical = sum(1 for s in actionable if s["risk_level"] == "CRITICAL")
     actionable_high = sum(1 for s in actionable if s["risk_level"] == "HIGH")
     actionable_medium = sum(1 for s in actionable if s["risk_level"] == "MEDIUM")
+    # Excludes price_move_only suppliers: an uncorroborated >3% dip (no
+    # negative news behind it) is common enough that it shouldn't, on its
+    # own, carry the same "flip the whole board red" weight as a confirmed
+    # cyber breach, sanctions match, recall, or real adverse-news hit on
+    # the same exposure tier — it still counts toward actionable_high/
+    # medium below (so it can push AMBER, or RED if it stacks with other
+    # signals), just not as an instant single-supplier trigger.
     high_exposure_hit = any(
-        s["risk_level"] in ("CRITICAL", "HIGH") and s.get("bat_exposure") in ("Critical", "High")
+        s["risk_level"] in ("CRITICAL", "HIGH")
+        and s.get("bat_exposure") in ("Critical", "High")
+        and not s.get("price_move_only", False)
         for s in actionable
     )
 

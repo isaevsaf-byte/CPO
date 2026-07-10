@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  /* Safety net: no single row should be able to force the page wider than
+     the viewport on mobile. The actual fix is making each row wrap/stack
+     properly (see app/page.tsx header and status banner), but this stops
+     any row we miss from producing a page-wide horizontal scrollbar. */
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

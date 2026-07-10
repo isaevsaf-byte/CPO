@@ -130,41 +130,43 @@ export default function MorningCoffeeDashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* BAT Header */}
-      <header className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white shadow-lg">
-        <div className="max-w-[100rem] mx-auto px-6 py-6">
-          <div className="flex justify-between items-center">
+      <header className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white shadow-lg overflow-hidden">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 py-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold">BAT Global Supply Watchtower</h1>
-              <p className="text-blue-100 mt-2">Intelligence Dashboard • Three Core Pillars</p>
+              <h1 className="text-2xl sm:text-3xl font-bold">BAT Global Supply Watchtower</h1>
+              <p className="text-blue-100 mt-2 text-sm sm:text-base">Intelligence Dashboard • Three Core Pillars</p>
             </div>
-            <div className="text-right flex items-center gap-4">
-              {/* Health Status Indicators */}
-              <div className="flex items-center gap-2" title="Data Source Health">
-                <span className="text-xs text-blue-200 mr-1">Health:</span>
-                <HealthIndicator status={macro?.status || 'unknown'} />
-                <HealthIndicator status={peers?.status || 'unknown'} />
-                <HealthIndicator status={suppliers?.status || 'unknown'} />
-              </div>
+            <div className="flex flex-col sm:items-end gap-3">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                {/* Health Status Indicators */}
+                <div className="flex items-center gap-2" title="Data Source Health">
+                  <span className="text-xs text-blue-200 mr-1">Health:</span>
+                  <HealthIndicator status={macro?.status || 'unknown'} />
+                  <HealthIndicator status={peers?.status || 'unknown'} />
+                  <HealthIndicator status={suppliers?.status || 'unknown'} />
+                </div>
 
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="p-2 rounded-full hover:bg-blue-800 transition-colors"
-                aria-label="About this Tool"
-                title="About this Tool"
-              >
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-              <div>
-                <div className="text-sm text-blue-100 flex items-center gap-2">
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="p-2 rounded-full hover:bg-blue-800 transition-colors"
+                  aria-label="About this Tool"
+                  title="About this Tool"
+                >
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+              </div>
+              <div className="sm:text-right">
+                <div className="text-sm text-blue-100 flex items-center gap-2 flex-wrap">
                   <span>Last Updated: {formatTimestamp(typedIntel?.last_updated)}</span>
                   {isChecking && (
                     <span className="animate-spin text-xs">&#8635;</span>
                   )}
                 </div>
                 {typedIntel?.version && (
-                  <div className="text-xs text-blue-200 font-mono">
+                  <div className="text-xs text-blue-200 font-mono truncate max-w-[220px] sm:max-w-none">
                     v{typedIntel.version}
                   </div>
                 )}
@@ -182,7 +184,7 @@ export default function MorningCoffeeDashboard() {
       {/* New Version Available Banner */}
       {hasNewVersion && (
         <div className="bg-blue-600 text-white px-4 py-3">
-          <div className="max-w-[100rem] mx-auto flex items-center justify-between">
+          <div className="max-w-[100rem] mx-auto flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <span className="text-lg">&#128260;</span>
               <span className="font-medium">New data available! Click refresh to see the latest intelligence.</span>
@@ -258,11 +260,11 @@ export default function MorningCoffeeDashboard() {
               </div>
             )}
             {typedIntel.rag_history && typedIntel.rag_history.length > 1 && (
-              <div className="w-full flex items-center gap-3 pt-3 mt-1 border-t border-black/10">
+              <div className="w-full flex flex-wrap items-center gap-x-3 gap-y-2 pt-3 mt-1 border-t border-black/10">
                 <span className="text-xs text-gray-500 whitespace-nowrap">
                   Last {typedIntel.rag_history.length} checks:
                 </span>
-                <div className="flex items-center gap-1" title="Each dot is one harvest cycle (~6h apart), oldest to newest">
+                <div className="flex items-center gap-1 flex-wrap" title="Each dot is one harvest cycle (~6h apart), oldest to newest">
                   {typedIntel.rag_history.slice(-28).map((entry, idx) => (
                     <span
                       key={idx}
@@ -272,7 +274,7 @@ export default function MorningCoffeeDashboard() {
                   ))}
                 </div>
                 {currentStreakLength(typedIntel.rag_history) > 1 && (
-                  <span className="text-xs text-gray-600 whitespace-nowrap">
+                  <span className="text-xs text-gray-600">
                     ({typedIntel.overall_rag.score} for {currentStreakLength(typedIntel.rag_history)} consecutive checks)
                   </span>
                 )}
@@ -640,34 +642,110 @@ export default function MorningCoffeeDashboard() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Supplier</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">BAT Exposure</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Segment</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[320px]">Risk Status</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {suppliersList
-                  .filter((supplier: Supplier) => {
-                    if (riskFilter === 'all') return true;
-                    if (riskFilter === 'critical') return supplier.risk_level === 'CRITICAL';
-                    if (riskFilter === 'high') return supplier.risk_level === 'HIGH';
-                    if (riskFilter === 'medium') return supplier.risk_level === 'MEDIUM';
-                    if (riskFilter === 'sanctions') return (supplier as any).sanctions_hit;
-                    if (riskFilter === 'cyber') return supplier.cyber_risk;
-                    if (riskFilter === 'recall') return (supplier as any).recall_risk;
-                    if (riskFilter === 'news') return supplier.news_risk;
-                    if (riskFilter === 'operational') return (supplier as any).operational_risk;
-                    if (riskFilter === 'geopolitical') return supplier.geopolitical_risk != null;
-                    return true;
-                  })
-                  .map((supplier: Supplier, idx: number) => (
+          {(() => {
+            const filteredSuppliers = suppliersList.filter((supplier: Supplier) => {
+              if (riskFilter === 'all') return true;
+              if (riskFilter === 'critical') return supplier.risk_level === 'CRITICAL';
+              if (riskFilter === 'high') return supplier.risk_level === 'HIGH';
+              if (riskFilter === 'medium') return supplier.risk_level === 'MEDIUM';
+              if (riskFilter === 'sanctions') return (supplier as any).sanctions_hit;
+              if (riskFilter === 'cyber') return supplier.cyber_risk;
+              if (riskFilter === 'recall') return (supplier as any).recall_risk;
+              if (riskFilter === 'news') return supplier.news_risk;
+              if (riskFilter === 'operational') return (supplier as any).operational_risk;
+              if (riskFilter === 'geopolitical') return supplier.geopolitical_risk != null;
+              return true;
+            });
+
+            const riskBadges = (supplier: Supplier) => (
+              <>
+                {supplier.risk_level === 'CRITICAL' && (
+                  <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">Critical</span>
+                )}
+                {supplier.risk_level === 'HIGH' && (
+                  <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">High</span>
+                )}
+                {supplier.risk_level === 'MEDIUM' && (
+                  <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-semibold">Medium</span>
+                )}
+                {(supplier.risk_level === 'LOW' || !supplier.risk_level) && (
+                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">Low</span>
+                )}
+                {supplier.sanctions_hit && (
+                  <span className="px-1.5 py-0.5 bg-red-800 text-white rounded text-xs" title={`OFAC SDN match — verify: ${supplier.sanctions_matches?.[0] || ''}`}>🚫</span>
+                )}
+                {supplier.cyber_risk && (
+                  <span className="px-1.5 py-0.5 bg-red-600 text-white rounded text-xs" title="CISA cyber vulnerability">🔒</span>
+                )}
+                {supplier.recall_risk && (
+                  <span className="px-1.5 py-0.5 bg-amber-700 text-white rounded text-xs" title={`CPSC recall: ${supplier.matching_recalls?.[0]?.product || ''}`}>⚠️</span>
+                )}
+                {supplier.news_risk && (
+                  <span className="px-1.5 py-0.5 bg-amber-600 text-white rounded text-xs" title="News-based risk">📰</span>
+                )}
+                {supplier.geopolitical_risk && (
+                  <span className="px-1.5 py-0.5 bg-orange-600 text-white rounded text-xs" title={supplier.geopolitical_risk?.reason || 'Geopolitical risk'}>🌍</span>
+                )}
+              </>
+            );
+
+            return (
+              <>
+                {/* Mobile: stacked cards — a wide table forces the Risk
+                    Status column (the whole point of this list) off-screen
+                    with no visible hint that there's more to scroll to. */}
+                <div className="md:hidden divide-y divide-gray-200">
+                  {filteredSuppliers.map((supplier: Supplier, idx: number) => (
+                    <Link
+                      key={idx}
+                      href={`/details/${encodeURIComponent(supplier.name)}`}
+                      className="block px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900">{supplier.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {supplier.category}
+                            {supplier.stock_ticker && supplier.stock_ticker !== 'N/A' && (
+                              <span className="font-mono"> • {supplier.stock_ticker}</span>
+                            )}
+                          </div>
+                        </div>
+                        <span className={`shrink-0 px-2 py-1 rounded-full text-xs font-bold border ${getExposureColor(supplier.bat_exposure || 'Medium')}`}>
+                          {supplier.bat_exposure || 'Medium'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap mt-2">
+                        {riskBadges(supplier)}
+                      </div>
+                      {supplier.risk_level && supplier.risk_level !== 'LOW' && supplier.last_signal && (
+                        <div className="text-xs text-gray-600 mt-1.5">{supplier.last_signal}</div>
+                      )}
+                      {supplier.geopolitical_risk?.reason && !supplier.geopolitical_risk?.escalated && (
+                        <div className="text-xs text-orange-700 mt-1">
+                          🌍 Also in a flagged region: {supplier.geopolitical_risk.reason}
+                        </div>
+                      )}
+                      <div className="text-xs text-gray-400 mt-1.5">{supplier.location || 'Unknown'}</div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Desktop/tablet: full table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Supplier</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">BAT Exposure</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Segment</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[320px]">Risk Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredSuppliers.map((supplier: Supplier, idx: number) => (
                   <tr
                     key={idx}
                     className="hover:bg-slate-50 cursor-pointer transition-colors"
@@ -773,10 +851,13 @@ export default function MorningCoffeeDashboard() {
                       </Link>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            );
+          })()}
         </div>
 
       </div>

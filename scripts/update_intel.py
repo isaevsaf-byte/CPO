@@ -565,14 +565,28 @@ SUPPLIER_ALIASES = {
 }
 
 
-def supplier_search_terms(supplier_name: str) -> list:
-    """Uppercase supplier name plus any known aliases, for substring matching
-    against vendor/manufacturer/party name fields in external datasets."""
+def supplier_search_terms(supplier_name: str, min_len: int = 4) -> list:
+    """
+    Uppercase supplier name plus any known aliases, for whole-word matching
+    against vendor/manufacturer/party name fields in external datasets.
+    Terms under min_len characters are dropped: short aliases like "TI"
+    (Texas Instruments) or "EVE" (EVE Energy) are common English letter
+    sequences that turn up inside completely unrelated words (e.g. "TI"
+    inside "authoriza-TI-on" falsely flagged a Langflow CVE as a Texas
+    Instruments vulnerability; "FUJI" inside "FUJIAN" — a Chinese province
+    name — falsely flagged an unrelated furniture recall against Fuji).
+    """
     terms = [supplier_name.upper()]
     for alias in SUPPLIER_ALIASES.get(supplier_name, []):
         if alias.upper() not in terms:
             terms.append(alias.upper())
-    return terms
+    return [t for t in terms if len(t) >= min_len]
+
+
+def supplier_terms_hit(text_upper: str, search_terms: list) -> bool:
+    """Whole-word match: True if any term appears as a standalone word in
+    text_upper (not merely as a substring inside a longer word)."""
+    return any(re.search(r'\b' + re.escape(term) + r'\b', text_upper) for term in search_terms)
 
 
 def fetch_cisa_kev():
@@ -658,14 +672,17 @@ def fetch_cpsc_recalls():
 
 
 def match_supplier_recalls(supplier_name: str, recalls: list) -> list:
-    """Match a supplier's name/aliases against CPSC recall manufacturer names.
+    """Match a supplier's name/aliases against CPSC recall manufacturer names
+    (whole-word, via supplier_search_terms — see its docstring for why).
     Returns matching recall summaries (empty list if none)."""
     search_terms = supplier_search_terms(supplier_name)
+    if not search_terms:
+        return []
     matches = []
     for recall in recalls:
         manufacturers = recall.get("Manufacturers", []) or []
         names = " | ".join(m.get("Name", "") for m in manufacturers if isinstance(m, dict)).upper()
-        if any(term in names for term in search_terms):
+        if supplier_terms_hit(names, search_terms):
             products = recall.get("Products", []) or []
             product_name = products[0].get("Name") if products and isinstance(products[0], dict) else "product"
             matches.append({
@@ -1395,22 +1412,22 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
         # so we don't only match on exact parent company name
         search_terms = supplier_search_terms(supplier_name)
 
-        # Check if any search term appears in CISA vulnerability fields
+        # Check if any search term appears (whole-word) in CISA vulnerability
+        # fields — see supplier_search_terms()'s docstring for why this is
+        # whole-word rather than substring matching.
         for vuln in cisa_vulns:
             vendor = vuln.get('vendorProject', '').upper()
             product = vuln.get('product', '').upper()
             description = vuln.get('vulnerabilityName', '').upper()
             combined = f"{vendor} {product} {description}"
 
-            for term in search_terms:
-                if term in combined:
-                    cyber_risk = True
-                    matching_vulns.append({
-                        "cveID": vuln.get('cveID', ''),
-                        "vulnerabilityName": vuln.get('vulnerabilityName', ''),
-                        "dateAdded": vuln.get('dateAdded', '')
-                    })
-                    break  # Don't double-count same vuln
+            if supplier_terms_hit(combined, search_terms):
+                cyber_risk = True
+                matching_vulns.append({
+                    "cveID": vuln.get('cveID', ''),
+                    "vulnerabilityName": vuln.get('vulnerabilityName', ''),
+                    "dateAdded": vuln.get('dateAdded', '')
+                })
 
         # Check for CPSC safety recalls against this supplier
         matching_recalls = match_supplier_recalls(supplier_name, cpsc_recalls)

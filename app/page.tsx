@@ -103,6 +103,30 @@ export default function MorningCoffeeDashboard() {
     suppliersByCategory[category].push(supplier);
   });
 
+  // Concrete "what to actually look at" list for the Overall Status banner
+  // — naming specific companies and reasons instead of just "Suppliers".
+  // Sanctions matches first (most urgent), then CRITICAL, then HIGH.
+  type ActionItem = { label: string; href: string };
+  const actionItems: ActionItem[] = [];
+  suppliersList
+    .filter((s: any) => s.sanctions_hit)
+    .forEach((s) => actionItems.push({
+      label: `Verify possible sanctions match: ${s.name}`,
+      href: `/details/${encodeURIComponent(s.name)}`,
+    }));
+  suppliersList
+    .filter((s: any) => s.counts_toward_rag !== false && s.risk_level === 'CRITICAL' && !s.sanctions_hit)
+    .forEach((s) => actionItems.push({ label: `${s.name}: ${s.last_signal}`, href: `/details/${encodeURIComponent(s.name)}` }));
+  peerGroup
+    .filter((p) => p.risk_level === 'CRITICAL')
+    .forEach((p) => actionItems.push({ label: `${p.name}: ${p.last_signal}`, href: `/details/${encodeURIComponent(p.name)}` }));
+  if (actionItems.length < 3) {
+    suppliersList
+      .filter((s: any) => s.counts_toward_rag !== false && s.risk_level === 'HIGH')
+      .forEach((s) => actionItems.push({ label: `${s.name}: ${s.last_signal}`, href: `/details/${encodeURIComponent(s.name)}` }));
+  }
+  const topActionItems = actionItems.slice(0, 3);
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* BAT Header */}
@@ -202,13 +226,29 @@ export default function MorningCoffeeDashboard() {
                   typedIntel.overall_rag.score === 'AMBER' ? 'text-amber-800' :
                   'text-green-800'
                 }`}>
-                  {typedIntel.overall_rag.score === 'RED' ? 'Action needed today' :
-                   typedIntel.overall_rag.score === 'AMBER' ? 'Monitor closely' :
+                  {typedIntel.overall_rag.score === 'RED'
+                    ? (topActionItems.length > 0
+                        ? `${topActionItems.length} item${topActionItems.length > 1 ? 's' : ''} need review`
+                        : 'Action needed today')
+                    : typedIntel.overall_rag.score === 'AMBER' ? 'Monitor closely' :
                    'All clear'}
                 </div>
               </div>
             </div>
-            {typedIntel.overall_rag.score !== 'GREEN' && typedIntel.overall_rag.driven_by?.length > 0 && (
+            {typedIntel.overall_rag.score !== 'GREEN' && topActionItems.length > 0 && (
+              <div className="text-sm text-gray-700 w-full sm:w-auto">
+                <ul className="space-y-1">
+                  {topActionItems.map((item, idx) => (
+                    <li key={idx}>
+                      <Link href={item.href} className="hover:underline">
+                        <span className="text-gray-500">→</span> {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {typedIntel.overall_rag.score !== 'GREEN' && topActionItems.length === 0 && typedIntel.overall_rag.driven_by?.length > 0 && (
               <div className="text-sm text-gray-700">
                 Driven by:{' '}
                 <span className="font-semibold capitalize">
@@ -788,7 +828,9 @@ export default function MorningCoffeeDashboard() {
                   🟢 <strong>green</strong> means everything looks normal, 🟡 <strong>amber</strong> means something
                   is worth keeping an eye on, and 🔴 <strong>red</strong> means something needs attention now.
                   It automatically takes the worst of the three sections below it (Global Economy, Peers &amp;
-                  Competitors, Suppliers) — you don&apos;t need to check all three yourself.
+                  Competitors, Suppliers) — you don&apos;t need to check all three yourself. When it&apos;s
+                  amber or red, the banner also lists the specific company (or companies) causing it and why —
+                  click any of them to jump straight to the details.
                 </p>
                 <p className="text-gray-700 leading-relaxed mt-2">
                   Next to it, a row of small dots shows the last several checks (the system checks in every

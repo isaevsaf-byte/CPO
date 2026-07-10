@@ -9,6 +9,8 @@ import requests
 import json
 import math
 import re
+import csv
+import io
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -684,6 +686,70 @@ def match_supplier_recalls(supplier_name: str, recalls: list) -> list:
             })
     return matches
 
+
+def fetch_ofac_sdn():
+    """
+    Fetch the OFAC Specially Designated Nationals (SDN) list — the primary
+    US sanctions screening list — via Treasury's free, no-auth bulk CSV.
+    (The README's originally-planned "ITA Consolidated Screening List" API
+    requires a registered API key; OFAC's SDN bulk file needs none, keeping
+    this pipeline's zero-credentials, zero-cost design intact.)
+    Tries the current sanctionslistservice.ofac.treas.gov endpoint first,
+    falling back to the legacy treasury.gov mirror. Degrades gracefully
+    like the other fetchers: failure returns status "error" with an empty
+    name list rather than raising.
+    """
+    source_name = "ofac_sdn"
+    urls = [
+        "https://sanctionslistservice.ofac.treas.gov/api/download/sdn.csv",
+        "https://www.treasury.gov/ofac/downloads/sdn.csv",
+    ]
+    last_error = None
+    for url in urls:
+        try:
+            response = fetch_with_retry(url)
+            reader = csv.reader(io.StringIO(response.text))
+            names = [row[1].strip() for row in reader if len(row) > 1 and row[1] and row[1] != '-0-']
+            if not names:
+                raise ValueError("SDN list fetched but parsed to zero names")
+
+            harvest_stats.record_success(source_name)
+            return {
+                "status": "success",
+                "total_entries": len(names),
+                "names": names,
+                "last_fetched": datetime.utcnow().isoformat()
+            }
+        except Exception as e:
+            last_error = e
+            continue
+
+    harvest_stats.record_error(source_name, str(last_error))
+    return {
+        "status": "error",
+        "error": str(last_error),
+        "total_entries": 0,
+        "names": [],
+        "last_fetched": datetime.utcnow().isoformat()
+    }
+
+
+def match_supplier_sanctions(supplier_name: str, sdn_names: list) -> list:
+    """
+    Screen a supplier's registered name against the OFAC SDN list using
+    whole-word matching. Deliberately does NOT use the CISA/recall alias
+    table or substring matching here: a sanctions flag is the single most
+    severe (and most reputationally costly if wrong) signal this pipeline
+    can raise, so it stays conservative — only the supplier's full name is
+    checked, and names under 5 characters are skipped as too short/generic
+    to screen reliably (e.g. "ITC", "GPI" would otherwise match countless
+    unrelated SDN entries by coincidence).
+    """
+    if len(supplier_name) < 5:
+        return []
+    pattern = re.compile(r'\b' + re.escape(supplier_name.upper()) + r'\b')
+    return [name for name in sdn_names if pattern.search(name.upper())][:5]
+
 # ============================================================================
 # PILLAR 1: MACRO OVERVIEW (US, EU, China)
 # ============================================================================
@@ -1214,11 +1280,12 @@ def fetch_supplier_stock_data(ticker_symbol):
         return None, None, []
 
 
-def process_suppliers(cyber_data, recalls_data=None):
+def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
     """
     Process supplier watchlist and assess SUPPLY CHAIN RISK to BAT.
 
-    Risk is assessed from FIVE layers (each can escalate):
+    Risk is assessed from SIX layers (each can escalate):
+      0. Sanctions screening (OFAC SDN) — an automatic, non-overridable CRITICAL
       1. CISA cyber vulnerabilities (KEV catalog)
       2. CPSC safety recalls (saferproducts.gov)
       3. Stock price movements (yfinance)
@@ -1226,6 +1293,7 @@ def process_suppliers(cyber_data, recalls_data=None):
       5. Geopolitical risk (conflict zones, sanctions, instability)
 
     CRITICAL - Immediate threat to supply:
+      - Sanctions match (OFAC SDN) — cannot legally transact
       - Bankruptcy, insolvency, liquidation
       - Factory fire, explosion, facility closure
       - Government sanctions, bans, seizure
@@ -1255,6 +1323,7 @@ def process_suppliers(cyber_data, recalls_data=None):
     suppliers = []
     cisa_vulns = cyber_data.get("recent_vulnerabilities", [])
     cpsc_recalls = (recalls_data or {}).get("recalls", [])
+    sdn_names = (sanctions_data or {}).get("names", [])
 
     # ================================================================
     # PRE-SCAN: Batch Google News geopolitical scan per unique country
@@ -1352,6 +1421,12 @@ def process_suppliers(cyber_data, recalls_data=None):
         category = supplier["category"]
         cyber_risk = False
         matching_vulns = []
+
+        # Sanctions screening (OFAC SDN) — checked first, ahead of every
+        # other layer, since it's the one signal here with real legal
+        # consequence rather than operational risk.
+        sanctions_matches = match_supplier_sanctions(supplier_name, sdn_names)
+        sanctions_hit = len(sanctions_matches) > 0
 
         # Broader CISA matching: include aliases and known product names
         # so we don't only match on exact parent company name
@@ -1473,8 +1548,16 @@ def process_suppliers(cyber_data, recalls_data=None):
         last_signal = "No supply chain risks detected."
         risk_analysis = ""
 
+        # Priority 0: Sanctions match — automatic CRITICAL, takes priority
+        # over everything else. Transacting with a sanctioned party is a
+        # legal blocker, not a graded operational risk.
+        if sanctions_hit:
+            supplier_risk_level = "CRITICAL"
+            last_signal = f"🚫 SANCTIONS MATCH (OFAC SDN): possible match to '{sanctions_matches[0]}'"
+            risk_analysis = f"{supplier_name} name matches an OFAC Specially Designated Nationals list entry ('{sanctions_matches[0]}'). This requires immediate compliance/legal verification before any further transactions — automated name matching can produce false positives and must be confirmed manually."
+
         # Priority 1: CISA cyber vulnerabilities (critical for IT-dependent suppliers)
-        if cyber_risk:
+        elif cyber_risk:
             supplier_risk_level = "CRITICAL" if len(matching_vulns) >= 2 else "HIGH"
             last_signal = f"🔒 Cyber vulnerability: {len(matching_vulns)} CISA KEV match(es) - {', '.join([v.get('cveID', 'N/A') for v in matching_vulns[:2]])}"
             risk_analysis = f"CISA Known Exploited Vulnerability detected. {supplier_name} systems may be at risk. {bat_exposure} exposure to BAT requires security assessment."
@@ -1577,6 +1660,8 @@ def process_suppliers(cyber_data, recalls_data=None):
             "name": supplier_name,
             "slug": slug,
             "category": category,
+            "sanctions_hit": sanctions_hit,
+            "sanctions_matches": sanctions_matches,
             "cyber_risk": cyber_risk,
             "matching_vulnerabilities": matching_vulns[:5],
             "recall_risk": recall_risk,
@@ -1607,6 +1692,7 @@ def process_suppliers(cyber_data, recalls_data=None):
         suppliers.append(supplier_data)
 
     # Calculate RAG score based on actual supply risks
+    suppliers_at_sanctions_risk = sum(1 for s in suppliers if s["sanctions_hit"])
     suppliers_at_cyber_risk = sum(1 for s in suppliers if s["cyber_risk"])
     suppliers_at_recall_risk = sum(1 for s in suppliers if s["recall_risk"])
     suppliers_at_news_risk = sum(1 for s in suppliers if s["news_risk"])
@@ -1651,12 +1737,15 @@ def process_suppliers(cyber_data, recalls_data=None):
 
     logger.info(f"Supplier risk summary: {total_critical} CRITICAL, {total_high} HIGH, {total_medium} MEDIUM, {len(suppliers) - total_critical - total_high - total_medium} LOW")
     logger.info(f"  of which actionable (excl. structural-only geo floor): {actionable_critical} CRITICAL, {actionable_high} HIGH, {actionable_medium} MEDIUM; high-exposure hit: {high_exposure_hit}")
-    logger.info(f"Risk sources: {suppliers_at_cyber_risk} cyber, {suppliers_at_recall_risk} recall, {suppliers_at_news_risk} news, {suppliers_at_geopolitical_risk} geopolitical ({suppliers_geo_escalated} escalated)")
+    logger.info(f"Risk sources: {suppliers_at_sanctions_risk} sanctions, {suppliers_at_cyber_risk} cyber, {suppliers_at_recall_risk} recall, {suppliers_at_news_risk} news, {suppliers_at_geopolitical_risk} geopolitical ({suppliers_geo_escalated} escalated)")
+    if suppliers_at_sanctions_risk > 0:
+        logger.warning(f"⚠️ {suppliers_at_sanctions_risk} supplier(s) matched OFAC SDN screening — requires immediate manual compliance review")
 
     return {
         "status": "success",
         "rag_score": rag_score,
         "total_suppliers": len(suppliers),
+        "suppliers_at_sanctions_risk": suppliers_at_sanctions_risk,
         "suppliers_at_cyber_risk": suppliers_at_cyber_risk,
         "suppliers_at_recall_risk": suppliers_at_recall_risk,
         "suppliers_at_news_risk": suppliers_at_news_risk,
@@ -2166,6 +2255,7 @@ def main():
     # Fetch supporting data
     cyber_data = fetch_cisa_kev()
     recalls_data = fetch_cpsc_recalls()
+    sanctions_data = fetch_ofac_sdn()
 
     # PILLAR 1: Macro Overview
     macro_data = fetch_macro_overview(previous_eur_usd)
@@ -2174,7 +2264,7 @@ def main():
     peers_data = fetch_peers_overview()
 
     # PILLAR 3: Supplier Watchlist
-    suppliers_data = process_suppliers(cyber_data, recalls_data)
+    suppliers_data = process_suppliers(cyber_data, recalls_data, sanctions_data)
 
     # Generate additional intelligence data (LIVE DATA)
     macro_economy = fetch_macro_economy()

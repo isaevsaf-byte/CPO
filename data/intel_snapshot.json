@@ -1,7 +1,27 @@
 {
-  "last_updated": "2026-07-10T11:43:44.125064",
-  "version": "c8b6ab549a11",
+  "last_updated": "2026-07-10T12:01:41.544634",
+  "version": "ceaaedf2ee8b",
   "status": "healthy",
+  "overall_rag": {
+    "score": "RED",
+    "driven_by": [
+      "suppliers"
+    ],
+    "pillar_scores": {
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "RED"
+    }
+  },
+  "rag_history": [
+    {
+      "timestamp": "2026-07-10T12:01:41.544625",
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "RED",
+      "overall": "RED"
+    }
+  ],
   "macro": {
     "status": "success",
     "rag_score": "GREEN",
@@ -15,7 +35,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators placeholder",
-        "last_fetched": "2026-07-10T11:42:36.063489"
+        "last_fetched": "2026-07-10T12:00:33.355453"
       },
       "eu": {
         "status": "success",
@@ -26,7 +46,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1435",
-        "last_fetched": "2026-07-10T11:42:36.757434"
+        "last_fetched": "2026-07-10T12:00:33.875119"
       },
       "china": {
         "status": "success",
@@ -37,11 +57,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators placeholder",
-        "last_fetched": "2026-07-10T11:42:36.758260"
+        "last_fetched": "2026-07-10T12:00:33.876091"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-10T11:42:36.758272"
+    "last_fetched": "2026-07-10T12:00:33.876105"
   },
   "peers": {
     "status": "success",
@@ -62,7 +82,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-07-10T11:42:36.758279"
+          "last_fetched": "2026-07-10T12:00:33.876112"
         },
         "news": {
           "status": "placeholder",
@@ -132,7 +152,7 @@
           ],
           "red_signals": 0,
           "amber_signals": 2,
-          "last_fetched": "2026-07-10T11:42:36.890291"
+          "last_fetched": "2026-07-10T12:00:34.226706"
         },
         "news": {
           "status": "placeholder",
@@ -152,7 +172,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-07-10T11:42:36.891068"
+          "last_fetched": "2026-07-10T12:00:34.227796"
         },
         "news": {
           "status": "placeholder",
@@ -172,7 +192,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-07-10T11:42:36.891076"
+          "last_fetched": "2026-07-10T12:00:34.227805"
         },
         "news": {
           "status": "placeholder",
@@ -192,7 +212,7 @@
           "filings": [],
           "red_signals": 0,
           "amber_signals": 0,
-          "last_fetched": "2026-07-10T11:42:36.891080"
+          "last_fetched": "2026-07-10T12:00:34.227809"
         },
         "news": {
           "status": "placeholder",
@@ -201,29 +221,35 @@
         }
       }
     ],
-    "last_fetched": "2026-07-10T11:42:36.891084"
+    "last_fetched": "2026-07-10T12:00:34.227813"
   },
   "suppliers": {
     "status": "success",
     "rag_score": "RED",
     "total_suppliers": 24,
+    "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 1,
+    "suppliers_at_recall_risk": 2,
     "suppliers_at_news_risk": 0,
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 0,
-    "total_high": 2,
+    "total_high": 3,
     "total_medium": 9,
     "actionable_critical": 0,
-    "actionable_high": 2,
+    "actionable_high": 3,
     "actionable_medium": 1,
     "suppliers": [
       {
         "name": "AMCOR",
         "slug": "amcor",
         "category": "Printed Packaging",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -246,8 +272,12 @@
         "name": "GPI",
         "slug": "gpi",
         "category": "Printed Packaging",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -270,13 +300,17 @@
         "name": "Stora Enso",
         "slug": "stora-enso",
         "category": "Printing Substrates",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.45,
-        "current_price": 9.39,
+        "daily_change_pct": 1.68,
+        "current_price": 9.42,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -288,7 +322,7 @@
           "headlines": [
             "Ukraine has already won the war against Russia, Finnish president tells CNBC - CNBC",
             "Russia Puts Finland on Nuclear Target List After Weapons Law Change - The Defense Post",
-            "Finland President: Ukraine has already won the war - CNBC"
+            "Finland's President Says 'Ukraine Has Won' War Against Russia by Preserving Sovereignty\u2014 But Warns Kyiv S - Benzinga"
           ],
           "escalated": true,
           "baseline_only": true
@@ -305,8 +339,12 @@
         "name": "IP Sun",
         "slug": "ip-sun",
         "category": "Printing Substrates",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -340,8 +378,12 @@
         "name": "Sappi",
         "slug": "sappi",
         "category": "Printing Substrates",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -375,8 +417,12 @@
         "name": "Daicel",
         "slug": "daicel",
         "category": "Filter Materials",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -399,8 +445,12 @@
         "name": "Eastman",
         "slug": "eastman",
         "category": "Filter Materials",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -423,8 +473,12 @@
         "name": "Cerdia",
         "slug": "cerdia",
         "category": "Filter Materials",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -447,8 +501,12 @@
         "name": "Tae Young Filters",
         "slug": "tae-young-filters",
         "category": "Filter Materials",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -482,16 +540,28 @@
         "name": "Fuji",
         "slug": "fuji",
         "category": "Capsules",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": true,
+        "matching_recalls": [
+          {
+            "recallNumber": "26541",
+            "recallDate": "2026-06-11T00:00:00",
+            "description": "This recall involves Timechee Changing Table Dressers. The recalled dressers are made of wood and were sold in white. The dresser has five drawers and two shelves, and a two-section changing table top",
+            "product": "Timechee Changing Table Dressers",
+            "url": "https://www.cpsc.gov/Recalls/2026/Timechee-Changing-Table-Dressers-Recalled-Due-to-Risk-of-Serious-Injury-or-Death-from-Tip-Over-and-Entrapment-Hazards-Violate-Mandatory-Standard-for-Clothing-Storage-Units-Sold-on-Amazon-by-Timechee"
+          }
+        ],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
         "daily_change_pct": null,
         "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Fuji (Capsules) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "risk_analysis": "CPSC safety recall on file for Fuji: This recall involves Timechee Changing Table Dressers. The recalled dressers are made of wood and were sold in white. The dresser has five drawers and two shelves, and a two-section changing table top. Medium exposure to BAT requires supplier quality review.",
+        "risk_level": "HIGH",
+        "last_signal": "\u26a0\ufe0f CPSC recall: Timechee Changing Table Dressers (26541)",
         "counts_toward_rag": true,
         "geopolitical_risk": null,
         "google_news_headlines": [],
@@ -506,8 +576,12 @@
         "name": "SWM (Mativ)",
         "slug": "swm-mativ",
         "category": "Fine Papers",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -530,8 +604,12 @@
         "name": "Delfort",
         "slug": "delfort",
         "category": "Fine Papers",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -554,8 +632,12 @@
         "name": "CNT",
         "slug": "cnt",
         "category": "Nicotine",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -578,8 +660,12 @@
         "name": "ITC",
         "slug": "itc",
         "category": "Nicotine",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -613,8 +699,12 @@
         "name": "Porton",
         "slug": "porton",
         "category": "Nicotine",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -648,8 +738,12 @@
         "name": "Tenowo",
         "slug": "tenowo",
         "category": "Modern/Traditional Oral Fleece",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -672,8 +766,12 @@
         "name": "Huizhou BYD Electronic",
         "slug": "byd-electronic",
         "category": "EMS",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -707,8 +805,12 @@
         "name": "Smoore",
         "slug": "smoore",
         "category": "EMS",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -742,8 +844,12 @@
         "name": "EVE Energy",
         "slug": "eve-energy",
         "category": "Batteries",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -777,12 +883,38 @@
         "name": "Texas Instruments",
         "slug": "texas-instruments",
         "category": "EE Component",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": true,
         "matching_vulnerabilities": [
           {
             "cveID": "CVE-2026-55255",
             "vulnerabilityName": "Langflow Authorization Bypass Through User-Controlled Key Vulnerability",
             "dateAdded": "2026-07-07"
+          }
+        ],
+        "recall_risk": true,
+        "matching_recalls": [
+          {
+            "recallNumber": "26599",
+            "recallDate": "2026-07-02T00:00:00",
+            "description": "This recall involves Metalux Optimized High Bay (OHB) LED light fixtures used indoors in commercial structures with high ceilings such as warehouses and commercial bays. The fixtures are painted white",
+            "product": "Metalux Optimized High Bay (OHB) LED Light Fixtures",
+            "url": "https://www.cpsc.gov/Recalls/2026/Cooper-Lighting-Recalls-Metalux-Optimized-High-Bay-LED-Light-Fixtures-Due-to-Fire-Hazard"
+          },
+          {
+            "recallNumber": "26593",
+            "recallDate": "2026-07-02T00:00:00",
+            "description": "This recall involves CVS Health Medicated Hemorrhoidal Wipes. The pain-relieving wipes were sold in boxes of 20 individually wrapped packets of flushable wipes. The CVS Health logo, a yellow heart, \"R",
+            "product": "CVS Health Medicated Hemorrhoidal Wipes",
+            "url": "https://www.cpsc.gov/Recalls/2026/Diamond-Wipes-International-Recalls-CVS-Health-Medicated-Hemorrhoidal-Wipes-Due-to-Risk-of-Serious-Injury-or-Death-from-Child-Poisoning-Violate-Mandatory-Standard-for-Child-Resistant-Packaging"
+          },
+          {
+            "recallNumber": "26489",
+            "recallDate": "2026-05-14T00:00:00",
+            "description": "This recall involves ZWILLING J. A. Henckels Aktiengesellschaft Enfinigy Kettle (1.5 l) and Enfinigy Kettle Pro (1.5 l). The electric stainless-steel kettles come in various colors including black, si",
+            "product": "Electric Kettles (ENFINIGY 1.5 l and ENFINIGY Pro 1.5 l)",
+            "url": "https://www.cpsc.gov/Recalls/2026/ZWILLING-JA-Henckels-Aktiengesellschaft-Recalls-Electric-Water-Kettles-Due-to-Risk-of-Serious-Injury-Due-to-Burn-Hazard"
           }
         ],
         "news_risk": false,
@@ -807,16 +939,20 @@
         "name": "Infineon",
         "slug": "infineon",
         "category": "EE Component",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.9,
-        "current_price": 71.96,
+        "daily_change_pct": -1.96,
+        "current_price": 71.91,
         "risk_analysis": "Stock decline for high exposure supplier. Monitor Infineon for any operational impacts.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83d\udcc9 Stock down -1.9% - High exposure supplier",
+        "last_signal": "\ud83d\udcc9 Stock down -2.0% - High exposure supplier",
         "counts_toward_rag": true,
         "geopolitical_risk": null,
         "google_news_headlines": [],
@@ -831,8 +967,12 @@
         "name": "Weener",
         "slug": "weener",
         "category": "Mechanical",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -855,8 +995,12 @@
         "name": "Rosti",
         "slug": "rosti",
         "category": "Mechanical",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -879,8 +1023,12 @@
         "name": "Jabil",
         "slug": "jabil",
         "category": "Mechanical",
+        "sanctions_hit": false,
+        "sanctions_matches": [],
         "cyber_risk": false,
         "matching_vulnerabilities": [],
+        "recall_risk": false,
+        "matching_recalls": [],
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
@@ -900,7 +1048,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-10T11:43:41.410310"
+    "last_fetched": "2026-07-10T12:01:38.485436"
   },
   "macro_economy": {
     "us": {
@@ -913,7 +1061,7 @@
       "cpi": "2.6%",
       "rate": "4.50%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: +0.10% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: +0.11% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.3%",
@@ -957,11 +1105,11 @@
       "region": "UK",
       "sentiment": "Negative",
       "latest_headline": "UK-listed (LSE). Monitoring regulatory news.",
-      "stock_move": "-1.60%",
-      "current_price": 2699.0,
-      "daily_change_pct": -1.6,
+      "stock_move": "-1.51%",
+      "current_price": 2701.5,
+      "daily_change_pct": -1.51,
       "risk_level": "MEDIUM",
-      "last_signal": "\ud83d\udcc9 Volatility: Stock down -1.60%",
+      "last_signal": "\ud83d\udcc9 Volatility: Stock down -1.51%",
       "news_risk": false,
       "stock_risk": true
     },
@@ -983,10 +1131,10 @@
   "harvest_stats": {
     "total_errors": 0,
     "total_warnings": 0,
-    "total_successes": 10,
+    "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 68.15055
+    "duration_seconds": 71.057611
   },
   "health": {
     "pillars": {

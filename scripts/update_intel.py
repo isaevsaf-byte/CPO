@@ -1554,6 +1554,15 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
         last_signal = "No supply chain risks detected."
         risk_analysis = ""
 
+        # Precomputed for Priorities 3-5 below (pure stock-price triggers):
+        # whether we actually had headlines to check the move against, so
+        # those branches can say "no negative news found" honestly instead
+        # of always implying an operational cause is confirmed.
+        if news_headline:
+            corroboration_note = "No negative news identified alongside this move — likely market/sector-wide rather than company-specific, but a move this size is worth a glance."
+        else:
+            corroboration_note = "No recent news data was available to check against this move."
+
         # Priority 0: Sanctions match — automatic CRITICAL, takes priority
         # over everything else. Transacting with a sanctioned party is a
         # legal blocker, not a graded operational risk.
@@ -1590,28 +1599,38 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
                 last_signal = f"📋 Monitor: {news_headline[:100]}"
             risk_analysis = f"{risk_reason}. {supplier_name} ({category}) requires monitoring. BAT exposure: {bat_exposure}."
 
+        # Priorities 3-5: pure stock-price triggers, reached only when the
+        # news scan above found nothing concerning. A price move alone
+        # doesn't confirm an operational problem — it may be market/sector-
+        # wide noise, or news that hasn't broken yet. Say so explicitly
+        # instead of instructing "investigate for operational impacts" as
+        # if a cause were already confirmed (EVE Energy's stock dipped 3.4%
+        # the same day its own headlines reported a strong, normal quarter
+        # — a real, correctly-thresholded signal, but not evidence of a
+        # problem, and the old wording implied otherwise).
+
         # Priority 3: Severe stock crash (>5%) indicates serious company problems
         elif daily_change_pct is not None and daily_change_pct < -5.0:
             supplier_risk_level = "CRITICAL"
-            last_signal = f"📉 Severe stock crash: {daily_change_pct:.1f}% - investigate cause"
-            risk_analysis = f"Severe stock decline of {daily_change_pct:.1f}% may indicate serious issues at {supplier_name}. BAT exposure: {bat_exposure}."
+            last_signal = f"📉 Severe stock crash: {daily_change_pct:.1f}% (no confirmed cause yet)"
+            risk_analysis = f"Severe stock decline of {daily_change_pct:.1f}% at {supplier_name}. {corroboration_note} A drop this size at {bat_exposure.lower()} exposure warrants direct follow-up regardless. BAT exposure: {bat_exposure}."
 
         # Priority 4: Significant stock drop (>3%) — escalate for Critical/High exposure
         elif daily_change_pct is not None and daily_change_pct < -3.0:
             if bat_exposure in ["Critical", "High"]:
                 supplier_risk_level = "HIGH"
-                last_signal = f"📉 Stock down {daily_change_pct:.1f}% - {bat_exposure} exposure supplier"
-                risk_analysis = f"Significant stock decline for {bat_exposure.lower()} exposure supplier. Investigate {supplier_name} for operational impacts. BAT exposure: {bat_exposure}."
+                last_signal = f"📉 Stock down {daily_change_pct:.1f}% (no confirmed cause) - {bat_exposure} exposure supplier"
+                risk_analysis = f"Stock decline for {bat_exposure.lower()}-exposure supplier {supplier_name}. {corroboration_note} BAT exposure: {bat_exposure}."
             else:
                 supplier_risk_level = "MEDIUM"
-                last_signal = f"📉 Stock down {daily_change_pct:.1f}% - monitoring"
-                risk_analysis = f"Notable stock decline for {supplier_name}. Monitor for any operational impacts. BAT exposure: {bat_exposure}."
+                last_signal = f"📉 Stock down {daily_change_pct:.1f}% (no confirmed cause) - monitoring"
+                risk_analysis = f"Notable stock decline for {supplier_name}. {corroboration_note} BAT exposure: {bat_exposure}."
 
         # Priority 5: Moderate stock drop (>1.5%) — flag for Critical/High exposure
         elif daily_change_pct is not None and daily_change_pct < -1.5 and bat_exposure in ["Critical", "High"]:
             supplier_risk_level = "MEDIUM"
-            last_signal = f"📉 Stock down {daily_change_pct:.1f}% - {bat_exposure} exposure supplier"
-            risk_analysis = f"Stock decline for {bat_exposure.lower()} exposure supplier. Monitor {supplier_name} for any operational impacts."
+            last_signal = f"📉 Stock down {daily_change_pct:.1f}% (no confirmed cause) - {bat_exposure} exposure supplier"
+            risk_analysis = f"Stock decline for {bat_exposure.lower()}-exposure supplier {supplier_name}. {corroboration_note}"
 
         # Default: Normal operations
         else:

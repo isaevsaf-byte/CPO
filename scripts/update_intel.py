@@ -231,6 +231,68 @@ GEOPOLITICAL_RISK_MAP = {
 RISK_PRIORITY = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
 
 # ============================================================================
+# NEWS RISK CLASSIFICATION HELPERS
+# Bare substring keywords are noisy on their own: "war" matches "trade war"
+# or "war of words"; "strike" matches "strike a deal"; "ban" matches "seize
+# the opportunity". These helpers add three cheap but high-leverage filters:
+#   1. Negation-awareness — "avoids bankruptcy" should not read as bankruptcy
+#   2. Subject relevance — the entity/country must be named IN the headline,
+#      not just matched somewhere in the article body by Google's search
+#   3. Recency — Google News RSS sometimes returns older evergreen articles
+#      for broad country/keyword queries; stale headlines are discounted
+# ============================================================================
+NEGATION_MARKERS = [
+    "no ", "not ", "denies", "denied", "denying", "rules out", "ruled out",
+    "avoids", "avoided", "averts", "averted", "unlikely", "rumors of",
+    "rumored", "despite", "no longer", "ends ", "ended ", "lifted",
+    "lifts ", "resolved", "settles", "settled", "dismisses", "dismissed",
+    "cleared of", "clears ", "false reports", "false claims",
+]
+
+
+def _is_negated_near(text_lower: str, keyword: str, window: int = 45) -> bool:
+    """True if a negation/de-escalation marker appears just before the keyword."""
+    idx = text_lower.find(keyword)
+    if idx == -1:
+        return False
+    context = text_lower[max(0, idx - window):idx]
+    return any(marker in context for marker in NEGATION_MARKERS)
+
+
+def _keyword_hit(text_lower: str, keyword: str) -> bool:
+    """A keyword only counts if present and not immediately negated nearby."""
+    return keyword in text_lower and not _is_negated_near(text_lower, keyword)
+
+
+def _mentions_subject(text_lower: str, subject: str) -> bool:
+    """Require the entity/country name to literally appear in the headline
+    itself — Google News matches query terms against the full article, so a
+    returned headline's title may not actually be about the search subject."""
+    return subject.lower() in text_lower
+
+
+def _parse_pub_date(pub_date_str: str):
+    try:
+        from email.utils import parsedate_to_datetime
+        dt = parsedate_to_datetime(pub_date_str)
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(tz=None).replace(tzinfo=None)
+        return dt
+    except Exception:
+        return None
+
+
+def _recent_headlines(headlines: list, max_age_days: int = 5) -> list:
+    """Drop stale headlines Google News sometimes returns for broad queries."""
+    cutoff = datetime.utcnow() - timedelta(days=max_age_days)
+    recent = []
+    for h in headlines:
+        dt = _parse_pub_date(h.get("published", ""))
+        if dt is None or dt >= cutoff:
+            recent.append(h)
+    return recent
+
+# ============================================================================
 # GOOGLE NEWS RSS — Broader news source for geopolitical & supplier scanning
 # Free, no API key, runs on GitHub Actions at $0
 # ============================================================================
@@ -277,50 +339,89 @@ def fetch_google_news_rss(query, max_results=5):
         return []
 
 
+# Direct-target phrases only. A bare "war" matches "trade war", "war of
+# words", or any headline about the Ukraine war that merely name-drops a
+# NATO neighbor — none of which mean that country itself is under threat.
+# These require an actual verb/action aimed at the country.
+GEO_CRITICAL_KW = [
+    "invades", "invasion of", "declares war on", "declared war on",
+    "war breaks out in", "bombing of", "bombs ", "missile strike on",
+    "airstrike on", "air strikes on", "under siege", "blockade of",
+    "military offensive against", "troops enter", "annexes", "annexation of",
+]
+GEO_HIGH_KW = [
+    "military buildup", "mobilizes troops", "mobilises troops",
+    "tensions escalat", "border clash", "imposes sanctions on",
+    "new sanctions on", "nuclear threat", "proxy war in",
+    "ceasefire collapse", "trade ban on", "export ban on", "embargo on",
+]
+GEO_MEDIUM_KW = [
+    "crisis in", "instability in", "unrest in", "protests in", "trade war",
+    "tariffs on", "diplomatic row", "territorial dispute", "border tension",
+]
+GEO_DEESCALATION_KW = [
+    "ceasefire agreed", "peace talks", "peace deal", "sanctions lifted",
+    "sanctions eased", "de-escalat", "withdraws troops", "troops withdraw",
+    "agreement reached",
+]
+
+
 def scan_country_geopolitical_news(country):
     """
-    Scan Google News for geopolitical risk signals affecting a specific country.
+    Scan Google News for geopolitical risk signals directly affecting a
+    specific country. Three guardrails against false positives:
+      - the country must actually be named in the headline (not just
+        matched by Google against the article body)
+      - de-escalation headlines (ceasefires, peace talks) are ignored
+      - CRITICAL requires 2+ independent corroborating headlines; a single
+        sensational headline is downgraded to HIGH instead
     Returns (risk_detected: bool, risk_level: str, headlines: list, reason: str)
     """
     query = f'"{country}" ({GEO_SEARCH_KEYWORDS})'
-    headlines = fetch_google_news_rss(query, max_results=5)
+    headlines = _recent_headlines(fetch_google_news_rss(query, max_results=8))
 
     if not headlines:
         return False, "LOW", [], ""
 
-    # Analyze headlines for severity
-    critical_kw = ["war", "invasion", "bombing", "missile", "airstrike", "sanctions imposed",
-                   "military offensive", "armed conflict", "blockade", "siege"]
-    high_kw = ["military", "tensions escalat", "sanctions", "nuclear", "proxy war",
-               "ceasefire collapse", "trade ban", "export ban", "embargo"]
-    medium_kw = ["crisis", "instability", "protest", "unrest", "trade war", "tariff",
-                 "diplomatic", "territorial dispute", "border clash"]
-
-    max_level = "LOW"
-    reason = ""
+    critical_hits, high_hits, medium_hits = [], [], []
 
     for h in headlines:
         title_lower = h["title"].lower()
 
-        for kw in critical_kw:
-            if kw in title_lower:
-                max_level = "CRITICAL" if RISK_PRIORITY.get("CRITICAL", 3) > RISK_PRIORITY.get(max_level, 0) else max_level
-                reason = f"Critical geopolitical event: '{kw}' in recent news"
-                break
+        if not _mentions_subject(title_lower, country):
+            continue
+        if any(kw in title_lower for kw in GEO_DEESCALATION_KW):
+            continue
 
-        for kw in high_kw:
-            if kw in title_lower:
-                if RISK_PRIORITY.get("HIGH", 2) > RISK_PRIORITY.get(max_level, 0):
-                    max_level = "HIGH"
-                    reason = reason or f"High geopolitical risk: '{kw}' in recent news"
-                break
+        hit = next((kw for kw in GEO_CRITICAL_KW if _keyword_hit(title_lower, kw)), None)
+        if hit:
+            critical_hits.append((h["title"], hit))
+            continue
 
-        for kw in medium_kw:
-            if kw in title_lower:
-                if RISK_PRIORITY.get("MEDIUM", 1) > RISK_PRIORITY.get(max_level, 0):
-                    max_level = "MEDIUM"
-                    reason = reason or f"Elevated geopolitical risk: '{kw}' in recent news"
-                break
+        hit = next((kw for kw in GEO_HIGH_KW if _keyword_hit(title_lower, kw)), None)
+        if hit:
+            high_hits.append((h["title"], hit))
+            continue
+
+        hit = next((kw for kw in GEO_MEDIUM_KW if _keyword_hit(title_lower, kw)), None)
+        if hit:
+            medium_hits.append((h["title"], hit))
+
+    if len(critical_hits) >= 2:
+        max_level = "CRITICAL"
+        reason = f"Critical geopolitical event: '{critical_hits[0][1]}' corroborated by {len(critical_hits)} headlines"
+    elif critical_hits:
+        max_level = "HIGH"
+        reason = f"Geopolitical event (single-source, downgraded pending corroboration): '{critical_hits[0][1]}' in recent news"
+    elif high_hits:
+        max_level = "HIGH"
+        reason = f"High geopolitical risk: '{high_hits[0][1]}' in recent news"
+    elif medium_hits:
+        max_level = "MEDIUM"
+        reason = f"Elevated geopolitical risk: '{medium_hits[0][1]}' in recent news"
+    else:
+        max_level = "LOW"
+        reason = ""
 
     risk_detected = max_level != "LOW"
     return risk_detected, max_level, headlines, reason
@@ -329,11 +430,13 @@ def scan_country_geopolitical_news(country):
 def scan_supplier_news_google(supplier_name, country):
     """
     Scan Google News for supply chain risk signals for a specific supplier.
-    Used for suppliers WITHOUT a stock ticker (no yfinance news).
+    Used for suppliers WITHOUT a stock ticker (no yfinance news). Requires
+    the supplier's name to actually appear in the headline and ignores
+    negated hits ("avoids bankruptcy", "denies fraud").
     Returns (headlines: list, risk_level: str, risk_reason: str)
     """
     query = f'"{supplier_name}" ({SUPPLY_SEARCH_KEYWORDS})'
-    headlines = fetch_google_news_rss(query, max_results=3)
+    headlines = _recent_headlines(fetch_google_news_rss(query, max_results=5))
 
     if not headlines:
         return [], "LOW", ""
@@ -342,7 +445,7 @@ def scan_supplier_news_google(supplier_name, country):
     CRITICAL_KW = ["bankruptcy", "bankrupt", "insolvent", "liquidation",
                    "factory fire", "plant fire", "explosion", "facility closure",
                    "sanction", "ransomware", "cyber attack", "operations halted",
-                   "strike", "labor strike", "walkout"]
+                   "labor strike", "workers strike", "walkout"]
     HIGH_KW = ["fraud investigation", "sec investigation", "major recall",
                "product recall", "ceo fired", "ceo resign"]
     MEDIUM_KW = ["mass layoff", "supply shortage", "supply disruption",
@@ -353,9 +456,11 @@ def scan_supplier_news_google(supplier_name, country):
 
     for h in headlines:
         title_lower = h["title"].lower()
+        if not _mentions_subject(title_lower, supplier_name):
+            continue
 
         for kw in CRITICAL_KW:
-            if kw in title_lower:
+            if _keyword_hit(title_lower, kw):
                 max_level = "CRITICAL"
                 reason = f"Critical supply risk from news: '{kw}'"
                 break
@@ -363,14 +468,14 @@ def scan_supplier_news_google(supplier_name, country):
             break
 
         for kw in HIGH_KW:
-            if kw in title_lower:
+            if _keyword_hit(title_lower, kw):
                 if RISK_PRIORITY.get("HIGH", 2) > RISK_PRIORITY.get(max_level, 0):
                     max_level = "HIGH"
                     reason = reason or f"High supply risk from news: '{kw}'"
                 break
 
         for kw in MEDIUM_KW:
-            if kw in title_lower:
+            if _keyword_hit(title_lower, kw):
                 if RISK_PRIORITY.get("MEDIUM", 1) > RISK_PRIORITY.get(max_level, 0):
                     max_level = "MEDIUM"
                     reason = reason or f"Supply concern from news: '{kw}'"
@@ -1124,9 +1229,9 @@ def process_suppliers(cyber_data):
         "bankruptcy", "bankrupt", "insolvent", "liquidation", "chapter 11",
         "factory fire", "plant fire", "explosion", "plant closure", "facility closure",
         "cease operations", "shut down", "shutting down",
-        "sanction", "sanctioned", "banned", "seized", "embargo",
+        "sanctioned", "import ban", "export ban", "trade ban", "seized", "embargo",
         "ransomware attack", "cyber attack", "systems down", "operations halted",
-        "strike", "labor strike", "workers strike", "walkout"
+        "labor strike", "workers strike", "walkout"
     ]
 
     HIGH_SUPPLY_KEYWORDS = [
@@ -1218,7 +1323,7 @@ def process_suppliers(cyber_data):
 
                 # Check for CRITICAL supply risk keywords
                 for kw in CRITICAL_SUPPLY_KEYWORDS:
-                    if kw in headline_lower:
+                    if _keyword_hit(headline_lower, kw):
                         news_risk = True
                         operational_risk = True
                         news_items.append({"headline": headline, "risk": "CRITICAL", "keyword": kw})
@@ -1228,7 +1333,7 @@ def process_suppliers(cyber_data):
                 # Check for HIGH supply risk keywords
                 if not operational_risk:
                     for kw in HIGH_SUPPLY_KEYWORDS:
-                        if kw in headline_lower:
+                        if _keyword_hit(headline_lower, kw):
                             news_risk = True
                             operational_risk = True
                             news_items.append({"headline": headline, "risk": "HIGH", "keyword": kw})
@@ -1238,7 +1343,7 @@ def process_suppliers(cyber_data):
                 # Check for MEDIUM supply risk keywords
                 if not operational_risk:
                     for kw in MEDIUM_SUPPLY_KEYWORDS:
-                        if kw in headline_lower:
+                        if _keyword_hit(headline_lower, kw):
                             news_risk = True
                             operational_risk = True
                             news_items.append({"headline": headline, "risk": "MEDIUM", "keyword": kw})
@@ -1631,9 +1736,13 @@ def fetch_peer_group():
     """
     peer_data = []
 
-    # Risk keywords for news analysis
-    CRITICAL_KEYWORDS = ["investigation", "fraud", "sanction", "bankruptcy", "recall",
-                          "strike", "ban", "seize", "breach", "hack", "lawsuit"]
+    # Risk keywords for news analysis. Bare "strike"/"ban"/"seize" were
+    # dropped in favor of specific phrases — they matched too much
+    # unrelated coverage ("strike a deal", "bans plastic packaging",
+    # "seize the opportunity").
+    CRITICAL_KEYWORDS = ["investigation", "fraud", "sanctioned", "bankruptcy", "recall",
+                          "labor strike", "workers strike", "import ban", "export ban",
+                          "trade ban", "seized", "breach", "hacked", "lawsuit"]
     WARNING_KEYWORDS = ["delay", "shortage", "volatile", "drop", "miss", "down",
                         "fine", "cut", "layoff", "restructur", "warning", "concern"]
 
@@ -1722,7 +1831,7 @@ def fetch_peer_group():
                     hl_lower = hl.lower()
 
                     # Check for CRITICAL keywords
-                    has_critical = any(keyword in hl_lower for keyword in CRITICAL_KEYWORDS)
+                    has_critical = any(_keyword_hit(hl_lower, keyword) for keyword in CRITICAL_KEYWORDS)
                     if has_critical:
                         risk_level = "CRITICAL"
                         last_signal = f"🚨 News Alert: {hl[:120]}"
@@ -1730,7 +1839,7 @@ def fetch_peer_group():
                         break
 
                     # Check for WARNING keywords
-                    has_warning = any(keyword in hl_lower for keyword in WARNING_KEYWORDS)
+                    has_warning = any(_keyword_hit(hl_lower, keyword) for keyword in WARNING_KEYWORDS)
                     if has_warning:
                         risk_level = "MEDIUM"
                         last_signal = f"⚠️ News Alert: {hl[:120]}"

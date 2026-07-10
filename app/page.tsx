@@ -10,7 +10,6 @@ import type {
   RAGScore as RAGScoreType,
   Supplier,
   PeerGroupItem,
-  Peer,
 } from '../types/intel';
 import {
   getRAGColor,
@@ -494,14 +493,15 @@ export default function MorningCoffeeDashboard() {
               const isBAT = peer.name === 'British American Tobacco' || peer.name === 'BAT' || peer.ticker === 'BTI';
               const stockMovePositive = peer.stock_move?.startsWith('+');
               const stockMoveNegative = peer.stock_move?.startsWith('-');
-              
+              const hasSecSignal = (peer.sec_red_signals ?? 0) > 0 || (peer.sec_amber_signals ?? 0) > 0;
+
               return (
                 <Link
                   key={idx}
                   href={`/details/${encodeURIComponent(peer.name)}`}
                   className={`bg-white rounded-lg shadow-sm border-2 p-5 block hover:bg-slate-50 cursor-pointer transition-colors ${
-                    isBAT 
-                      ? 'border-blue-600 bg-blue-50' 
+                    isBAT
+                      ? 'border-blue-600 bg-blue-50'
                       : 'border-gray-200'
                   }`}
                 >
@@ -518,9 +518,9 @@ export default function MorningCoffeeDashboard() {
                       <div className="text-xs text-gray-600 font-mono mt-1">{peer.ticker}</div>
                     </div>
                   </div>
-                  
+
                   <div className="mb-3">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${
                         peer.sentiment === 'Positive' ? 'bg-green-100 text-green-800' :
                         peer.sentiment === 'Negative' ? 'bg-red-100 text-red-800' :
@@ -535,11 +535,22 @@ export default function MorningCoffeeDashboard() {
                       }`}>
                         {peer.stock_move || 'N/A'}
                       </span>
+                      {hasSecSignal && (
+                        <span
+                          className="px-1.5 py-0.5 bg-amber-700 text-white rounded text-xs"
+                          title={`SEC 8-K filing signal: ${peer.sec_red_signals ?? 0} distress, ${peer.sec_amber_signals ?? 0} management-change`}
+                        >
+                          📄 SEC
+                        </span>
+                      )}
                     </div>
                   </div>
-                  
-                  <div className="pt-3 border-t border-gray-200">
+
+                  <div className="pt-3 border-t border-gray-200 space-y-1">
                     <p className="text-xs text-gray-700 leading-relaxed">{peer.latest_headline || 'No headline'}</p>
+                    {hasSecSignal && peer.summary && (
+                      <p className="text-xs text-amber-800 leading-relaxed font-medium">{peer.summary}</p>
+                    )}
                   </div>
                 </Link>
               );
@@ -725,44 +736,6 @@ export default function MorningCoffeeDashboard() {
           </div>
         </div>
 
-        {/* Peers Section */}
-        {peers?.peers && peers.peers.length > 0 && (
-          <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">Peers & Competitors</h2>
-            </div>
-            <div className="p-6">
-              <div className="space-y-4">
-                {peers.peers.map((peer: Peer, idx: number) => (
-                  <Link
-                    key={idx}
-                    href={`/details/${encodeURIComponent(peer.name)}`}
-                    className="block border-b border-gray-200 pb-4 last:border-0 last:pb-0 hover:bg-slate-50 cursor-pointer transition-colors p-2 rounded -m-2"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-900">{peer.name}</h3>
-                          <span className={`px-2 py-1 rounded text-xs font-bold ${
-                            peer.rag_score === 'RED' ? 'bg-red-100 text-red-800' :
-                            peer.rag_score === 'AMBER' ? 'bg-amber-100 text-amber-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {peer.rag_score}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 mt-1">{peer.full_name} • {peer.type}</p>
-                        <p className="text-sm text-gray-700 mt-2 bg-gray-50 p-3 rounded border border-gray-200">
-                          {peer.summary}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       <footer className="mt-12 bg-gray-900 text-gray-300 py-6">

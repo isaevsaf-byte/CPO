@@ -542,15 +542,6 @@ PEERS_CONFIG = [
     }
 ]
 
-# Legacy PEERS_LIST for backward compatibility with existing code
-PEERS_LIST = [
-    {"name": "BAT", "full_name": "British American Tobacco", "type": "Tobacco Competitor"},
-    {"name": "PMI", "full_name": "Philip Morris International", "type": "Tobacco Competitor"},
-    {"name": "Imperial", "full_name": "Imperial Brands", "type": "Tobacco Competitor"},
-    {"name": "JTI", "full_name": "Japan Tobacco International", "type": "Tobacco Competitor"},
-    {"name": "Our Company", "full_name": "Our Company", "type": "Self-Reference"}
-]
-
 # ============================================================================
 # SUPPLIER NAME ALIASES — shared across CISA, CPSC recall, and sanctions
 # matching so a supplier registered under a trading name or subsidiary
@@ -889,13 +880,14 @@ def fetch_macro_overview(previous_eur_usd=None):
 def fetch_sec_filings_for_peer(peer_name):
     """Fetch SEC 8-K filings for a peer company with retry logic"""
     source_name = f"sec_edgar_{peer_name}"
-    # CIK mapping for tobacco companies (simplified)
+    # CIK mapping for tobacco companies (simplified). Keyed by the same
+    # canonical name used in PEERS_CONFIG so this can be called directly
+    # from fetch_peer_group() without a second name-mapping table.
     cik_map = {
-        "BAT": None,  # British American Tobacco - not US listed
-        "PMI": "0001413329",  # Philip Morris International
-        "Imperial": None,  # Imperial Brands - not US listed
-        "JTI": None,  # Japan Tobacco - not US listed
-        "Our Company": None  # Placeholder
+        "British American Tobacco": None,  # not US listed
+        "Philip Morris Int.": "0001413329",  # Philip Morris International
+        "Imperial Brands": None,  # not US listed
+        "Japan Tobacco": None,  # not US listed
     }
 
     cik = cik_map.get(peer_name)
@@ -1046,67 +1038,38 @@ def generate_peer_summary(peer_name, filings_data):
     # Default neutral summary
     return f"Neutral: Standard monitoring active. No material risks identified in last 48h."
 
-def fetch_peers_overview():
-    """Aggregate Peers & Competitors Intelligence - ALWAYS includes summary text"""
-    peers_data = []
-    total_red_signals = 0
-    total_amber_signals = 0
-    
-    for peer in PEERS_LIST:
-        peer_name = peer["name"]
-        filings_data = fetch_sec_filings_for_peer(peer_name)
-        
-        # Generate summary text - MANDATORY: Always provide meaningful text
-        summary_text = generate_peer_summary(peer_name, filings_data)
-        
-        # Placeholder for news tracking (would integrate news API in production)
-        news_data = {
-            "status": "placeholder",
-            "recent_news": [],
-            "note": "News tracking placeholder - integrate news API"
-        }
-        
-        # Determine individual peer RAG score
-        peer_red = filings_data.get("red_signals", 0)
-        peer_amber = filings_data.get("amber_signals", 0)
-        if peer_red > 0:
-            peer_rag = "RED"
-        elif peer_amber > 0:
-            peer_rag = "AMBER"
-        else:
-            peer_rag = "GREEN"
-        
-        peer_info = {
-            "name": peer_name,
-            "full_name": peer.get("full_name", peer_name),
-            "type": peer.get("type", "Unknown"),
-            "rag_score": peer_rag,
-            "summary": summary_text,  # MANDATORY: Always present
-            "sec_filings": filings_data,
-            "news": news_data
-        }
-        
-        if filings_data.get("status") == "success":
-            total_red_signals += filings_data.get("red_signals", 0)
-            total_amber_signals += filings_data.get("amber_signals", 0)
-        
-        peers_data.append(peer_info)
-    
-    # Calculate overall RAG score
-    if total_red_signals > 0:
+def fetch_peers_overview(peer_group):
+    """
+    Pillar-2 rollup — Peers & Competitors.
+
+    peer_group (from fetch_peer_group()) is now the single source of truth
+    for peer data: each entry already carries both live stock/news risk
+    AND SEC 8-K filing signals (see fetch_peer_group). This just aggregates
+    it into the pillar-level status/rag_score the dashboard card needs.
+    Previously this ran its own independent fetch loop over a second,
+    differently-named company list (PEERS_LIST) and produced a second,
+    mostly-duplicate `peers` array — same 4 companies, doubled maintenance,
+    double the SEC EDGAR requests per harvest.
+    """
+    total_red_signals = sum(p.get("sec_red_signals", 0) for p in peer_group)
+    total_amber_signals = sum(p.get("sec_amber_signals", 0) for p in peer_group)
+    live_critical = sum(1 for p in peer_group if p.get("risk_level") == "CRITICAL")
+    live_high = sum(1 for p in peer_group if p.get("risk_level") in ("HIGH", "CRITICAL"))
+    live_medium = sum(1 for p in peer_group if p.get("risk_level") == "MEDIUM")
+
+    if total_red_signals > 0 or live_critical > 0:
         rag_score = "RED"
-    elif total_amber_signals > 0:
+    elif total_amber_signals > 0 or live_high >= 1 or live_medium >= 2:
         rag_score = "AMBER"
     else:
         rag_score = "GREEN"
-    
+
     return {
         "status": "success",
         "rag_score": rag_score,
-        "total_peers": len(peers_data),
+        "total_peers": len(peer_group),
         "total_red_signals": total_red_signals,
         "total_amber_signals": total_amber_signals,
-        "peers": peers_data,
         "last_fetched": datetime.utcnow().isoformat()
     }
 
@@ -1994,7 +1957,10 @@ def fetch_peer_group():
                 "current_price": None,
                 "daily_change_pct": None,
                 "risk_level": "LOW",
-                "last_signal": peer_config.get("default_text", "Circuit breaker active.")
+                "last_signal": peer_config.get("default_text", "Circuit breaker active."),
+                "sec_red_signals": 0,
+                "sec_amber_signals": 0,
+                "summary": peer_config.get("default_text", "Circuit breaker active."),
             })
         return peer_data
 
@@ -2129,6 +2095,20 @@ def fetch_peer_group():
 
             yfinance_circuit_breaker.record_success()
             harvest_stats.record_success(f"peer_{peer_config['ticker']}")
+
+            # Fold in SEC 8-K filing signals (was previously a second,
+            # independently-fetched "peers" pillar over a differently-named
+            # copy of this same company list — see fetch_peers_overview).
+            filings_data = fetch_sec_filings_for_peer(peer_config["name"])
+            sec_red = filings_data.get("red_signals", 0)
+            sec_amber = filings_data.get("amber_signals", 0)
+            if sec_red > 0 and RISK_PRIORITY.get(risk_level, 0) < RISK_PRIORITY.get("HIGH", 2):
+                risk_level = "HIGH"
+                last_signal = f"📄 SEC filing: {sec_red} distress signal(s) (Item 1.03/4.02) | {last_signal}"
+            elif sec_amber > 0 and RISK_PRIORITY.get(risk_level, 0) < RISK_PRIORITY.get("MEDIUM", 1):
+                risk_level = "MEDIUM"
+                last_signal = f"📄 SEC filing: {sec_amber} management change signal(s) | {last_signal}"
+
             peer_data.append({
                 "name": peer_config["name"],
                 "ticker": ticker_symbol,
@@ -2141,7 +2121,10 @@ def fetch_peer_group():
                 "risk_level": risk_level,
                 "last_signal": last_signal,
                 "news_risk": news_risk_detected,
-                "stock_risk": stock_risk_detected
+                "stock_risk": stock_risk_detected,
+                "sec_red_signals": sec_red,
+                "sec_amber_signals": sec_amber,
+                "summary": generate_peer_summary(peer_config["name"], filings_data),
             })
 
         except Exception as e:
@@ -2160,7 +2143,10 @@ def fetch_peer_group():
                 "risk_level": "LOW",
                 "last_signal": peer_config.get("default_text", "Data fetch error."),
                 "news_risk": False,
-                "stock_risk": False
+                "stock_risk": False,
+                "sec_red_signals": 0,
+                "sec_amber_signals": 0,
+                "summary": peer_config.get("default_text", "Data fetch error."),
             })
 
     return peer_data
@@ -2260,33 +2246,19 @@ def main():
     # PILLAR 1: Macro Overview
     macro_data = fetch_macro_overview(previous_eur_usd)
 
-    # PILLAR 2: Peers & Competitors
-    peers_data = fetch_peers_overview()
+    # PILLAR 2: Peers & Competitors — peer_group (live stock/news + SEC
+    # filing signals, all merged in fetch_peer_group) is now the single
+    # source of truth; fetch_peers_overview just rolls it up into the
+    # pillar-level status the dashboard card needs. No separate fetch, no
+    # separate cross-pillar escalation merge required anymore.
+    peer_group = fetch_peer_group()
+    peers_data = fetch_peers_overview(peer_group)
 
     # PILLAR 3: Supplier Watchlist
     suppliers_data = process_suppliers(cyber_data, recalls_data, sanctions_data)
 
     # Generate additional intelligence data (LIVE DATA)
     macro_economy = fetch_macro_economy()
-    peer_group = fetch_peer_group()
-
-    # ================================================================
-    # MERGE live peer_group risk data INTO peers pillar RAG score
-    # peer_group has real-time stock + news data that the SEC-only
-    # peers pillar misses. Escalate the pillar RAG if live data shows risk.
-    # ================================================================
-    peer_group_critical = sum(1 for p in peer_group if p.get("risk_level") == "CRITICAL")
-    peer_group_high = sum(1 for p in peer_group if p.get("risk_level") in ("HIGH", "CRITICAL"))
-    peer_group_medium = sum(1 for p in peer_group if p.get("risk_level") == "MEDIUM")
-
-    if peer_group_critical >= 1:
-        if peers_data.get("rag_score") != "RED":
-            logger.info(f"Escalating peers RAG to RED: {peer_group_critical} peer(s) at CRITICAL from live data")
-            peers_data["rag_score"] = "RED"
-    elif peer_group_high >= 1 or peer_group_medium >= 2:
-        if peers_data.get("rag_score") == "GREEN":
-            logger.info(f"Escalating peers RAG to AMBER: live peer data shows elevated risk")
-            peers_data["rag_score"] = "AMBER"
 
     # ================================================================
     # MERGE live macro_economy trend data INTO macro pillar RAG score

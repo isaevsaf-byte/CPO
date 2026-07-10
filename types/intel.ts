@@ -63,45 +63,16 @@ export interface MacroEconomy {
 // Peers Data Types
 // ============================================================================
 
-export interface SECFiling {
-  title: string;
-  summary: string;
-  published: string;
-}
-
-export interface SECFilingsData {
-  status: Status;
-  filings: SECFiling[];
-  red_signals: number;
-  amber_signals: number;
-  reason?: string;
-  error?: string;
-  last_fetched: string;
-}
-
-export interface PeerNewsData {
-  status: Status;
-  recent_news: any[];
-  note?: string;
-}
-
-export interface Peer {
-  name: string;
-  full_name: string;
-  type: string;
-  rag_score: RAGScore;
-  summary: string;
-  sec_filings: SECFilingsData;
-  news: PeerNewsData;
-}
-
+// Pillar-2 rollup only — see PeerGroupItem for per-company data.
+// (Previously this pillar carried its own `peers: Peer[]` array,
+// independently fetched over a differently-named copy of the same 4
+// companies as peer_group; that's now consolidated into peer_group.)
 export interface PeersData {
   status: Status;
   rag_score: RAGScore;
   total_peers: number;
   total_red_signals: number;
   total_amber_signals: number;
-  peers: Peer[];
   last_fetched: string;
 }
 
@@ -118,6 +89,9 @@ export interface PeerGroupItem {
   last_signal: string;
   news_risk?: boolean;
   stock_risk?: boolean;
+  sec_red_signals?: number;
+  sec_amber_signals?: number;
+  summary?: string;
 }
 
 // ============================================================================

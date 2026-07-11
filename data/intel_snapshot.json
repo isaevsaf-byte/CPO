@@ -1,18 +1,16 @@
 {
-  "last_updated": "2026-07-10T20:18:13.249010",
-  "version": "3b6c10109fe6",
+  "last_updated": "2026-07-11T01:22:58.333610",
+  "version": "e1df9dbf3fcf",
   "status": "healthy",
   "overall_rag": {
-    "score": "GREEN",
+    "score": "AMBER",
     "driven_by": [
-      "macro",
-      "peers",
       "suppliers"
     ],
     "pillar_scores": {
       "macro": "GREEN",
       "peers": "GREEN",
-      "suppliers": "GREEN"
+      "suppliers": "AMBER"
     }
   },
   "rag_history": [
@@ -92,6 +90,13 @@
       "peers": "GREEN",
       "suppliers": "GREEN",
       "overall": "GREEN"
+    },
+    {
+      "timestamp": "2026-07-11T01:22:58.333604",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -107,7 +112,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-10T20:17:05.231596"
+        "last_fetched": "2026-07-11T01:21:50.721159"
       },
       "eu": {
         "status": "success",
@@ -118,7 +123,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.143",
-        "last_fetched": "2026-07-10T20:17:05.902507"
+        "last_fetched": "2026-07-11T01:21:51.384397"
       },
       "china": {
         "status": "placeholder",
@@ -129,11 +134,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-10T20:17:05.903489"
+        "last_fetched": "2026-07-11T01:21:51.385368"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-10T20:17:05.903502"
+    "last_fetched": "2026-07-11T01:21:51.385424"
   },
   "peers": {
     "status": "success",
@@ -141,11 +146,11 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 2,
-    "last_fetched": "2026-07-10T20:17:08.103141"
+    "last_fetched": "2026-07-11T01:21:53.445952"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "GREEN",
+    "rag_score": "AMBER",
     "total_suppliers": 24,
     "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 0,
@@ -154,10 +159,10 @@
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 0,
-    "total_high": 0,
-    "total_medium": 9,
+    "total_high": 1,
+    "total_medium": 8,
     "actionable_critical": 0,
-    "actionable_high": 0,
+    "actionable_high": 1,
     "actionable_medium": 0,
     "suppliers": [
       {
@@ -231,8 +236,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.97,
-        "current_price": 9.44,
+        "daily_change_pct": null,
+        "current_price": null,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -245,7 +250,7 @@
           "headlines": [
             "Ukraine has already won the war against Russia, Finnish president tells CNBC - CNBC",
             "Russia Puts Finland on Nuclear Target List After Weapons Law Change - The Defense Post",
-            "Finland's President Says 'Ukraine Has Won' War Against Russia by Preserving Sovereignty\u2014 But Warns Kyiv S - Benzinga"
+            "EU Foreign Affairs Council to discuss Russia\u2019s war of aggression, the Middle East and the Black Sea - Suomi ulkomailla"
           ],
           "escalated": true,
           "baseline_only": true
@@ -283,9 +288,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "Why Christmas trees are causing a ruckus in the US-China trade war - South China Morning Post",
             "China blocks exports of helium, key for chipmaking, as Iran war squeezes supply - AP News",
-            "The loudest voices in US-China trade talks? Christmas tree growers - South China Morning Post",
-            "Beijing Marks 89th Anniversary of China\u2019s War of Resistance - Modern Diplomacy"
+            "China \u2018sees Ukraine war in its interest\u2019 - TVP World"
           ],
           "escalated": true,
           "baseline_only": true
@@ -323,9 +328,9 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
+            "Today in Africa, July 10, 2026: Sudan peace plan, South Africa anti-migrant protests, Ghana romance scam - OkayAfrica",
             "July 10, the Battle of Britain begins in World War II - Sent-trib",
-            "South Africa is not at war with Africa. - IOL",
-            "US-Iran war has added strain to financial system, Prudential Authority says - Business Day"
+            "Fifteen years of independence for South Sudan, but still little to celebrate - RFI"
           ],
           "escalated": true,
           "baseline_only": true
@@ -450,9 +455,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
+            "T\u00fcrkiye\u2019s NATO commitment and the trial by fire of the Korean War - TRT World",
             "JUST IN: North Korea Learning Drone Warfare Lessons from Russia-Ukraine Conflict - National Defense Magazine",
-            "N. Korea says will bolster nuclear force, expand S. Korea spy activities in \u2018radical way\u2019 - France 24",
-            "Stocks rise, oil prices fall, while South Korean AI darling SK Hynix leaps in its Wall Street debut - WRAL"
+            "N. Korea says will bolster nuclear force, expand S. Korea spy activities in \u2018radical way\u2019 - France 24"
           ],
           "escalated": true,
           "baseline_only": true
@@ -594,8 +599,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": -0.11,
+        "current_price": 281.75,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -607,8 +612,8 @@
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
             "An Elite Club Is in the Firing Line of India\u2019s War on Its Colonial Past - WSJ",
-            "\"Sexual Violence Used As A Tool Of War, Terrorism, Torture\": India At UN - NDTV",
-            "'Weapon of war': India at UN condemns conflict-related sexual violence, highlights role of women peacekeepers - WION"
+            "Trump repeats claim of ending India-Pakistan war, says 11 jets were shot down during conflict - The New Indian Express",
+            "China blocks helium exports amid Iran war-driven supply crunch - Firstpost"
           ],
           "escalated": true,
           "baseline_only": true
@@ -646,9 +651,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "Why Christmas trees are causing a ruckus in the US-China trade war - South China Morning Post",
             "China blocks exports of helium, key for chipmaking, as Iran war squeezes supply - AP News",
-            "The loudest voices in US-China trade talks? Christmas tree growers - South China Morning Post",
-            "Beijing Marks 89th Anniversary of China\u2019s War of Resistance - Modern Diplomacy"
+            "China \u2018sees Ukraine war in its interest\u2019 - TVP World"
           ],
           "escalated": true,
           "baseline_only": true
@@ -715,9 +720,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "Why Christmas trees are causing a ruckus in the US-China trade war - South China Morning Post",
             "China blocks exports of helium, key for chipmaking, as Iran war squeezes supply - AP News",
-            "The loudest voices in US-China trade talks? Christmas tree growers - South China Morning Post",
-            "Beijing Marks 89th Anniversary of China\u2019s War of Resistance - Modern Diplomacy"
+            "China \u2018sees Ukraine war in its interest\u2019 - TVP World"
           ],
           "escalated": true,
           "baseline_only": true
@@ -743,8 +748,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.13,
+        "current_price": 7.63,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -755,9 +760,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "Why Christmas trees are causing a ruckus in the US-China trade war - South China Morning Post",
             "China blocks exports of helium, key for chipmaking, as Iran war squeezes supply - AP News",
-            "The loudest voices in US-China trade talks? Christmas tree growers - South China Morning Post",
-            "Beijing Marks 89th Anniversary of China\u2019s War of Resistance - Modern Diplomacy"
+            "China \u2018sees Ukraine war in its interest\u2019 - TVP World"
           ],
           "escalated": true,
           "baseline_only": true
@@ -783,24 +788,24 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
-        "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
-        "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
-        "counts_toward_rag": false,
-        "price_move_only": false,
+        "daily_change_pct": -3.43,
+        "current_price": 54.94,
+        "risk_analysis": "Stock decline for high-exposure supplier EVE Energy. No recent news data was available to check against this move. BAT exposure: High.",
+        "risk_level": "HIGH",
+        "last_signal": "\ud83d\udcc9 Stock down -3.4% (no confirmed cause) - High exposure supplier",
+        "counts_toward_rag": true,
+        "price_move_only": true,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "Why Christmas trees are causing a ruckus in the US-China trade war - South China Morning Post",
             "China blocks exports of helium, key for chipmaking, as Iran war squeezes supply - AP News",
-            "The loudest voices in US-China trade talks? Christmas tree growers - South China Morning Post",
-            "Beijing Marks 89th Anniversary of China\u2019s War of Resistance - Modern Diplomacy"
+            "China \u2018sees Ukraine war in its interest\u2019 - TVP World"
           ],
-          "escalated": true,
-          "baseline_only": true
+          "escalated": false,
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -852,11 +857,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.19,
-        "current_price": 72.48,
+        "daily_change_pct": null,
+        "current_price": null,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.2%",
+        "last_signal": "\u2713 Normal operations. No risk signals.",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -956,7 +961,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-10T20:18:12.449722"
+    "last_fetched": "2026-07-11T01:22:57.477771"
   },
   "macro_economy": {
     "us": {
@@ -974,8 +979,8 @@
     "china": {
       "cpi": "0.3%",
       "rate": "3.45%",
-      "trend": "Stable",
-      "summary": "CNY/USD stable: -0.39% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "trend": "Growing",
+      "summary": "CNY/USD growing: -0.53% change. Yuan strengthening against USD. Industrial output showing resilience despite external headwinds. PBOC maintaining accommodative policy stance. Export sector performing well, domestic consumption recovering. Currency strength reflects improved economic fundamentals and policy effectiveness."
     }
   },
   "peer_group": [
@@ -1017,13 +1022,13 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Negative",
+      "sentiment": "Neutral",
       "latest_headline": "UK-listed (LSE). Monitoring regulatory news.",
-      "stock_move": "-1.09%",
-      "current_price": 2713.0,
-      "daily_change_pct": -1.09,
+      "stock_move": "N/A",
+      "current_price": null,
+      "daily_change_pct": null,
       "risk_level": "LOW",
-      "last_signal": "Stock: -1.09% | UK-listed (LSE). Monitoring regulatory news.",
+      "last_signal": "UK-listed (LSE). Monitoring regulatory news.",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1034,13 +1039,13 @@
       "name": "Japan Tobacco",
       "ticker": "2914.T",
       "region": "Japan",
-      "sentiment": "Neutral",
+      "sentiment": "Negative",
       "latest_headline": "Tokyo listed. Monitoring global press releases.",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "-1.12%",
+      "current_price": 6117.0,
+      "daily_change_pct": -1.12,
       "risk_level": "LOW",
-      "last_signal": "Tokyo listed. Monitoring global press releases.",
+      "last_signal": "Stock: -1.12% | Tokyo listed. Monitoring global press releases.",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1054,7 +1059,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 70.716765
+    "duration_seconds": 70.374885
   },
   "health": {
     "pillars": {

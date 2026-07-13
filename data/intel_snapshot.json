@@ -1,16 +1,16 @@
 {
-  "last_updated": "2026-07-13T01:26:33.443927",
-  "version": "984fb8ef503f",
+  "last_updated": "2026-07-13T08:43:10.723963",
+  "version": "ee30e5e750c0",
   "status": "healthy",
   "overall_rag": {
-    "score": "AMBER",
+    "score": "RED",
     "driven_by": [
       "suppliers"
     ],
     "pillar_scores": {
       "macro": "GREEN",
       "peers": "GREEN",
-      "suppliers": "AMBER"
+      "suppliers": "RED"
     }
   },
   "rag_history": [
@@ -153,6 +153,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-07-13T08:43:10.723959",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "RED",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -168,7 +175,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-13T01:25:19.007934"
+        "last_fetched": "2026-07-13T08:41:53.629317"
       },
       "eu": {
         "status": "success",
@@ -179,7 +186,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.143",
-        "last_fetched": "2026-07-13T01:25:19.712197"
+        "last_fetched": "2026-07-13T08:41:54.538828"
       },
       "china": {
         "status": "placeholder",
@@ -190,23 +197,23 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-13T01:25:19.713166"
+        "last_fetched": "2026-07-13T08:41:54.539794"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-13T01:25:19.713180"
+    "last_fetched": "2026-07-13T08:41:54.539808"
   },
   "peers": {
     "status": "success",
     "rag_score": "GREEN",
     "total_peers": 4,
     "total_red_signals": 0,
-    "total_amber_signals": 2,
-    "last_fetched": "2026-07-13T01:25:27.662824"
+    "total_amber_signals": 1,
+    "last_fetched": "2026-07-13T08:42:06.046376"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "AMBER",
+    "rag_score": "RED",
     "total_suppliers": 24,
     "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 0,
@@ -214,12 +221,12 @@
     "suppliers_at_news_risk": 0,
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
-    "total_critical": 0,
+    "total_critical": 1,
     "total_high": 1,
     "total_medium": 8,
-    "actionable_critical": 0,
+    "actionable_critical": 1,
     "actionable_high": 1,
-    "actionable_medium": 0,
+    "actionable_medium": 1,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -292,24 +299,24 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.97,
-        "current_price": 9.44,
-        "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
-        "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
-        "counts_toward_rag": false,
+        "daily_change_pct": -0.95,
+        "current_price": 9.35,
+        "risk_analysis": "Geopolitical risk in Finland: Geopolitical event (single-source, downgraded pending corroboration): 'invades' in recent news. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "HIGH",
+        "last_signal": "\ud83c\udf0d Geopolitical: Geopolitical event (single-source, downgraded pending corroboration): 'invades' in recent news",
+        "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": {
           "detected": true,
-          "level": "MEDIUM",
-          "reason": "NATO frontline state, border with Russia",
+          "level": "HIGH",
+          "reason": "Geopolitical event (single-source, downgraded pending corroboration): 'invades' in recent news",
           "headlines": [
             "Finland has built an underground city for a million people in case of war with Russia - \u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0456 \u041d\u0430\u0446\u0456\u043e\u043d\u0430\u043b\u044c\u043d\u0456 \u041d\u043e\u0432\u0438\u043d\u0438 (\u0423\u041d\u041d)",
-            "NATO War Scenario Against Russia Raises 2030 Risk - \u0412\u043e\u0435\u043d\u043d\u043e\u0435 \u0434\u0435\u043b\u043e",
+            "If Putin invades Finland, the nuclear bunkers have pools and ball pits - The Times",
             "Finland's President Says 'Ukraine Has Won' War Against Russia by Preserving Sovereignty\u2014 But Warns Kyiv S - Benzinga"
           ],
           "escalated": true,
-          "baseline_only": true
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "Medium",
@@ -345,8 +352,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "China & Taiwan Update, July 10, 2026 - Institute for the Study of War",
-            "What Happens if China Hacks the US Water Supply? I Went to a Secret War Game to Find Out - WIRED",
-            "Iran is China\u2019s indispensable partner, but Beijing will never fight its war - Middle East Monitor"
+            "Iran is China\u2019s indispensable partner, but Beijing will never fight its war - Middle East Monitor",
+            "China can help end Ukraine war by pressuring Russia, U.S. Senator Graham says - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -384,9 +391,9 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "Sky News Australia. . Sky News host James Macpherson says the Middle East is on the verge of returning to \u201call-out war\u201d. - facebook.com",
-            "France hosts S.Africa leader for talks, war remembrance - RFI",
-            "When St Helena Held the Boers: Britain's Forgotten Prison Island - historyisnowmagazine.com"
+            "Captured African recruits say they want to go home \u2014 to Russia - politico.eu",
+            "Is Russia Winning the Information War in South Africa? - The Common Sense",
+            "Sky News Australia. . Sky News host James Macpherson says the Middle East is on the verge of returning to \u201call-out war\u201d. - facebook.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -511,9 +518,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "\u2018Sealed in blood\u2019: Where does the China-North Korea alliance stand today? - Al Jazeera",
-            "N. Korea says will bolster nuclear force, expand S. Korea spy activities in \u2018radical way\u2019 - France 24",
-            "Korean War veteran honored - North Country Now"
+            "Britain's Princess Anne to visit S. Korea to mark Korean War battles anniv. - Yonhap News Agency",
+            "Asian stocks trade lower on renewed US-Iran war tensions, South Korea\u2019s KOSPI leads losses - FXStreet",
+            "\u2018Sealed in blood\u2019: Where does the China-North Korea alliance stand today? - Al Jazeera"
           ],
           "escalated": true,
           "baseline_only": true
@@ -655,8 +662,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.11,
-        "current_price": 281.75,
+        "daily_change_pct": -0.55,
+        "current_price": 280.2,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -708,8 +715,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "China & Taiwan Update, July 10, 2026 - Institute for the Study of War",
-            "What Happens if China Hacks the US Water Supply? I Went to a Secret War Game to Find Out - WIRED",
-            "Iran is China\u2019s indispensable partner, but Beijing will never fight its war - Middle East Monitor"
+            "Iran is China\u2019s indispensable partner, but Beijing will never fight its war - Middle East Monitor",
+            "China can help end Ukraine war by pressuring Russia, U.S. Senator Graham says - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -777,8 +784,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "China & Taiwan Update, July 10, 2026 - Institute for the Study of War",
-            "What Happens if China Hacks the US Water Supply? I Went to a Secret War Game to Find Out - WIRED",
-            "Iran is China\u2019s indispensable partner, but Beijing will never fight its war - Middle East Monitor"
+            "Iran is China\u2019s indispensable partner, but Beijing will never fight its war - Middle East Monitor",
+            "China can help end Ukraine war by pressuring Russia, U.S. Senator Graham says - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -804,8 +811,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.13,
-        "current_price": 7.63,
+        "daily_change_pct": -1.18,
+        "current_price": 7.54,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -817,8 +824,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "China & Taiwan Update, July 10, 2026 - Institute for the Study of War",
-            "What Happens if China Hacks the US Water Supply? I Went to a Secret War Game to Find Out - WIRED",
-            "Iran is China\u2019s indispensable partner, but Beijing will never fight its war - Middle East Monitor"
+            "Iran is China\u2019s indispensable partner, but Beijing will never fight its war - Middle East Monitor",
+            "China can help end Ukraine war by pressuring Russia, U.S. Senator Graham says - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -844,21 +851,21 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -3.43,
-        "current_price": 54.94,
-        "risk_analysis": "Stock decline for high-exposure supplier EVE Energy. No recent news data was available to check against this move. BAT exposure: High.",
-        "risk_level": "HIGH",
-        "last_signal": "\ud83d\udcc9 Stock down -3.4% (no confirmed cause) - High exposure supplier",
+        "daily_change_pct": -5.82,
+        "current_price": 51.74,
+        "risk_analysis": "Severe stock decline of -5.8% at EVE Energy. No recent news data was available to check against this move. A drop this size at high exposure warrants direct follow-up regardless. BAT exposure: High.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83d\udcc9 Severe stock crash: -5.8% (no confirmed cause yet)",
         "counts_toward_rag": true,
-        "price_move_only": true,
+        "price_move_only": false,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "China & Taiwan Update, July 10, 2026 - Institute for the Study of War",
-            "What Happens if China Hacks the US Water Supply? I Went to a Secret War Game to Find Out - WIRED",
-            "Iran is China\u2019s indispensable partner, but Beijing will never fight its war - Middle East Monitor"
+            "Iran is China\u2019s indispensable partner, but Beijing will never fight its war - Middle East Monitor",
+            "China can help end Ukraine war by pressuring Russia, U.S. Senator Graham says - Reuters"
           ],
           "escalated": false,
           "baseline_only": false
@@ -913,13 +920,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.19,
-        "current_price": 72.48,
-        "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.2%",
+        "daily_change_pct": -1.59,
+        "current_price": 71.33,
+        "risk_analysis": "Stock decline for high-exposure supplier Infineon. No recent news data was available to check against this move.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Stock down -1.6% (no confirmed cause) - High exposure supplier",
         "counts_toward_rag": true,
-        "price_move_only": false,
+        "price_move_only": true,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1017,7 +1024,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-13T01:26:32.592497"
+    "last_fetched": "2026-07-13T08:43:10.159288"
   },
   "macro_economy": {
     "us": {
@@ -1030,13 +1037,13 @@
       "cpi": "2.6%",
       "rate": "4.50%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: -0.37% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: +0.08% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.3%",
       "rate": "3.45%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.39% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.17% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1067,24 +1074,24 @@
       "current_price": 181.6199951171875,
       "daily_change_pct": 0.25,
       "risk_level": "LOW",
-      "last_signal": "Stock: +0.25% | US-listed (NYSE). Monitoring SEC filings (8-K). (note: 2 routine leadership-change filing(s) also on record)",
+      "last_signal": "Stock: +0.25% | US-listed (NYSE). Monitoring SEC filings (8-K). (note: 1 routine leadership-change filing(s) also on record)",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
-      "sec_amber_signals": 2,
-      "summary": "Informational: 2 leadership-change filing(s) noted (director/officer departure, Item 5.02). Not counted as a risk signal."
+      "sec_amber_signals": 1,
+      "summary": "Informational: 1 leadership-change filing(s) noted (director/officer departure, Item 5.02). Not counted as a risk signal."
     },
     {
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Negative",
+      "sentiment": "Neutral",
       "latest_headline": "UK-listed (LSE). Monitoring regulatory news.",
-      "stock_move": "-1.09%",
-      "current_price": 2713.0,
-      "daily_change_pct": -1.09,
+      "stock_move": "-0.41%",
+      "current_price": 2702.0,
+      "daily_change_pct": -0.41,
       "risk_level": "LOW",
-      "last_signal": "Stock: -1.09% | UK-listed (LSE). Monitoring regulatory news.",
+      "last_signal": "Stock: -0.41% | UK-listed (LSE). Monitoring regulatory news.",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1097,11 +1104,11 @@
       "region": "Japan",
       "sentiment": "Neutral",
       "latest_headline": "Tokyo listed. Monitoring global press releases.",
-      "stock_move": "-1.00%",
-      "current_price": 6056.0,
-      "daily_change_pct": -1.0,
+      "stock_move": "-0.26%",
+      "current_price": 6101.0,
+      "daily_change_pct": -0.26,
       "risk_level": "LOW",
-      "last_signal": "Stock: -1.00% | Tokyo listed. Monitoring global press releases.",
+      "last_signal": "Stock: -0.26% | Tokyo listed. Monitoring global press releases.",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1115,7 +1122,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 77.338284
+    "duration_seconds": 79.993159
   },
   "health": {
     "pillars": {

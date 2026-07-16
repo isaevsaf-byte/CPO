@@ -1,18 +1,16 @@
 {
-  "last_updated": "2026-07-16T01:21:45.334628",
-  "version": "85ab6f8ac7fd",
+  "last_updated": "2026-07-16T07:52:40.873745",
+  "version": "4d5bbc4f93bd",
   "status": "healthy",
   "overall_rag": {
-    "score": "GREEN",
+    "score": "RED",
     "driven_by": [
-      "macro",
-      "peers",
       "suppliers"
     ],
     "pillar_scores": {
       "macro": "GREEN",
       "peers": "GREEN",
-      "suppliers": "GREEN"
+      "suppliers": "RED"
     }
   },
   "rag_history": [
@@ -239,6 +237,13 @@
       "peers": "GREEN",
       "suppliers": "GREEN",
       "overall": "GREEN"
+    },
+    {
+      "timestamp": "2026-07-16T07:52:40.873742",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "RED",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -254,7 +259,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-16T01:20:36.314562"
+        "last_fetched": "2026-07-16T07:51:29.392383"
       },
       "eu": {
         "status": "success",
@@ -265,7 +270,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1406",
-        "last_fetched": "2026-07-16T01:20:37.131104"
+        "last_fetched": "2026-07-16T07:51:30.335304"
       },
       "china": {
         "status": "placeholder",
@@ -276,11 +281,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-16T01:20:37.132002"
+        "last_fetched": "2026-07-16T07:51:30.335804"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-16T01:20:37.132015"
+    "last_fetched": "2026-07-16T07:51:30.335814"
   },
   "peers": {
     "status": "success",
@@ -288,11 +293,11 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-07-16T01:20:39.933643"
+    "last_fetched": "2026-07-16T07:51:34.345495"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "GREEN",
+    "rag_score": "RED",
     "total_suppliers": 24,
     "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 0,
@@ -300,10 +305,10 @@
     "suppliers_at_news_risk": 0,
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
-    "total_critical": 0,
+    "total_critical": 1,
     "total_high": 0,
     "total_medium": 9,
-    "actionable_critical": 0,
+    "actionable_critical": 1,
     "actionable_high": 0,
     "actionable_medium": 0,
     "suppliers": [
@@ -378,8 +383,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 1.11,
+        "current_price": 9.43,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -432,7 +437,7 @@
           "headlines": [
             "Will Iran Be a Forever War? - The New York Times",
             "US-Iran war: is Trump falling into a Vietnam \u2018quagmire\u2019? - South China Morning Post",
-            "China\u2019s War on \u2018Lying Flat\u2019 Comes for Companion Chatbots - Gizmodo"
+            "China Maritime Report #56\u2014\u201cThe Silent Service: Assessing PLAN Influence in the Central Military Commission\u201d - Andrew Erickson"
           ],
           "escalated": true,
           "baseline_only": true
@@ -470,9 +475,9 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
+            "The US army veteran and the mystery Boeings flying Sudan\u2019s war routes - Reuters",
             "J\u2019activists: the hybrid nature of conflict journalism in Sudan\u2019s \u2018silent war\u2019 - ISS Africa",
-            "Sudan\u2019s war economy fueling conflict, risks global supply chains: UN report - Anadolu Ajans\u0131",
-            "Activity on Northern Border Worries South Korea - The Common Sense"
+            "Sudan\u2019s war economy fueling conflict, risks global supply chains: UN report - Anadolu Ajans\u0131"
           ],
           "escalated": true,
           "baseline_only": true
@@ -598,8 +603,8 @@
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
             "Activity on Northern Border Worries South Korea - The Common Sense",
-            "Knox County Korean War recognition ceremony planned - norfolkneradio.com",
-            "West Hazleton to dedicate Korean War monument July 25 - Hazleton Standard Speaker"
+            "West Hazleton to dedicate Korean War monument July 25 - Hazleton Standard Speaker",
+            "Retired Lt. Gen. Michael Flynn warns Iran war delaying critical U.S. pivot to Asia - Washington Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -741,8 +746,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.4,
-        "current_price": 276.65,
+        "daily_change_pct": 1.21,
+        "current_price": 280.0,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -753,8 +758,8 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "U.S. blockades Iranian ports, launches dozens of strikes as Trump seeks control of Strait of Hormuz - CBS News",
             "Iran war supply chain disruptions: Impacts on India\u2019s economy - IFPRI",
+            "U.S. blockades Iranian ports, launches dozens of strikes as Trump seeks control of Strait of Hormuz - CBS News",
             "Pakistan on the Ropes: Why a Cornered Military May Gamble on Short War With India - orfonline.org"
           ],
           "escalated": true,
@@ -795,7 +800,7 @@
           "headlines": [
             "Will Iran Be a Forever War? - The New York Times",
             "US-Iran war: is Trump falling into a Vietnam \u2018quagmire\u2019? - South China Morning Post",
-            "China\u2019s War on \u2018Lying Flat\u2019 Comes for Companion Chatbots - Gizmodo"
+            "China Maritime Report #56\u2014\u201cThe Silent Service: Assessing PLAN Influence in the Central Military Commission\u201d - Andrew Erickson"
           ],
           "escalated": true,
           "baseline_only": true
@@ -864,7 +869,7 @@
           "headlines": [
             "Will Iran Be a Forever War? - The New York Times",
             "US-Iran war: is Trump falling into a Vietnam \u2018quagmire\u2019? - South China Morning Post",
-            "China\u2019s War on \u2018Lying Flat\u2019 Comes for Companion Chatbots - Gizmodo"
+            "China Maritime Report #56\u2014\u201cThe Silent Service: Assessing PLAN Influence in the Central Military Commission\u201d - Andrew Erickson"
           ],
           "escalated": true,
           "baseline_only": true
@@ -890,8 +895,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.32,
-        "current_price": 7.68,
+        "daily_change_pct": 7.92,
+        "current_price": 8.18,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -904,7 +909,7 @@
           "headlines": [
             "Will Iran Be a Forever War? - The New York Times",
             "US-Iran war: is Trump falling into a Vietnam \u2018quagmire\u2019? - South China Morning Post",
-            "China\u2019s War on \u2018Lying Flat\u2019 Comes for Companion Chatbots - Gizmodo"
+            "China Maritime Report #56\u2014\u201cThe Silent Service: Assessing PLAN Influence in the Central Military Commission\u201d - Andrew Erickson"
           ],
           "escalated": true,
           "baseline_only": true
@@ -930,8 +935,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.04,
-        "current_price": 52.28,
+        "daily_change_pct": -1.28,
+        "current_price": 51.61,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -944,7 +949,7 @@
           "headlines": [
             "Will Iran Be a Forever War? - The New York Times",
             "US-Iran war: is Trump falling into a Vietnam \u2018quagmire\u2019? - South China Morning Post",
-            "China\u2019s War on \u2018Lying Flat\u2019 Comes for Companion Chatbots - Gizmodo"
+            "China Maritime Report #56\u2014\u201cThe Silent Service: Assessing PLAN Influence in the Central Military Commission\u201d - Andrew Erickson"
           ],
           "escalated": true,
           "baseline_only": true
@@ -999,11 +1004,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "daily_change_pct": -7.8,
+        "current_price": 66.22,
+        "risk_analysis": "Severe stock decline of -7.8% at Infineon. No recent news data was available to check against this move. A drop this size at high exposure warrants direct follow-up regardless. BAT exposure: High.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83d\udcc9 Severe stock crash: -7.8% (no confirmed cause yet)",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1103,7 +1108,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-16T01:21:44.561583"
+    "last_fetched": "2026-07-16T07:52:39.876577"
   },
   "macro_economy": {
     "us": {
@@ -1116,13 +1121,13 @@
       "cpi": "2.6%",
       "rate": "4.50%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: +0.42% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: +0.45% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.3%",
       "rate": "3.45%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.17% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.06% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1164,13 +1169,13 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Neutral",
+      "sentiment": "Positive",
       "latest_headline": "UK-listed (LSE). Monitoring regulatory news.",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "+2.32%",
+      "current_price": 2734.0,
+      "daily_change_pct": 2.32,
       "risk_level": "LOW",
-      "last_signal": "UK-listed (LSE). Monitoring regulatory news.",
+      "last_signal": "Stock: +2.32% | UK-listed (LSE). Monitoring regulatory news.",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1183,11 +1188,11 @@
       "region": "Japan",
       "sentiment": "Positive",
       "latest_headline": "Tokyo listed. Monitoring global press releases.",
-      "stock_move": "+1.64%",
-      "current_price": 6210.0,
-      "daily_change_pct": 1.64,
+      "stock_move": "+1.39%",
+      "current_price": 6195.0,
+      "daily_change_pct": 1.39,
       "risk_level": "LOW",
-      "last_signal": "Stock: +1.64% | Tokyo listed. Monitoring global press releases.",
+      "last_signal": "Stock: +1.39% | Tokyo listed. Monitoring global press releases.",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1201,7 +1206,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 72.004372
+    "duration_seconds": 73.934406
   },
   "health": {
     "pillars": {

@@ -47,22 +47,21 @@ function HealthIndicator({ status }: { status: string }) {
   );
 }
 
-// How many consecutive most-recent history entries share the current
-// overall score — tells a CPO whether today's status is a new blip or
-// something that's been sitting there for days.
-function currentStreakLength(history: { overall: string }[] | undefined): number {
-  if (!history || history.length === 0) return 0;
+// How long the current overall score has been in effect — tells a CPO
+// whether today's status is a new blip or something that's been sitting
+// there for days, without exposing raw per-cycle check data.
+function currentStreakDuration(history: { overall: string; timestamp: string }[] | undefined): string | null {
+  if (!history || history.length === 0) return null;
   const current = history[history.length - 1].overall;
-  let streak = 0;
+  let streakStart = history[history.length - 1].timestamp;
   for (let i = history.length - 1; i >= 0; i--) {
     if (history[i].overall !== current) break;
-    streak++;
+    streakStart = history[i].timestamp;
   }
-  return streak;
-}
-
-function ragDotColor(score: string): string {
-  return score === 'RED' ? 'bg-red-500' : score === 'AMBER' ? 'bg-amber-400' : 'bg-green-500';
+  const hours = (Date.now() - new Date(streakStart).getTime()) / (1000 * 60 * 60);
+  if (hours < 1) return null;
+  if (hours < 48) return `${Math.round(hours)}h`;
+  return `${Math.round(hours / 24)}d`;
 }
 
 export default function MorningCoffeeDashboard() {
@@ -259,25 +258,14 @@ export default function MorningCoffeeDashboard() {
                 <span className="text-gray-500"> — see below for detail</span>
               </div>
             )}
-            {typedIntel.rag_history && typedIntel.rag_history.length > 1 && (
-              <div className="w-full flex flex-wrap items-center gap-x-3 gap-y-2 pt-3 mt-1 border-t border-black/10">
-                <span className="text-xs text-gray-500 whitespace-nowrap">
-                  Last {typedIntel.rag_history.length} checks:
-                </span>
-                <div className="flex items-center gap-1 flex-wrap" title="Each dot is one harvest cycle (~6h apart), oldest to newest">
-                  {typedIntel.rag_history.slice(-28).map((entry, idx) => (
-                    <span
-                      key={idx}
-                      className={`inline-block w-2.5 h-2.5 rounded-full ${ragDotColor(entry.overall)}`}
-                      title={`${formatTimestamp(entry.timestamp)}: ${entry.overall}`}
-                    />
-                  ))}
-                </div>
-                {currentStreakLength(typedIntel.rag_history) > 1 && (
-                  <span className="text-xs text-gray-600">
-                    ({typedIntel.overall_rag.score} for {currentStreakLength(typedIntel.rag_history)} consecutive checks)
-                  </span>
-                )}
+            {typedIntel.executive_summary && (
+              <div className="w-full text-sm text-gray-700 pt-3 mt-1 border-t border-black/10">
+                {typedIntel.executive_summary}
+              </div>
+            )}
+            {typedIntel.rag_history && typedIntel.rag_history.length > 1 && currentStreakDuration(typedIntel.rag_history) && (
+              <div className="w-full text-xs text-gray-500 pt-3 mt-1 border-t border-black/10">
+                {typedIntel.overall_rag.score === 'GREEN' ? 'Stable' : `Status unchanged`} for {currentStreakDuration(typedIntel.rag_history)}
               </div>
             )}
           </div>

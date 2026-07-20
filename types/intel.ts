@@ -233,6 +233,7 @@ export interface IntelSnapshot {
   version: string;
   status: OverallStatus;
   overall_rag?: OverallRag;
+  executive_summary?: string;
   rag_history?: RagHistoryEntry[];
   macro: MacroData;
   peers: PeersData;

@@ -206,6 +206,12 @@ def calculate_data_hash(data: dict) -> str:
     # version to detect real changes worth refreshing for).
     if 'rag_history' in data_copy:
         del data_copy['rag_history']
+    # executive_summary is LLM-generated prose that varies slightly between
+    # runs even when the underlying data is identical — including it here
+    # would flip `version` on every harvest and defeat the frontend's
+    # "new data available" staleness check (see useDataFreshness).
+    if 'executive_summary' in data_copy:
+        del data_copy['executive_summary']
 
     json_str = json.dumps(data_copy, sort_keys=True)
     return hashlib.md5(json_str.encode()).hexdigest()[:12]
@@ -1314,7 +1320,12 @@ def fetch_supplier_stock_data(ticker_symbol):
             news = ticker.news
             if news:
                 for item in news[:5]:
-                    title = item.get('title', None)
+                    # yfinance >= 0.2.46 wraps title under item['content']['title']
+                    # Fall back to top-level 'title' for older versions
+                    title = (
+                        item.get('content', {}).get('title')
+                        or item.get('title')
+                    )
                     if title:
                         headlines.append(title)
         except Exception:
@@ -1662,8 +1673,13 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
         # — a real, correctly-thresholded signal, but not evidence of a
         # problem, and the old wording implied otherwise).
 
-        # Priority 3: Severe stock crash (>5%) indicates serious company problems
+        # Priority 3: Severe stock crash (>5%) indicates serious company problems.
+        # Still uncorroborated (no negative news behind it), so — like
+        # Priorities 4/5 — it's marked price_move_only and can't flip the
+        # overall board to RED on its own; see high_exposure_hit and the
+        # confirmed_* RAG rollup below.
         elif daily_change_pct is not None and daily_change_pct < -5.0:
+            price_move_only = True
             supplier_risk_level = "CRITICAL"
             last_signal = f"📉 Severe stock crash: {daily_change_pct:.1f}% (no confirmed cause yet)"
             risk_analysis = f"Severe stock decline of {daily_change_pct:.1f}% at {supplier_name}. {corroboration_note} A drop this size at {bat_exposure.lower()} exposure warrants direct follow-up regardless. BAT exposure: {bat_exposure}."
@@ -1783,7 +1799,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
     suppliers_at_news_risk = sum(1 for s in suppliers if s["news_risk"])
     suppliers_at_operational_risk = sum(1 for s in suppliers if s.get("operational_risk", False))
     suppliers_at_geopolitical_risk = sum(1 for s in suppliers if s.get("geopolitical_risk") is not None)
-    suppliers_geo_escalated = sum(1 for s in suppliers if s.get("geopolitical_escalated", False))
+    suppliers_geo_escalated = sum(1 for s in suppliers if s.get("geopolitical_risk") and s["geopolitical_risk"].get("escalated", False))
 
     total_critical = sum(1 for s in suppliers if s["risk_level"] == "CRITICAL")
     total_high = sum(1 for s in suppliers if s["risk_level"] == "HIGH")
@@ -1808,13 +1824,19 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
     actionable_critical = sum(1 for s in actionable if s["risk_level"] == "CRITICAL")
     actionable_high = sum(1 for s in actionable if s["risk_level"] == "HIGH")
     actionable_medium = sum(1 for s in actionable if s["risk_level"] == "MEDIUM")
-    # Excludes price_move_only suppliers: an uncorroborated >3% dip (no
-    # negative news behind it) is common enough that it shouldn't, on its
-    # own, carry the same "flip the whole board red" weight as a confirmed
-    # cyber breach, sanctions match, recall, or real adverse-news hit on
-    # the same exposure tier — it still counts toward actionable_high/
-    # medium below (so it can push AMBER, or RED if it stacks with other
-    # signals), just not as an instant single-supplier trigger.
+    # price_move_only suppliers (an uncorroborated stock dip — no negative
+    # news, cyber match, recall, or sanctions hit behind it, whatever the
+    # size) still count toward actionable_high/medium/critical above so
+    # they can push AMBER, but they're excluded below from every RED
+    # trigger: a confirmed signal (cyber, sanctions, recall, corroborated
+    # news) is what should make a CPO's day RED, not "the market moved and
+    # we don't know why yet". Otherwise every uncorroborated dip — however
+    # large, or however many happen to land the same cycle — trains the
+    # reader to treat RED as noise instead of a real page-me signal.
+    confirmed = [s for s in actionable if not s.get("price_move_only", False)]
+    confirmed_critical = sum(1 for s in confirmed if s["risk_level"] == "CRITICAL")
+    confirmed_high = sum(1 for s in confirmed if s["risk_level"] == "HIGH")
+    confirmed_medium = sum(1 for s in confirmed if s["risk_level"] == "MEDIUM")
     high_exposure_hit = any(
         s["risk_level"] in ("CRITICAL", "HIGH")
         and s.get("bat_exposure") in ("Critical", "High")
@@ -1822,7 +1844,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
         for s in actionable
     )
 
-    if actionable_critical >= 1 or high_exposure_hit or (actionable_high + actionable_medium) >= 3:
+    if confirmed_critical >= 1 or high_exposure_hit or (confirmed_high + confirmed_medium) >= 3:
         rag_score = "RED"
     elif actionable_high >= 1 or actionable_medium >= 1:
         rag_score = "AMBER"
@@ -1917,8 +1939,8 @@ def fetch_macro_economy():
                 summary = f"S&P 500 stable: {change_pct:+.2f}% change. Market reflects balanced economic conditions. Fed monitoring inflation and employment data closely. Industrial output steady, consumer spending patterns normal. Economic outlook remains cautiously optimistic."
             
             return {
-                "cpi": "3.2%",  # Static for now - would need separate API
-                "rate": "5.50%",  # Static for now - would need separate API
+                "cpi": "2.8%",  # Static for now - would need separate API
+                "rate": "4.25%",  # Static for now - would need separate API
                 "trend": trend,
                 "summary": summary
             }
@@ -1968,8 +1990,8 @@ def fetch_macro_economy():
                 summary = f"EUR/USD stable: {change_pct:+.2f}% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
             
             return {
-                "cpi": "2.6%",  # Static for now - would need separate API
-                "rate": "4.50%",  # Static for now - would need separate API
+                "cpi": "2.2%",  # Static for now - would need separate API
+                "rate": "2.65%",  # Static for now - would need separate API
                 "trend": trend,
                 "summary": summary
             }
@@ -2020,8 +2042,8 @@ def fetch_macro_economy():
                 summary = f"CNY/USD stable: {change_pct:+.2f}% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
             
             return {
-                "cpi": "0.3%",  # Static for now - would need separate API
-                "rate": "3.45%",  # Static for now - would need separate API
+                "cpi": "0.5%",  # Static for now - would need separate API
+                "rate": "3.10%",  # Static for now - would need separate API
                 "trend": trend,
                 "summary": summary
             }
@@ -2138,7 +2160,11 @@ def fetch_peer_group():
                 news = ticker.news
                 if news:
                     for item in news[:5]:
-                        title = item.get('title', None)
+                        # yfinance >= 0.2.46 wraps title under item['content']['title']
+                        title = (
+                            item.get('content', {}).get('title')
+                            or item.get('title')
+                        )
                         if title:
                             all_headlines.append(title)
                     if all_headlines:
@@ -2354,6 +2380,80 @@ def save_with_backup(data: dict, output_file: Path) -> bool:
         return False
 
 
+def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
+                                 suppliers_data: dict, peers_data: dict,
+                                 macro_data: dict) -> str | None:
+    """
+    Narrate the already-computed RAG rollup into a CPO-facing executive
+    summary via a single Claude API call. This never influences the RAG
+    score itself (that stays deterministic, above) — it only connects
+    signals across suppliers/pillars that the per-supplier f-string
+    templates report individually (e.g. five China-exposure suppliers
+    flagged separately vs. recognized as one concentrated risk).
+
+    Best-effort: returns None (no summary rendered) if no API key is
+    configured or the call fails for any reason, so the harvest never
+    blocks on an external dependency.
+    """
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        logger.info("ANTHROPIC_API_KEY not set — skipping executive summary")
+        return None
+
+    try:
+        import anthropic
+
+        suppliers = suppliers_data.get("suppliers", [])
+        actionable_suppliers = [
+            {
+                "name": s.get("name"),
+                "category": s.get("category"),
+                "bat_exposure": s.get("bat_exposure"),
+                "location": s.get("location"),
+                "risk_level": s.get("risk_level"),
+                "last_signal": s.get("last_signal"),
+                "geopolitical": s.get("geopolitical_risk") is not None,
+            }
+            for s in suppliers
+            if s.get("risk_level") != "LOW"
+        ]
+
+        payload = {
+            "overall_rag": overall_rag,
+            "pillar_rag_scores": pillar_rag_scores,
+            "actionable_suppliers": actionable_suppliers,
+            "peers": [
+                {"name": p.get("name"), "sentiment": p.get("sentiment"), "rag_score": p.get("rag_score")}
+                for p in peers_data.get("peers", [])
+            ],
+            "macro": {
+                region: {"status": data.get("status"), "summary": data.get("summary")}
+                for region, data in (macro_data.get("regions") or {}).items()
+            },
+        }
+
+        client = anthropic.Anthropic()
+        response = client.messages.create(
+            model="claude-haiku-4-5",
+            max_tokens=500,
+            system=(
+                "You write terse executive briefs for a CPO (Chief Procurement Officer) "
+                "reviewing a supply chain risk dashboard. You are given an already-decided "
+                "RAG status (RED/AMBER/GREEN) and its underlying signals — do not restate "
+                "or second-guess the color, only explain what it means and what's actionable. "
+                "Prioritize: connect signals that share a root cause (same country, same "
+                "sector, same time window) instead of listing suppliers one by one. Call out "
+                "what's genuinely urgent vs. what can wait. 3-5 sentences, plain prose, no "
+                "markdown headers, no bullet lists, no restating the RAG color as a first line."
+            ),
+            messages=[{"role": "user", "content": json.dumps(payload)}],
+        )
+        text = "".join(block.text for block in response.content if block.type == "text").strip()
+        return text or None
+    except Exception as e:
+        logger.warning(f"Executive summary generation failed (non-blocking): {e}")
+        return None
+
+
 def main():
     """Main aggregation function - Three Core Pillars"""
     logger.info("Starting CPO intelligence harvest (Three Core Pillars)...")
@@ -2475,12 +2575,17 @@ def main():
     })
     rag_history = rag_history[-MAX_RAG_HISTORY:]
 
+    executive_summary = generate_executive_summary(
+        overall_rag, pillar_rag_scores, suppliers_data, peers_data, macro_data
+    )
+
     # Build dashboard state with three core pillars + additional intelligence
     dashboard_state = {
         "last_updated": datetime.utcnow().isoformat(),
         "version": "",  # Will be set after hash calculation
         "status": overall_status,
         "overall_rag": overall_rag,
+        "executive_summary": executive_summary,
         "rag_history": rag_history,
         "macro": macro_data,
         "peers": peers_data,

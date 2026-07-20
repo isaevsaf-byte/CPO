@@ -1,18 +1,20 @@
 {
-  "last_updated": "2026-07-20T08:35:03.010141",
-  "version": "f69730772cb2",
+  "last_updated": "2026-07-20T12:35:34.385803",
+  "version": "d0329a860d70",
   "status": "healthy",
   "overall_rag": {
-    "score": "RED",
+    "score": "AMBER",
     "driven_by": [
+      "macro",
       "suppliers"
     ],
     "pillar_scores": {
       "macro": "AMBER",
       "peers": "GREEN",
-      "suppliers": "RED"
+      "suppliers": "AMBER"
     }
   },
+  "executive_summary": "Your supply chain is bifurcated by geography and risk type: China concentration dominates the critical exposure\u2014four suppliers (Huizhou BYD, Smoore, EVE Energy, Porton, ITC nicotine) span EMS, batteries, and materials, all flagged for US-China trade and Taiwan contingencies. This is your immediate strategic risk. Separately, three packaging suppliers (AMCOR, GPI, Texas Instruments) show unexplained stock declines without geopolitical triggers; these warrant a quick vendor check call to rule out operational issues before they cascade. The secondary geopolitical cluster\u2014Stora Enso (Finland/Russia border), Sappi (South Africa energy crisis), Tae Young (Korean peninsula)\u2014is real but distributed and lower exposure, so these can be monitored on a quarterly cycle unless macro deteriorates. Focus your next 48 hours on China suppliers: confirm inventory positions and lead-time flexibility, particularly for EMS and battery tiers where substitution is costly.",
   "rag_history": [
     {
       "timestamp": "2026-07-10T12:01:41.544625",
@@ -356,6 +358,13 @@
       "peers": "GREEN",
       "suppliers": "RED",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-07-20T12:35:29.596562",
+      "macro": "AMBER",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -371,7 +380,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-20T08:33:53.429975"
+        "last_fetched": "2026-07-20T12:34:13.816816"
       },
       "eu": {
         "status": "success",
@@ -382,7 +391,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1435",
-        "last_fetched": "2026-07-20T08:33:54.232182"
+        "last_fetched": "2026-07-20T12:34:14.714234"
       },
       "china": {
         "status": "placeholder",
@@ -393,11 +402,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-20T08:33:54.233187"
+        "last_fetched": "2026-07-20T12:34:14.714937"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-20T08:33:54.233200"
+    "last_fetched": "2026-07-20T12:34:14.714949"
   },
   "peers": {
     "status": "success",
@@ -405,11 +414,11 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-07-20T08:33:57.352038"
+    "last_fetched": "2026-07-20T12:34:23.709459"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "RED",
+    "rag_score": "AMBER",
     "total_suppliers": 24,
     "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 0,
@@ -439,7 +448,7 @@
         "operational_risk": false,
         "daily_change_pct": -2.01,
         "current_price": 43.94,
-        "risk_analysis": "Stock decline for critical-exposure supplier AMCOR. No recent news data was available to check against this move.",
+        "risk_analysis": "Stock decline for critical-exposure supplier AMCOR. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83d\udcc9 Stock down -2.0% (no confirmed cause) - Critical exposure supplier",
         "counts_toward_rag": true,
@@ -468,7 +477,7 @@
         "operational_risk": false,
         "daily_change_pct": -1.68,
         "current_price": 326.06,
-        "risk_analysis": "Stock decline for high-exposure supplier GPI. No recent news data was available to check against this move.",
+        "risk_analysis": "Stock decline for high-exposure supplier GPI. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83d\udcc9 Stock down -1.7% (no confirmed cause) - High exposure supplier",
         "counts_toward_rag": true,
@@ -495,8 +504,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.1,
-        "current_price": 9.76,
+        "daily_change_pct": -0.04,
+        "current_price": 9.77,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -543,9 +552,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Iran war, Myanmar crisis and South China Sea rifts under the spotlight in ASEAN ministerial talks - AP News",
-            "China\u2019s Outbound Investment Shrugs Off the Iran War - American Enterprise Institute - AEI",
-            "Opinion | The Iran war is a gift. Just not for the United States. - The Washington Post"
+            "U.S.-China rivalry enters a new phase of managed competition - GIS Reports",
+            "Putin\u2019s war is going badly \u2014 and China, Kazakhstan, Azerbaijan, Armenia and Turkey are quietly walking away - EUobserver",
+            "Southeast Asian ministers set to call for opening of Strait of Hormuz in Manila talks - AP News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -710,9 +719,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
+            "Putin thanks North Korea for support in war against Ukraine - upi.com",
             "A brief reminder of the folly of war (Korea edition) - Big Think",
-            "South Korea urges citizens to leave Middle East amid US-Iran hostilities - Anadolu Ajans\u0131",
-            "Frontline: Korea \u2013 One War, Two Decisions - AnewZ"
+            "North Korea paves way for possible Kim trip to Moscow - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -866,9 +875,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "Iran, US on brink of war again: For India, a lot to watch out for - The Indian Express",
-            "Pakistan Summons Imran Khan's Sister Over Remarks On Army, War With India - NDTV",
-            "US airstrikes on Iran intensify after troop death as Jordan faces missiles - India Today"
+            "India's Crude Oil Import Bill Soars 60% as Iran War Drives Prices Higher - Crude Oil Prices Today | OilPrice.com",
+            "Trump\u2019s Iran war has no endgame - PRESS Insider",
+            "Iran, US on brink of war again: For India, a lot to watch out for - The Indian Express"
           ],
           "escalated": true,
           "baseline_only": true
@@ -906,9 +915,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Iran war, Myanmar crisis and South China Sea rifts under the spotlight in ASEAN ministerial talks - AP News",
-            "China\u2019s Outbound Investment Shrugs Off the Iran War - American Enterprise Institute - AEI",
-            "Opinion | The Iran war is a gift. Just not for the United States. - The Washington Post"
+            "U.S.-China rivalry enters a new phase of managed competition - GIS Reports",
+            "Putin\u2019s war is going badly \u2014 and China, Kazakhstan, Azerbaijan, Armenia and Turkey are quietly walking away - EUobserver",
+            "Southeast Asian ministers set to call for opening of Strait of Hormuz in Manila talks - AP News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -975,9 +984,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Iran war, Myanmar crisis and South China Sea rifts under the spotlight in ASEAN ministerial talks - AP News",
-            "China\u2019s Outbound Investment Shrugs Off the Iran War - American Enterprise Institute - AEI",
-            "Opinion | The Iran war is a gift. Just not for the United States. - The Washington Post"
+            "U.S.-China rivalry enters a new phase of managed competition - GIS Reports",
+            "Putin\u2019s war is going badly \u2014 and China, Kazakhstan, Azerbaijan, Armenia and Turkey are quietly walking away - EUobserver",
+            "Southeast Asian ministers set to call for opening of Strait of Hormuz in Manila talks - AP News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1015,9 +1024,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Iran war, Myanmar crisis and South China Sea rifts under the spotlight in ASEAN ministerial talks - AP News",
-            "China\u2019s Outbound Investment Shrugs Off the Iran War - American Enterprise Institute - AEI",
-            "Opinion | The Iran war is a gift. Just not for the United States. - The Washington Post"
+            "U.S.-China rivalry enters a new phase of managed competition - GIS Reports",
+            "Putin\u2019s war is going badly \u2014 and China, Kazakhstan, Azerbaijan, Armenia and Turkey are quietly walking away - EUobserver",
+            "Southeast Asian ministers set to call for opening of Strait of Hormuz in Manila talks - AP News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1055,9 +1064,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Iran war, Myanmar crisis and South China Sea rifts under the spotlight in ASEAN ministerial talks - AP News",
-            "China\u2019s Outbound Investment Shrugs Off the Iran War - American Enterprise Institute - AEI",
-            "Opinion | The Iran war is a gift. Just not for the United States. - The Washington Post"
+            "U.S.-China rivalry enters a new phase of managed competition - GIS Reports",
+            "Putin\u2019s war is going badly \u2014 and China, Kazakhstan, Azerbaijan, Armenia and Turkey are quietly walking away - EUobserver",
+            "Southeast Asian ministers set to call for opening of Strait of Hormuz in Manila talks - AP News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1085,7 +1094,7 @@
         "operational_risk": false,
         "daily_change_pct": -2.47,
         "current_price": 284.02,
-        "risk_analysis": "Stock decline for high-exposure supplier Texas Instruments. No recent news data was available to check against this move.",
+        "risk_analysis": "Stock decline for high-exposure supplier Texas Instruments. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83d\udcc9 Stock down -2.5% (no confirmed cause) - High exposure supplier",
         "counts_toward_rag": true,
@@ -1112,11 +1121,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.68,
-        "current_price": 63.23,
+        "daily_change_pct": 0.52,
+        "current_price": 63.99,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.7%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.5%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1216,26 +1225,26 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-20T08:35:02.320145"
+    "last_fetched": "2026-07-20T12:35:28.768857"
   },
   "macro_economy": {
     "us": {
-      "cpi": "3.2%",
-      "rate": "5.50%",
+      "cpi": "2.8%",
+      "rate": "4.25%",
       "trend": "Declining",
       "summary": "S&P 500 declining: -1.01% change. Market reflects broader economic conditions. Fed signals potential rate cuts in Q3 as inflation moderates. Industrial output remains resilient despite market volatility. Investors monitoring employment data and consumer spending trends."
     },
     "eu": {
-      "cpi": "2.6%",
-      "rate": "4.50%",
+      "cpi": "2.2%",
+      "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: -0.03% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: -0.19% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
-      "cpi": "0.3%",
-      "rate": "3.45%",
+      "cpi": "0.5%",
+      "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.10% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.24% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1244,13 +1253,13 @@
       "ticker": "BTI",
       "region": "Global/US ADR",
       "sentiment": "Neutral",
-      "latest_headline": "Primary listing LSE; traded as BTI (NYSE). Monitoring filings.",
+      "latest_headline": "Wall Street plunges in AI \u2018bloodbath\u2019",
       "stock_move": "-0.51%",
       "current_price": 62.84000015258789,
       "daily_change_pct": -0.51,
-      "risk_level": "LOW",
-      "last_signal": "Stock: -0.51% | Primary listing LSE; traded as BTI (NYSE). Monitoring filings.",
-      "news_risk": false,
+      "risk_level": "MEDIUM",
+      "last_signal": "\u26a0\ufe0f News Alert: British American Tobacco Is Cutting 5,500 Jobs. How to Play the High-Yield Dividend Stock Here.",
+      "news_risk": true,
       "stock_risk": false,
       "sec_red_signals": 0,
       "sec_amber_signals": 0,
@@ -1261,12 +1270,12 @@
       "ticker": "PM",
       "region": "US",
       "sentiment": "Positive",
-      "latest_headline": "US-listed (NYSE). Monitoring SEC filings (8-K).",
+      "latest_headline": "US Equity Futures Edge Higher Pre-Bell as Traders Monitor Middle East Situation, Anticipate Week's Tech Earnings",
       "stock_move": "+1.65%",
       "current_price": 192.97999572753906,
       "daily_change_pct": 1.65,
       "risk_level": "LOW",
-      "last_signal": "Stock: +1.65% | US-listed (NYSE). Monitoring SEC filings (8-K). (note: 1 routine leadership-change filing(s) also on record)",
+      "last_signal": "\ud83d\udcf0 US Equity Futures Edge Higher Pre-Bell as Traders Monitor Middle East Situation, Anticipate Week's T (note: 1 routine leadership-change filing(s) also on record)",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1278,12 +1287,12 @@
       "ticker": "IMB.L",
       "region": "UK",
       "sentiment": "Neutral",
-      "latest_headline": "UK-listed (LSE). Monitoring regulatory news.",
-      "stock_move": "-0.77%",
-      "current_price": 2848.0,
-      "daily_change_pct": -0.77,
+      "latest_headline": "Wall Street plunges in AI \u2018bloodbath\u2019",
+      "stock_move": "-0.49%",
+      "current_price": 2856.0,
+      "daily_change_pct": -0.49,
       "risk_level": "LOW",
-      "last_signal": "Stock: -0.77% | UK-listed (LSE). Monitoring regulatory news.",
+      "last_signal": "\ud83d\udcf0 Wall Street plunges in AI \u2018bloodbath\u2019",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1295,12 +1304,12 @@
       "ticker": "2914.T",
       "region": "Japan",
       "sentiment": "Positive",
-      "latest_headline": "Tokyo listed. Monitoring global press releases.",
+      "latest_headline": "Altria vs. Turning Point Brands: Which Tobacco Stock Is a Better Buy in 2026?",
       "stock_move": "+2.45%",
       "current_price": 6347.0,
       "daily_change_pct": 2.45,
       "risk_level": "LOW",
-      "last_signal": "Stock: +2.45% | Tokyo listed. Monitoring global press releases.",
+      "last_signal": "\ud83d\udcf0 Altria vs. Turning Point Brands: Which Tobacco Stock Is a Better Buy in 2026?",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1314,7 +1323,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 71.097696
+    "duration_seconds": 82.186494
   },
   "health": {
     "pillars": {

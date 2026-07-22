@@ -1,19 +1,20 @@
 {
-  "last_updated": "2026-07-22T08:05:26.871335",
-  "version": "373554049bc0",
+  "last_updated": "2026-07-22T13:17:37.159497",
+  "version": "efa97faec814",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
     "driven_by": [
+      "peers",
       "suppliers"
     ],
     "pillar_scores": {
       "macro": "GREEN",
-      "peers": "GREEN",
+      "peers": "AMBER",
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your supplier risk is driven almost entirely by geopolitical exposure concentrated in three zones: China (six suppliers across EMS, nicotine, batteries, and substrates facing US-China trade and Taiwan risks), South Africa (Sappi under energy crisis pressure), and Eastern Europe/Korea (Stora Enso near Russia, Tae Young near North Korea). The critical-exposure EMS suppliers (Huizhou BYD, Smoore) and high-exposure battery/nicotine suppliers (EVE Energy, ITC) warrant immediate diversification planning\u2014these aren't temporary disruptions but structural policy risks. The Sappi signal is distinct and slower-burning; focus there only after securing alternatives for your China concentration. Macro and peer health remain stable, so this is purely a sourcing resilience issue: task procurement to map substitute suppliers outside these geopolitical flashpoints and cost the premium now rather than face sudden allocation crises.",
+  "executive_summary": "Your amber status is driven entirely by geopolitical clustering\u2014five suppliers across printing substrates and nicotine are exposed to the US-China trade war and Taiwan risk, while your two critical EMS providers (Huizhou BYD, Smoore) sit directly in that same theater. Separately, Sappi in South Africa faces energy and infrastructure crises that could disrupt printing substrate supply. The near-term urgency is highest for your battery and EMS supply chains since Huizhou BYD and Smoore carry critical BAT exposure; you should stress-test inventory coverage for Taiwan-triggered export controls and map secondary EMS suppliers outside China/Taiwan now. Stora Enso and Tae Young are lower-priority watches unless NATO tensions escalate further\u2014their medium exposure and stable operational status suggest monitoring suffices for now. Request that macro team complete China and US economic dashboards; missing data is masking whether trade war rhetoric is hardening into actual tariff action.",
   "rag_history": [
     {
       "timestamp": "2026-07-10T12:01:41.544625",
@@ -420,6 +421,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-07-22T13:17:32.463246",
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -435,7 +443,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-22T08:04:15.265483"
+        "last_fetched": "2026-07-22T13:16:24.687185"
       },
       "eu": {
         "status": "success",
@@ -446,7 +454,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1418",
-        "last_fetched": "2026-07-22T08:04:15.793557"
+        "last_fetched": "2026-07-22T13:16:25.085641"
       },
       "china": {
         "status": "placeholder",
@@ -457,19 +465,19 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-22T08:04:15.794333"
+        "last_fetched": "2026-07-22T13:16:25.086585"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-22T08:04:15.794345"
+    "last_fetched": "2026-07-22T13:16:25.086623"
   },
   "peers": {
     "status": "success",
-    "rag_score": "GREEN",
+    "rag_score": "AMBER",
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-07-22T08:04:17.817655"
+    "last_fetched": "2026-07-22T13:16:27.525915"
   },
   "suppliers": {
     "status": "success",
@@ -559,8 +567,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.87,
-        "current_price": 9.83,
+        "daily_change_pct": 3.56,
+        "current_price": 10.07,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -646,9 +654,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
-          "headlines": [
-            "The South African Billionaire Heiress at the Centre of an International Media Controversy - The Common Sense"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -773,8 +779,8 @@
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
             "Gray Zone Contestation Between North and South Korea in the Yellow Sea - Irregular Warfare Initiative",
-            "Capitol Hill event honors Korean War veterans ahead of armistice anniv. - Yonhap News Agency",
-            "How the War with Iran is Shaping Key U.S. Relations Beyond the Middle East - War on the Rocks"
+            "The Korean War never officially ended: an armistice signed in 1953 paused the fighting, but no peace treaty followed, leaving the Korean Peninsula technically at war for more than seventy years - Space Daily",
+            "Capitol Hill event honors Korean War veterans ahead of armistice anniv. - Yonhap News Agency"
           ],
           "escalated": true,
           "baseline_only": true
@@ -916,8 +922,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.04,
-        "current_price": 281.1,
+        "daily_change_pct": -0.07,
+        "current_price": 280.8,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -928,9 +934,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "Tankers with Saudi crude turn back as Houthis open new front in US-Iran war - Reuters",
-            "Can IMEC Survive the Iran War? - The National Interest",
-            "US Iran War Live Updates: Hegseth says US war on Iran has cost $37.5bn as strikes enter 11th night - Firstpost"
+            "India's equity benchmarks log worst day in 2 weeks on widening Mideast conflict - Reuters",
+            "Amnesty: Deadly Pakistan Air Strikes on Kabul Drug Rehab Center a Possible War Crime - The Diplomat \u2013 Asia-Pacific",
+            "Can IMEC Survive the Iran War? - The National Interest"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1065,8 +1071,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.59,
-        "current_price": 8.46,
+        "daily_change_pct": -0.35,
+        "current_price": 8.48,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1174,11 +1180,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 4.5,
-        "current_price": 66.88,
+        "daily_change_pct": -0.24,
+        "current_price": 67.38,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +4.5%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.2%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1278,7 +1284,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-22T08:05:21.609644"
+    "last_fetched": "2026-07-22T13:17:31.654054"
   },
   "macro_economy": {
     "us": {
@@ -1291,13 +1297,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: -0.06% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: -0.05% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.14% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.17% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1323,13 +1329,13 @@
       "ticker": "PM",
       "region": "US",
       "sentiment": "Negative",
-      "latest_headline": "Philip Morris (PM) Q2 Earnings: What To Expect",
+      "latest_headline": "Update: US Equity Futures Drop Pre-Bell as Oil Prices Jump Amid Lack of Progress in US-Iran Talks",
       "stock_move": "-2.43%",
       "current_price": 188.0399932861328,
       "daily_change_pct": -2.43,
-      "risk_level": "LOW",
-      "last_signal": "\ud83d\udcf0 Philip Morris (PM) Q2 Earnings: What To Expect (note: 1 routine leadership-change filing(s) also on record)",
-      "news_risk": false,
+      "risk_level": "MEDIUM",
+      "last_signal": "\u26a0\ufe0f News Alert: US Equity Futures Drop Pre-Bell as Oil Prices Jump Amid Lack of Progress in US-Iran Talks (note: 1 routine leadership-change filing(s) also on record)",
+      "news_risk": true,
       "stock_risk": false,
       "sec_red_signals": 0,
       "sec_amber_signals": 1,
@@ -1339,11 +1345,11 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Negative",
+      "sentiment": "Neutral",
       "latest_headline": "Wall Street plunges in AI \u2018bloodbath\u2019",
-      "stock_move": "-1.76%",
-      "current_price": 2795.0,
-      "daily_change_pct": -1.76,
+      "stock_move": "+0.68%",
+      "current_price": 2812.0,
+      "daily_change_pct": 0.68,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Wall Street plunges in AI \u2018bloodbath\u2019",
       "news_risk": false,
@@ -1376,7 +1382,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 73.852903
+    "duration_seconds": 75.131528
   },
   "health": {
     "pillars": {

@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-07-23T01:28:59.081409",
-  "version": "a73be3fc176e",
+  "last_updated": "2026-07-23T08:08:12.069472",
+  "version": "748d700cde8e",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -13,7 +13,7 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your amber status is entirely driven by geopolitical concentration among suppliers across three high-risk zones: China (six suppliers spanning EMS, nicotine, batteries, and printing substrates), NATO's eastern flank (Stora Enso in Finland), and secondary hotspots (South Korea near North Korea, India with dual border tensions, South Africa with unexplained equity weakness). The immediate priority is your two critical-exposure EMS suppliers (Huizhou BYD and Smoore) plus EVE Energy on batteries\u2014all three are China-exposed and vulnerable to US export controls on semiconductors and advanced materials, which directly threaten your electronic modular systems. Secondary but actionable: ITC's high nicotine exposure combined with India-China border risk could force tariffs or supply interruption within 6\u201312 months; you should map alternate nicotine sourcing now rather than reactively. Stora Enso and Sappi's equity decline warrant outreach calls (not urgent, but rule out demand destruction or working capital stress before Q2 earnings). Macro and peer pillars are stable, so this is a pure supplier geography and concentration problem\u2014consider dual-sourcing your EMS and battery tiers toward non-China regions or onshoring, and consolidate your printing substrate base away from geopolitical frontlines.",
+  "executive_summary": "Your amber status is driven entirely by supplier concentration risk, not macro conditions or peer instability. Three clusters demand immediate attention: (1) China-exposed EMS and battery suppliers (Huizhou BYD, Smoore, EVE Energy) face critical battery exposure under active US-China trade pressure and Taiwan risk\u2014this is your highest-priority vulnerability given how embedded these are in your supply chain; (2) printing substrate suppliers across three geographies (Stora Enso in Finland showing a hard 8.2% stock crash with no confirmed cause, plus IP Sun and Sappi under geopolitical strain) suggest either a sector-wide shock or localized disruption you need to diagnose within 48 hours; (3) nicotine and filter materials from India, South Korea, and China are secondary but flagged by border and regional military tensions. The unconfirmed stock crashes at Stora Enso and Infineon are more urgent than abstract geopolitical flags\u2014escalate calls to those suppliers immediately to rule out operational breakdown or hidden capacity loss, then assess whether you need alternate sources for printing substrates or can absorb a brief shortage.",
   "rag_history": [
     {
       "timestamp": "2026-07-10T12:01:41.544625",
@@ -441,6 +441,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-07-23T08:08:05.791244",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -456,7 +463,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-23T01:27:45.623869"
+        "last_fetched": "2026-07-23T08:06:57.887680"
       },
       "eu": {
         "status": "success",
@@ -467,7 +474,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1408",
-        "last_fetched": "2026-07-23T01:27:46.217928"
+        "last_fetched": "2026-07-23T08:06:58.691406"
       },
       "china": {
         "status": "placeholder",
@@ -478,11 +485,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-23T01:27:46.218812"
+        "last_fetched": "2026-07-23T08:06:58.692706"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-23T01:27:46.218826"
+    "last_fetched": "2026-07-23T08:06:58.692724"
   },
   "peers": {
     "status": "success",
@@ -490,7 +497,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-07-23T01:27:48.526002"
+    "last_fetched": "2026-07-23T08:07:00.971867"
   },
   "suppliers": {
     "status": "success",
@@ -502,10 +509,10 @@
     "suppliers_at_news_risk": 0,
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
-    "total_critical": 0,
+    "total_critical": 1,
     "total_high": 0,
     "total_medium": 9,
-    "actionable_critical": 0,
+    "actionable_critical": 1,
     "actionable_high": 0,
     "actionable_medium": 2,
     "suppliers": [
@@ -580,20 +587,20 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
-        "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
-        "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
-        "counts_toward_rag": false,
-        "price_move_only": false,
+        "daily_change_pct": -8.19,
+        "current_price": 8.93,
+        "risk_analysis": "Severe stock decline of -8.2% at Stora Enso. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance. A drop this size at medium exposure warrants direct follow-up regardless. BAT exposure: Medium.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83d\udcc9 Severe stock crash: -8.2% (no confirmed cause yet)",
+        "counts_toward_rag": true,
+        "price_move_only": true,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [],
-          "escalated": true,
-          "baseline_only": true
+          "escalated": false,
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "Medium",
@@ -629,8 +636,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Lawmakers get taste of AI-enabled cyberattacks in China-Taiwan war game - Nextgov/FCW",
-            "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks",
-            "China braces as new US global tariffs loom: fresh trade war or managed friction? - South China Morning Post"
+            "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
+            "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -667,7 +674,9 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
-          "headlines": [],
+          "headlines": [
+            "Brent crude oil price forecast: targets $100 as US-Iran war escalates - Invezz"
+          ],
           "escalated": false,
           "baseline_only": false
         },
@@ -792,8 +801,8 @@
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
             "News - DeCA honors 1.8 million Americans who fought during Korean War - DVIDS",
-            "Gray Zone Contestation Between North and South Korea in the Yellow Sea - Irregular Warfare Initiative",
-            "The Korean War never officially ended: an armistice signed in 1953 paused the fighting, but no peace treaty followed, leaving the Korean Peninsula technically at war for more than seventy years - Space Daily"
+            "The Allies Who Cannot Afford to Quit America - Time Magazine",
+            "How the War with Iran is Shaping Key U.S. Relations Beyond the Middle East - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -935,8 +944,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.07,
-        "current_price": 280.8,
+        "daily_change_pct": -0.12,
+        "current_price": 280.45,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -947,9 +956,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "One of hardest things to do: Trump honours return of 4 US troops killed in Iran war - India Today",
-            "India's equity benchmarks log worst day in 2 weeks on widening Mideast conflict - Reuters",
-            "This Indian Maharaja Saved Hundreds of Polish Orphans During World War II, Offering Them Refuge When No One Else Would - Smithsonian Magazine"
+            "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
+            "India RBI Says Economy Resilient Despite Monsoon, Iran War Risks - Bloomberg.com",
+            "How the War with Iran is Shaping Key U.S. Relations Beyond the Middle East - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -988,8 +997,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Lawmakers get taste of AI-enabled cyberattacks in China-Taiwan war game - Nextgov/FCW",
-            "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks",
-            "China braces as new US global tariffs loom: fresh trade war or managed friction? - South China Morning Post"
+            "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
+            "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1057,8 +1066,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Lawmakers get taste of AI-enabled cyberattacks in China-Taiwan war game - Nextgov/FCW",
-            "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks",
-            "China braces as new US global tariffs loom: fresh trade war or managed friction? - South China Morning Post"
+            "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
+            "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1084,8 +1093,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.42,
-        "current_price": 8.6,
+        "daily_change_pct": 2.48,
+        "current_price": 8.69,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1097,8 +1106,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Lawmakers get taste of AI-enabled cyberattacks in China-Taiwan war game - Nextgov/FCW",
-            "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks",
-            "China braces as new US global tariffs loom: fresh trade war or managed friction? - South China Morning Post"
+            "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
+            "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1124,24 +1133,24 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.23,
-        "current_price": 53.0,
-        "risk_analysis": "Stock decline for high-exposure supplier EVE Energy. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
+        "daily_change_pct": 4.36,
+        "current_price": 55.31,
+        "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83d\udcc9 Stock down -2.2% (no confirmed cause) - High exposure supplier",
-        "counts_toward_rag": true,
-        "price_move_only": true,
+        "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
+        "counts_toward_rag": false,
+        "price_move_only": false,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Lawmakers get taste of AI-enabled cyberattacks in China-Taiwan war game - Nextgov/FCW",
-            "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks",
-            "China braces as new US global tariffs loom: fresh trade war or managed friction? - South China Morning Post"
+            "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
+            "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks"
           ],
-          "escalated": false,
-          "baseline_only": false
+          "escalated": true,
+          "baseline_only": true
         },
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1193,13 +1202,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "daily_change_pct": -1.55,
+        "current_price": 66.49,
+        "risk_analysis": "Stock decline for high-exposure supplier Infineon. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Stock down -1.6% (no confirmed cause) - High exposure supplier",
         "counts_toward_rag": true,
-        "price_move_only": false,
+        "price_move_only": true,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1297,7 +1306,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-23T01:28:52.734607"
+    "last_fetched": "2026-07-23T08:08:05.229895"
   },
   "macro_economy": {
     "us": {
@@ -1310,13 +1319,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: +0.15% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: +0.21% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: +0.10% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: +0.06% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1360,9 +1369,9 @@
       "region": "UK",
       "sentiment": "Neutral",
       "latest_headline": "Wall Street plunges in AI \u2018bloodbath\u2019",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "+0.29%",
+      "current_price": 2801.0,
+      "daily_change_pct": 0.29,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Wall Street plunges in AI \u2018bloodbath\u2019",
       "news_risk": false,
@@ -1375,11 +1384,11 @@
       "name": "Japan Tobacco",
       "ticker": "2914.T",
       "region": "Japan",
-      "sentiment": "Neutral",
+      "sentiment": "Negative",
       "latest_headline": "Is Bunzl (BZLFY) Outperforming Other Consumer Staples Stocks This Year?",
-      "stock_move": "-0.25%",
-      "current_price": 6442.0,
-      "daily_change_pct": -0.25,
+      "stock_move": "-1.38%",
+      "current_price": 6369.0,
+      "daily_change_pct": -1.38,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Is Bunzl (BZLFY) Outperforming Other Consumer Staples Stocks This Year?",
       "news_risk": false,
@@ -1395,7 +1404,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 75.859908
+    "duration_seconds": 77.117512
   },
   "health": {
     "pillars": {

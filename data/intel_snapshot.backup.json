@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-07-24T01:25:23.056035",
-  "version": "e5c045dc04e2",
+  "last_updated": "2026-07-24T08:04:39.432886",
+  "version": "ddbb3998da9d",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -14,7 +14,7 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your supply chain is amber primarily due to geopolitical clustering: four critical-to-high exposure suppliers (Huizhou BYD, Smoore, EVE Energy, Texas Instruments) are either China-based or Taiwan-exposed, facing compounding US-China trade friction and export controls that could cascade through EMS and battery categories. Separately, three printing substrate suppliers (Stora Enso, IP Sun, Sappi) are geopolitically isolated but in different theatres\u2014Finland's NATO exposure, China's tech controls, and South Africa's energy crisis\u2014so they're less likely to cascade but each needs individual contingency planning.\n\nThe urgent move is a sourcing audit of the China cluster (especially Huizhou BYD and Smoore, both critical BAT exposure) to identify secondary suppliers or nearshoring options before Q2 trade policy tightens; Texas Instruments' unexplained -3.1% stock drop despite high BAT exposure warrants a direct earnings call or investor note review to rule out supply-side signals. Sappi and South Africa's energy instability is worth monitoring but lower urgency unless you're seeing production delays already. The macro dashboard gaps (US and China economic data still placeholder) are limiting visibility\u2014prioritize closing those within one sprint.",
+  "executive_summary": "Your supply chain faces dual pressures: a China-centric geopolitical cluster (US-Taiwan-export controls) affecting EMS, batteries, and nicotine suppliers, compounded by unexplained equity crashes in critical European and US component makers (Infineon down 6.8%, Stora Enso down 5.3%). The geopolitical risks are material but somewhat known; the stock crashes are the real wildcard\u2014they suggest either sector-wide margin compression, demand signals, or hidden operational issues that haven't yet hit headlines. Immediate actions: escalate with Infineon and Smoore (both critical exposure + sharp moves) to understand whether this is cyclical or structural, and stress-test your China EMS footprint (Huizhou BYD, Smoore) for Taiwan-linked supply gaps. South Africa and South Korea geopolitical exposure is real but slower-moving; use the next 4\u20136 weeks to map alternative substrates and filters before those regimes deteriorate further.",
   "rag_history": [
     {
       "timestamp": "2026-07-10T12:01:41.544625",
@@ -470,6 +470,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-07-24T08:04:35.155691",
+      "macro": "AMBER",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -485,7 +492,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-24T01:24:09.188336"
+        "last_fetched": "2026-07-24T08:03:28.152878"
       },
       "eu": {
         "status": "success",
@@ -496,7 +503,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1392",
-        "last_fetched": "2026-07-24T01:24:10.161642"
+        "last_fetched": "2026-07-24T08:03:28.695167"
       },
       "china": {
         "status": "placeholder",
@@ -507,11 +514,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-24T01:24:10.162535"
+        "last_fetched": "2026-07-24T08:03:28.696154"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-24T01:24:10.162548"
+    "last_fetched": "2026-07-24T08:03:28.696167"
   },
   "peers": {
     "status": "success",
@@ -519,7 +526,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-07-24T01:24:12.357639"
+    "last_fetched": "2026-07-24T08:03:30.572704"
   },
   "suppliers": {
     "status": "success",
@@ -531,12 +538,12 @@
     "suppliers_at_news_risk": 0,
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
-    "total_critical": 0,
-    "total_high": 1,
-    "total_medium": 10,
-    "actionable_critical": 0,
-    "actionable_high": 1,
-    "actionable_medium": 1,
+    "total_critical": 2,
+    "total_high": 2,
+    "total_medium": 8,
+    "actionable_critical": 2,
+    "actionable_high": 2,
+    "actionable_medium": 2,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -609,20 +616,20 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
-        "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
-        "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
-        "counts_toward_rag": false,
-        "price_move_only": false,
+        "daily_change_pct": -5.32,
+        "current_price": 9.49,
+        "risk_analysis": "Severe stock decline of -5.3% at Stora Enso. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance. A drop this size at medium exposure warrants direct follow-up regardless. BAT exposure: Medium.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83d\udcc9 Severe stock crash: -5.3% (no confirmed cause yet)",
+        "counts_toward_rag": true,
+        "price_move_only": true,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [],
-          "escalated": true,
-          "baseline_only": true
+          "escalated": false,
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "Medium",
@@ -697,7 +704,8 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "Banks raid Safaricom as corporate deals in Kenya trigger talent war - The Africa Report"
+            "Banks raid Safaricom as corporate deals in Kenya trigger talent war - The Africa Report",
+            "Gold falls despite war risks: has $100 oil rewritten the safe-haven trade? - Invezz"
           ],
           "escalated": true,
           "baseline_only": true
@@ -822,9 +830,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
+            "Facing the North Korea-Russia alliance: EU-ROK strategies for deterrence and cooperation - Real Instituto Elcano",
             "The True Cost of the U.S. Military in South Korea - Center for International Policy",
-            "News - DeCA honors 1.8 million Americans who fought during Korean War - DVIDS",
-            "Athletes' Love Transcends Cold War Divide - \uc870\uc120\uc77c\ubcf4"
+            "News - DeCA honors 1.8 million Americans who fought during Korean War - DVIDS"
           ],
           "escalated": true,
           "baseline_only": true
@@ -966,8 +974,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.18,
-        "current_price": 281.3,
+        "daily_change_pct": 0.85,
+        "current_price": 283.7,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -978,9 +986,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
+            "In India, Iran war forces Diet Coke to roll out a bigger can, heftier price tag - Reuters",
             "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
-            "How the War with Iran is Shaping Key U.S. Relations Beyond the Middle East - War on the Rocks",
-            "Could India have done more to prevent the Iran war? - Firstpost"
+            "How the War with Iran is Shaping Key U.S. Relations Beyond the Middle East - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1115,13 +1123,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.89,
-        "current_price": 8.64,
-        "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
-        "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
-        "counts_toward_rag": false,
-        "price_move_only": false,
+        "daily_change_pct": -4.4,
+        "current_price": 8.26,
+        "risk_analysis": "Stock decline for critical-exposure supplier Smoore. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance. BAT exposure: Critical.",
+        "risk_level": "HIGH",
+        "last_signal": "\ud83d\udcc9 Stock down -4.4% (no confirmed cause) - Critical exposure supplier",
+        "counts_toward_rag": true,
+        "price_move_only": true,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
@@ -1131,8 +1139,8 @@
             "Lawmakers get taste of AI-enabled cyberattacks in China-Taiwan war game - Nextgov/FCW",
             "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks"
           ],
-          "escalated": true,
-          "baseline_only": true
+          "escalated": false,
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "Critical",
@@ -1155,13 +1163,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 4.36,
-        "current_price": 55.31,
-        "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "daily_change_pct": -2.44,
+        "current_price": 53.96,
+        "risk_analysis": "Stock decline for high-exposure supplier EVE Energy. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
-        "counts_toward_rag": false,
-        "price_move_only": false,
+        "last_signal": "\ud83d\udcc9 Stock down -2.4% (no confirmed cause) - High exposure supplier",
+        "counts_toward_rag": true,
+        "price_move_only": true,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
@@ -1171,8 +1179,8 @@
             "Lawmakers get taste of AI-enabled cyberattacks in China-Taiwan war game - Nextgov/FCW",
             "Total War on Taipei: China Explores Elevating Cognitive Effects into Its Vision of Warfare - War on the Rocks"
           ],
-          "escalated": true,
-          "baseline_only": true
+          "escalated": false,
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1224,13 +1232,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "daily_change_pct": -6.82,
+        "current_price": 65.04,
+        "risk_analysis": "Severe stock decline of -6.8% at Infineon. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance. A drop this size at high exposure warrants direct follow-up regardless. BAT exposure: High.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83d\udcc9 Severe stock crash: -6.8% (no confirmed cause yet)",
         "counts_toward_rag": true,
-        "price_move_only": false,
+        "price_move_only": true,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1328,7 +1336,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-24T01:25:16.769694"
+    "last_fetched": "2026-07-24T08:04:34.627814"
   },
   "macro_economy": {
     "us": {
@@ -1341,13 +1349,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: -0.19% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: -0.18% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.04% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: +0.02% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1391,9 +1399,9 @@
       "region": "UK",
       "sentiment": "Neutral",
       "latest_headline": "Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "-0.25%",
+      "current_price": 2795.0,
+      "daily_change_pct": -0.25,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
       "news_risk": false,
@@ -1406,11 +1414,11 @@
       "name": "Japan Tobacco",
       "ticker": "2914.T",
       "region": "Japan",
-      "sentiment": "Neutral",
+      "sentiment": "Positive",
       "latest_headline": "Is Bunzl (BZLFY) Outperforming Other Consumer Staples Stocks This Year?",
-      "stock_move": "+0.69%",
-      "current_price": 6413.0,
-      "daily_change_pct": 0.69,
+      "stock_move": "+1.44%",
+      "current_price": 6461.0,
+      "daily_change_pct": 1.44,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Is Bunzl (BZLFY) Outperforming Other Consumer Staples Stocks This Year?",
       "news_risk": false,
@@ -1426,7 +1434,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 77.031252
+    "duration_seconds": 73.979659
   },
   "health": {
     "pillars": {

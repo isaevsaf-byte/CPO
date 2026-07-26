@@ -1,20 +1,19 @@
 {
-  "last_updated": "2026-07-26T08:05:36.102764",
-  "version": "2e6c5cfbeee1",
+  "last_updated": "2026-07-26T12:53:33.248531",
+  "version": "894d05fbc60c",
   "status": "healthy",
   "overall_rag": {
-    "score": "AMBER",
+    "score": "RED",
     "driven_by": [
-      "peers",
       "suppliers"
     ],
     "pillar_scores": {
       "macro": "GREEN",
       "peers": "AMBER",
-      "suppliers": "AMBER"
+      "suppliers": "RED"
     }
   },
-  "executive_summary": "Your amber status is driven by converging geopolitical stress across two distinct clusters: China-exposed suppliers (Smoore, EVE Energy, Porton, Huizhou BYD, IP Sun) facing US-China trade and Taiwan escalation risk, and European/strategic suppliers (Stora Enso in NATO's eastern flank, Sappi in South Africa's energy crisis) facing regional instability. The critical urgency sits with Smoore and Huizhou BYD in EMS and batteries\u2014both carry critical BAT exposure to your products and are showing stock pressure without clear cause, suggesting market-wide China jitters rather than isolated company problems. Triage focus: confirm alternative sourcing paths for EMS and battery components from non-China providers over the next 30 days; for substrates and filters, the geopolitical risks are real but less acutely volatile, so stress-test lead times and pricing with Stora Enso and Sappi rather than rush diversification. The Texas Instruments and Infineon declines appear technical noise unrelated to BAT-specific risks and don't warrant immediate action.",
+  "executive_summary": "Your RED status is driven entirely by supplier concentration risk across geopolitically sensitive regions and critical product categories\u2014not macro headwinds, which remain stable. The core problem: five suppliers in China (Smoore, Huizhou BYD, Porton, EVE Energy, IP Sun) represent critical-to-high exposure in EMS, batteries, and nicotine, all facing overlapping US-China trade and Taiwan escalation risks; simultaneously, ITC in India is flagged as HIGH-risk on a single unconfirmed geopolitical signal that needs urgent verification before you decide whether this is noise or a material supply shock. The printing substrates are more dispersed but still vulnerable (Stora Enso exposed to Russia border proximity, Sappi to South African infrastructure collapse). Immediate action: treat ITC's signal as a validation priority\u2014if corroborated, nicotine supply becomes acutely fragile with only Porton as a backup (also China-exposed); in parallel, stress-test your China EMS and battery roadmap assuming 60\u201390 day delays or partial allocation given recent unexplained stock moves at Smoore and EVE. The filter and substrate risks are slower-burn but should trigger contingency sourcing conversations within 30 days.",
   "rag_history": [
     {
       "timestamp": "2026-07-10T12:01:41.544625",
@@ -533,6 +532,13 @@
       "peers": "AMBER",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-07-26T12:53:27.227722",
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "RED",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -548,7 +554,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-26T08:03:14.803532"
+        "last_fetched": "2026-07-26T12:52:19.511674"
       },
       "eu": {
         "status": "success",
@@ -559,7 +565,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1377",
-        "last_fetched": "2026-07-26T08:03:15.618440"
+        "last_fetched": "2026-07-26T12:52:20.218089"
       },
       "china": {
         "status": "placeholder",
@@ -570,11 +576,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-26T08:03:15.619282"
+        "last_fetched": "2026-07-26T12:52:20.218800"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-26T08:03:15.619295"
+    "last_fetched": "2026-07-26T12:52:20.218813"
   },
   "peers": {
     "status": "success",
@@ -582,11 +588,11 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-07-26T08:03:17.701586"
+    "last_fetched": "2026-07-26T12:52:22.584591"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "AMBER",
+    "rag_score": "RED",
     "total_suppliers": 24,
     "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 0,
@@ -595,10 +601,10 @@
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 0,
-    "total_high": 1,
-    "total_medium": 10,
+    "total_high": 2,
+    "total_medium": 9,
     "actionable_critical": 0,
-    "actionable_high": 1,
+    "actionable_high": 2,
     "actionable_medium": 3,
     "suppliers": [
       {
@@ -719,7 +725,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [],
+          "headlines": [
+            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
+            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
+            "China is gaining troubling military know-how from Russia - The Economist"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -755,7 +765,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
-          "headlines": [],
+          "headlines": [
+            "Whale 'supergroups' show numbers are rebounding from hunting. But Iran war holds dangers for them - ABC News - Breaking News, Latest News and Videos",
+            "Whale 'supergroups' show numbers are rebounding from hunting. But Iran war holds dangers for them - Toronto Star",
+            "Whale 'Supergroup' So Huge It Looked Like 'Manhattan Skyline'. The Only Problem: Iran War - News18"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -878,7 +892,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
-          "headlines": [],
+          "headlines": [
+            "Russia asks North Korea to send 30,000 extra troops for Ukraine war: Zelensky - South China Morning Post",
+            "Russia Wants 30,000 More North Korean Troops for Ukraine War, Zelensky Says - Newsweek",
+            "News - Military medical heroes of the Korean War - DVIDS"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -1021,18 +1039,22 @@
         "operational_risk": false,
         "daily_change_pct": 0.76,
         "current_price": 283.45,
-        "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
-        "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
-        "counts_toward_rag": false,
+        "risk_analysis": "Geopolitical risk in India: Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "risk_level": "HIGH",
+        "last_signal": "\ud83c\udf0d Geopolitical: Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
+        "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": {
           "detected": true,
-          "level": "MEDIUM",
-          "reason": "Border tensions with China and Pakistan",
-          "headlines": [],
+          "level": "HIGH",
+          "reason": "Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
+          "headlines": [
+            "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
+            "Lessons from US-Iran war, Russian invasion of Ukraine and India-Pakistan conflict: nuclear deterrence is dead - Firstpost",
+            "Iran Warns of Wider West Asia War | Zelenskyy Accuses Russia | India Issues Black Sea Advisory - WION"
+          ],
           "escalated": true,
-          "baseline_only": true
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1066,7 +1088,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [],
+          "headlines": [
+            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
+            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
+            "China is gaining troubling military know-how from Russia - The Economist"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -1131,7 +1157,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [],
+          "headlines": [
+            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
+            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
+            "China is gaining troubling military know-how from Russia - The Economist"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -1167,7 +1197,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [],
+          "headlines": [
+            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
+            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
+            "China is gaining troubling military know-how from Russia - The Economist"
+          ],
           "escalated": false,
           "baseline_only": false
         },
@@ -1203,7 +1237,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [],
+          "headlines": [
+            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
+            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
+            "China is gaining troubling military know-how from Russia - The Economist"
+          ],
           "escalated": false,
           "baseline_only": false
         },
@@ -1361,7 +1399,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-26T08:05:31.114622"
+    "last_fetched": "2026-07-26T12:53:26.579064"
   },
   "macro_economy": {
     "us": {
@@ -1459,7 +1497,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 143.863517
+    "duration_seconds": 76.219233
   },
   "health": {
     "pillars": {

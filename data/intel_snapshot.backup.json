@@ -1,19 +1,20 @@
 {
-  "last_updated": "2026-07-26T01:28:41.744169",
-  "version": "047b5b33b575",
+  "last_updated": "2026-07-26T08:05:36.102764",
+  "version": "2e6c5cfbeee1",
   "status": "healthy",
   "overall_rag": {
-    "score": "RED",
+    "score": "AMBER",
     "driven_by": [
+      "peers",
       "suppliers"
     ],
     "pillar_scores": {
       "macro": "GREEN",
       "peers": "AMBER",
-      "suppliers": "RED"
+      "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by supplier concentration in geopolitical hotspots, not by macro deterioration or peer pressure. Two clusters demand immediate triage: China-exposed suppliers (Smoore, EVE Energy, Huizhou BYD, IP Sun, Porton) account for half your critical and high-risk exposure and face compounding US-Taiwan-tech-export headwinds; and ITC (nicotine, India, HIGH risk) has triggered a single unconfirmed invasion signal that needs urgent corroboration before escalating but warrants 48\u201372 hour clarification given your single-source dependency. Secondary but real: Stora Enso (Finland, NATO frontline) and Sappi (South Africa, energy crisis) are less immediate but worth contingency mapping now, while Tae Young Filters (Korea) sits in a stable but militarized zone.\n\nFocus today on ITC's signal validation and a China-specific stress scenario (Taiwan-related supply halt); the stock-price dips on TI, Infineon, and EVE suggest market noise rather than confirmed events, so treat those as watch-list items. You have a green macro backdrop, so this is containable through targeted diversification or forward hedging in the next 60 days rather than crisis mode.",
+  "executive_summary": "Your amber status is driven by converging geopolitical stress across two distinct clusters: China-exposed suppliers (Smoore, EVE Energy, Porton, Huizhou BYD, IP Sun) facing US-China trade and Taiwan escalation risk, and European/strategic suppliers (Stora Enso in NATO's eastern flank, Sappi in South Africa's energy crisis) facing regional instability. The critical urgency sits with Smoore and Huizhou BYD in EMS and batteries\u2014both carry critical BAT exposure to your products and are showing stock pressure without clear cause, suggesting market-wide China jitters rather than isolated company problems. Triage focus: confirm alternative sourcing paths for EMS and battery components from non-China providers over the next 30 days; for substrates and filters, the geopolitical risks are real but less acutely volatile, so stress-test lead times and pricing with Stora Enso and Sappi rather than rush diversification. The Texas Instruments and Infineon declines appear technical noise unrelated to BAT-specific risks and don't warrant immediate action.",
   "rag_history": [
     {
       "timestamp": "2026-07-10T12:01:41.544625",
@@ -525,6 +526,13 @@
       "peers": "AMBER",
       "suppliers": "RED",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-07-26T08:05:31.333188",
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -540,7 +548,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-26T01:27:27.919025"
+        "last_fetched": "2026-07-26T08:03:14.803532"
       },
       "eu": {
         "status": "success",
@@ -551,7 +559,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1377",
-        "last_fetched": "2026-07-26T01:27:28.825072"
+        "last_fetched": "2026-07-26T08:03:15.618440"
       },
       "china": {
         "status": "placeholder",
@@ -562,11 +570,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-26T01:27:28.825751"
+        "last_fetched": "2026-07-26T08:03:15.619282"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-26T01:27:28.825764"
+    "last_fetched": "2026-07-26T08:03:15.619295"
   },
   "peers": {
     "status": "success",
@@ -574,11 +582,11 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-07-26T01:27:31.364425"
+    "last_fetched": "2026-07-26T08:03:17.701586"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "RED",
+    "rag_score": "AMBER",
     "total_suppliers": 24,
     "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 0,
@@ -587,10 +595,10 @@
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 0,
-    "total_high": 2,
-    "total_medium": 9,
+    "total_high": 1,
+    "total_medium": 10,
     "actionable_critical": 0,
-    "actionable_high": 2,
+    "actionable_high": 1,
     "actionable_medium": 3,
     "suppliers": [
       {
@@ -635,11 +643,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 1.28,
+        "current_price": 330.87,
         "risk_analysis": "No supply chain risks identified. GPI (Printed Packaging) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "last_signal": "\u2713 Normal operations. Stock: +1.3%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -711,11 +719,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [
-            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
-            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China is gaining troubling military know-how from Russia - The Economist"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -874,11 +878,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
-          "headlines": [
-            "Russia Wants 30,000 More North Korean Troops for Ukraine War, Zelensky Says - Newsweek",
-            "Community Gathers in Duluth to Honor Korean War Heroes on Armistice Day - Georgia Asian Times",
-            "'Song for Another Home': A novel of survival and remembrance from the 'forgotten' Korean War - University of California, Berkeley"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -1021,22 +1021,18 @@
         "operational_risk": false,
         "daily_change_pct": 0.76,
         "current_price": 283.45,
-        "risk_analysis": "Geopolitical risk in India: Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
-        "risk_level": "HIGH",
-        "last_signal": "\ud83c\udf0d Geopolitical: Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
-        "counts_toward_rag": true,
+        "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
+        "counts_toward_rag": false,
         "price_move_only": false,
         "geopolitical_risk": {
           "detected": true,
-          "level": "HIGH",
-          "reason": "Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
-          "headlines": [
-            "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
-            "In India, Iran war forces Diet Coke to roll out a bigger can, heftier price tag - Reuters",
-            "Lessons from US-Iran war, Russian invasion of Ukraine and India-Pakistan conflict: nuclear deterrence is dead - Firstpost"
-          ],
+          "level": "MEDIUM",
+          "reason": "Border tensions with China and Pakistan",
+          "headlines": [],
           "escalated": true,
-          "baseline_only": false
+          "baseline_only": true
         },
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1070,11 +1066,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [
-            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
-            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China is gaining troubling military know-how from Russia - The Economist"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -1139,11 +1131,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [
-            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
-            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China is gaining troubling military know-how from Russia - The Economist"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -1179,11 +1167,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [
-            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
-            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China is gaining troubling military know-how from Russia - The Economist"
-          ],
+          "headlines": [],
           "escalated": false,
           "baseline_only": false
         },
@@ -1219,11 +1203,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [
-            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
-            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China is gaining troubling military know-how from Russia - The Economist"
-          ],
+          "headlines": [],
           "escalated": false,
           "baseline_only": false
         },
@@ -1381,7 +1361,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-26T01:28:35.516356"
+    "last_fetched": "2026-07-26T08:05:31.114622"
   },
   "macro_economy": {
     "us": {
@@ -1400,7 +1380,7 @@
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.16% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.01% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1426,7 +1406,7 @@
       "ticker": "PM",
       "region": "US",
       "sentiment": "Neutral",
-      "latest_headline": "Is Philip Morris International (PM) Fairly Valued After Its 5 Year Run?",
+      "latest_headline": "Philip Morris International (PM) Wins FDA Modified Risk Status For ZYN In The US",
       "stock_move": "+0.98%",
       "current_price": 193.0,
       "daily_change_pct": 0.98,
@@ -1479,7 +1459,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 76.890833
+    "duration_seconds": 143.863517
   },
   "health": {
     "pillars": {

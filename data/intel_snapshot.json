@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-07-27T01:46:44.772588",
-  "version": "e9bd52fc183f",
+  "last_updated": "2026-07-27T09:23:41.599291",
+  "version": "ce0e397f39c6",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -13,7 +13,7 @@
       "suppliers": "RED"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by geopolitical shocks across suppliers, not macroeconomic deterioration. The cluster divides into two urgent zones: China-exposed suppliers (Huizhou BYD, Smoore, EVE Energy, IP Sun, Porton) face compounding US-China trade and Taiwan risks affecting your critical EMS and battery tiers; separately, ITC (your highest-risk nicotine source in India) has flagged a geopolitical event requiring immediate corroboration before escalating. Secondary concerns include Stora Enso (NATO proximity to Russia) and Sappi (South Africa energy crisis), both printing substrates but less critical to your BAT exposure profile. Texas Instruments and Infineon show stock weakness with no confirmed trigger\u2014monitor but don't over-weight until cause is clear. Immediate action: validate ITC's alert and run contingency scenarios for dual-sourcing your China EMS/battery stack; flag Stora Enso and Sappi for Q2 supply agreements to lock in volume before tensions worsen.",
+  "executive_summary": "Your RED status is driven entirely by geopolitical concentration in your supplier base, not macro weakness\u2014the overall economy remains stable. Nine of ten flagged suppliers face overlapping trade-war and regional-conflict risks, clustering heavily in China (six suppliers across EMS, batteries, and nicotine) and secondary hotspots in India, South Korea, and Russia-adjacent Finland. ITC in India carries the highest immediate concern (HIGH risk, single-source nicotine) pending corroboration of the recent news signal, while your two critical-exposure EMS suppliers (Huizhou BYD, Smoore) sit directly in the US-China export-control crosshairs\u2014a scenario that could disrupt production within weeks if Taiwan tensions escalate or sanctions tighten. The printing-substrate tier (Stora Enso, IP Sun, Sappi) and filter supplier (Tae Young) are medium-risk but lower urgency; focus first on securing redundancy or hedges for nicotine and EMS, then initiate country-diversification conversations with substrate and battery vendors within the next quarter.",
   "rag_history": [
     {
       "timestamp": "2026-07-10T12:01:41.544625",
@@ -553,6 +553,13 @@
       "peers": "AMBER",
       "suppliers": "RED",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-07-27T09:23:36.493525",
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "RED",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -568,7 +575,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-27T01:45:28.833715"
+        "last_fetched": "2026-07-27T09:22:29.157805"
       },
       "eu": {
         "status": "success",
@@ -579,7 +586,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1377",
-        "last_fetched": "2026-07-27T01:45:32.539717"
+        "last_fetched": "2026-07-27T09:22:29.842773"
       },
       "china": {
         "status": "placeholder",
@@ -590,11 +597,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-27T01:45:32.540798"
+        "last_fetched": "2026-07-27T09:22:29.843674"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-27T01:45:32.540813"
+    "last_fetched": "2026-07-27T09:22:29.843686"
   },
   "peers": {
     "status": "success",
@@ -602,7 +609,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-07-27T01:45:34.712458"
+    "last_fetched": "2026-07-27T09:22:31.974135"
   },
   "suppliers": {
     "status": "success",
@@ -616,10 +623,10 @@
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 0,
     "total_high": 1,
-    "total_medium": 10,
+    "total_medium": 9,
     "actionable_critical": 0,
     "actionable_high": 1,
-    "actionable_medium": 2,
+    "actionable_medium": 1,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -692,8 +699,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 2.27,
-        "current_price": 9.38,
+        "daily_change_pct": 1.64,
+        "current_price": 9.53,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -742,9 +749,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
-            "China is gaining troubling military know-how from Russia - The Economist"
+            "To end Myanmar's brutal civil war, the US will need China's help - Responsible Statecraft",
+            "The Iran War and the Limits of Great Power - The Cairo Review of Global Affairs",
+            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -783,7 +790,8 @@
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
             "Whale 'supergroups' show numbers are rebounding from hunting. But Iran war holds dangers for them - ABC News - Breaking News, Latest News and Videos",
-            "Whale 'supergroups' show numbers are rebounding from hunting. But Iran war holds dangers for them - News-Press NOW"
+            "Whale 'supergroups' show numbers are rebounding from hunting. But Iran war holds dangers for them - News-Press NOW",
+            "The Iran war is changing how South Africans commute - TopAuto.co.za"
           ],
           "escalated": true,
           "baseline_only": true
@@ -908,9 +916,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "South Korea Traces of War - The Lufkin Daily News",
-            "Korean War Veterans Armistice Day ceremony held at Veterans National Memorial Shrine & Museum - WPTA | 21Alive | Fort Wayne, IN",
-            "Remembering the 'Forgotten War' in Pittsfield - iBerkshires.com"
+            "Photos show North and South Korea still divided 73 years after the armistice - AP News",
+            "Photos show North and South Korea still divided 73 years after the armistice - WRAL",
+            "Gov't commemorates UN forces' participation in Korean War - Korea JoongAng Daily"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1052,8 +1060,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.76,
-        "current_price": 283.45,
+        "daily_change_pct": 0.88,
+        "current_price": 285.95,
         "risk_analysis": "Geopolitical risk in India: Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "HIGH",
         "last_signal": "\ud83c\udf0d Geopolitical: Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
@@ -1065,8 +1073,8 @@
           "reason": "Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
           "headlines": [
             "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
-            "Indian rupee, bonds set for relief as Iran-US war truce eases oil fears; Fed in focus - Reuters",
-            "The Iran War and Central Asia\u2019s New Trade Geography - The National Interest"
+            "Coal India\u2019s Profit May Dip as Iran War Lifts Mining Costs - Bloomberg.com",
+            "Discount, premium, discount, premium: How Russian crude prices swung as India stepped up procurement amid - The Times of India"
           ],
           "escalated": true,
           "baseline_only": false
@@ -1104,9 +1112,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
-            "China is gaining troubling military know-how from Russia - The Economist"
+            "To end Myanmar's brutal civil war, the US will need China's help - Responsible Statecraft",
+            "The Iran War and the Limits of Great Power - The Cairo Review of Global Affairs",
+            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1173,9 +1181,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
-            "China is gaining troubling military know-how from Russia - The Economist"
+            "To end Myanmar's brutal civil war, the US will need China's help - Responsible Statecraft",
+            "The Iran War and the Limits of Great Power - The Cairo Review of Global Affairs",
+            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1201,8 +1209,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.0,
-        "current_price": 8.25,
+        "daily_change_pct": 3.15,
+        "current_price": 8.51,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1213,9 +1221,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
-            "China is gaining troubling military know-how from Russia - The Economist"
+            "To end Myanmar's brutal civil war, the US will need China's help - Responsible Statecraft",
+            "The Iran War and the Limits of Great Power - The Cairo Review of Global Affairs",
+            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1241,8 +1249,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 3.32,
-        "current_price": 55.75,
+        "daily_change_pct": 2.13,
+        "current_price": 55.11,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1253,9 +1261,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
-            "China is gaining troubling military know-how from Russia - The Economist"
+            "To end Myanmar's brutal civil war, the US will need China's help - Responsible Statecraft",
+            "The Iran War and the Limits of Great Power - The Cairo Review of Global Affairs",
+            "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1310,13 +1318,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.65,
-        "current_price": 64.41,
-        "risk_analysis": "Stock decline for high-exposure supplier Infineon. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
-        "risk_level": "MEDIUM",
-        "last_signal": "\ud83d\udcc9 Stock down -1.6% (no confirmed cause) - High exposure supplier",
+        "daily_change_pct": 2.41,
+        "current_price": 65.96,
+        "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
+        "risk_level": "LOW",
+        "last_signal": "\u2713 Normal operations. Stock: +2.4%",
         "counts_toward_rag": true,
-        "price_move_only": true,
+        "price_move_only": false,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1414,7 +1422,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-27T01:46:38.962018"
+    "last_fetched": "2026-07-27T09:23:36.022061"
   },
   "macro_economy": {
     "us": {
@@ -1427,13 +1435,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: +0.31% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: +0.21% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.10% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.11% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1475,11 +1483,11 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Neutral",
+      "sentiment": "Negative",
       "latest_headline": "Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
-      "stock_move": "+0.93%",
-      "current_price": 2823.0,
-      "daily_change_pct": 0.93,
+      "stock_move": "-1.13%",
+      "current_price": 2791.0,
+      "daily_change_pct": -1.13,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
       "news_risk": false,
@@ -1494,9 +1502,9 @@
       "region": "Japan",
       "sentiment": "Positive",
       "latest_headline": "Is Bunzl (BZLFY) Outperforming Other Consumer Staples Stocks This Year?",
-      "stock_move": "+1.22%",
-      "current_price": 6540.0,
-      "daily_change_pct": 1.22,
+      "stock_move": "+1.08%",
+      "current_price": 6531.0,
+      "daily_change_pct": 1.08,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Is Bunzl (BZLFY) Outperforming Other Consumer Staples Stocks This Year?",
       "news_risk": false,
@@ -1512,7 +1520,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 78.634224
+    "duration_seconds": 75.540472
   },
   "health": {
     "pillars": {

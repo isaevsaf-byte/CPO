@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-07-26T12:53:33.248531",
-  "version": "894d05fbc60c",
+  "last_updated": "2026-07-26T18:53:18.511441",
+  "version": "997916071692",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -13,7 +13,7 @@
       "suppliers": "RED"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by supplier concentration risk across geopolitically sensitive regions and critical product categories\u2014not macro headwinds, which remain stable. The core problem: five suppliers in China (Smoore, Huizhou BYD, Porton, EVE Energy, IP Sun) represent critical-to-high exposure in EMS, batteries, and nicotine, all facing overlapping US-China trade and Taiwan escalation risks; simultaneously, ITC in India is flagged as HIGH-risk on a single unconfirmed geopolitical signal that needs urgent verification before you decide whether this is noise or a material supply shock. The printing substrates are more dispersed but still vulnerable (Stora Enso exposed to Russia border proximity, Sappi to South African infrastructure collapse). Immediate action: treat ITC's signal as a validation priority\u2014if corroborated, nicotine supply becomes acutely fragile with only Porton as a backup (also China-exposed); in parallel, stress-test your China EMS and battery roadmap assuming 60\u201390 day delays or partial allocation given recent unexplained stock moves at Smoore and EVE. The filter and substrate risks are slower-burn but should trigger contingency sourcing conversations within 30 days.",
+  "executive_summary": "Your printing substrates and filter materials are caught in overlapping geopolitical stress zones\u2014Finland's NATO exposure, China's trade war and Taiwan risk, and South Africa's energy crisis each create single points of failure across suppliers with medium BAT exposure. More acute is your nicotine supply: ITC in India shows a unconfirmed geopolitical flag that needs immediate clarification, while Porton (China) faces the same US-China trade headwinds as your critical EMS suppliers. Smoore and Huizhou BYD (both China, both critical EMS exposure) are signaling via stock decline; while the causes are unconfirmed, they warrant direct outreach within 48 hours to test for supply disruption or sanctions concerns rather than waiting for clarity. The battery and semiconductor stock slides (EVE Energy, Texas Instruments, Infineon) are secondary to supplier concentration\u2014focus first on de-risking China-dependent critical categories (EMS, nicotine) and validating the ITC signal before it escalates. Peer AMBER and macro GREEN give you some buffer, but your RED driver is structural, not cyclical.",
   "rag_history": [
     {
       "timestamp": "2026-07-10T12:01:41.544625",
@@ -539,6 +539,13 @@
       "peers": "AMBER",
       "suppliers": "RED",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-07-26T18:53:13.405419",
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "RED",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -554,7 +561,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-26T12:52:19.511674"
+        "last_fetched": "2026-07-26T18:52:05.670258"
       },
       "eu": {
         "status": "success",
@@ -565,7 +572,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1377",
-        "last_fetched": "2026-07-26T12:52:20.218089"
+        "last_fetched": "2026-07-26T18:52:06.338383"
       },
       "china": {
         "status": "placeholder",
@@ -576,11 +583,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-26T12:52:20.218800"
+        "last_fetched": "2026-07-26T18:52:06.339133"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-07-26T12:52:20.218813"
+    "last_fetched": "2026-07-26T18:52:06.339145"
   },
   "peers": {
     "status": "success",
@@ -588,7 +595,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-07-26T12:52:22.584591"
+    "last_fetched": "2026-07-26T18:52:08.549913"
   },
   "suppliers": {
     "status": "success",
@@ -689,7 +696,9 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
-          "headlines": [],
+          "headlines": [
+            "Ukraine is stronger than at any point in war, Finnish president says - RBC-Ukraine"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -728,7 +737,7 @@
           "headlines": [
             "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
             "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China is gaining troubling military know-how from Russia - The Economist"
+            "China pours funding into green energy deals as Iran war hits oil demand - Financial Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -767,7 +776,7 @@
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
             "Whale 'supergroups' show numbers are rebounding from hunting. But Iran war holds dangers for them - ABC News - Breaking News, Latest News and Videos",
-            "Whale 'supergroups' show numbers are rebounding from hunting. But Iran war holds dangers for them - Toronto Star",
+            "Whale 'supergroups' show numbers are rebounding from hunting. But Iran war holds dangers for them - News-Press NOW",
             "Whale 'Supergroup' So Huge It Looked Like 'Manhattan Skyline'. The Only Problem: Iran War - News18"
           ],
           "escalated": true,
@@ -893,8 +902,8 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
+            "Remembering the 'Forgotten War' in Pittsfield - iBerkshires.com",
             "Russia asks North Korea to send 30,000 extra troops for Ukraine war: Zelensky - South China Morning Post",
-            "Russia Wants 30,000 More North Korean Troops for Ukraine War, Zelensky Says - Newsweek",
             "News - Military medical heroes of the Korean War - DVIDS"
           ],
           "escalated": true,
@@ -1050,8 +1059,8 @@
           "reason": "Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
           "headlines": [
             "US-China trade war reaches India\u2019s streets as Modi weighs Washington bet - South China Morning Post",
-            "Lessons from US-Iran war, Russian invasion of Ukraine and India-Pakistan conflict: nuclear deterrence is dead - Firstpost",
-            "Iran Warns of Wider West Asia War | Zelenskyy Accuses Russia | India Issues Black Sea Advisory - WION"
+            "\u2018No accountability for settler war crimes against Palestinians\u2019 - Al Jazeera",
+            "Lessons from US-Iran war, Russian invasion of Ukraine and India-Pakistan conflict: nuclear deterrence is dead - Firstpost"
           ],
           "escalated": true,
           "baseline_only": false
@@ -1091,7 +1100,7 @@
           "headlines": [
             "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
             "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China is gaining troubling military know-how from Russia - The Economist"
+            "China pours funding into green energy deals as Iran war hits oil demand - Financial Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1160,7 +1169,7 @@
           "headlines": [
             "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
             "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China is gaining troubling military know-how from Russia - The Economist"
+            "China pours funding into green energy deals as Iran war hits oil demand - Financial Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1200,7 +1209,7 @@
           "headlines": [
             "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
             "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China is gaining troubling military know-how from Russia - The Economist"
+            "China pours funding into green energy deals as Iran war hits oil demand - Financial Times"
           ],
           "escalated": false,
           "baseline_only": false
@@ -1240,7 +1249,7 @@
           "headlines": [
             "China Has Come Through Trump\u2019s Trade War in a Good Position - The New York Times",
             "The Department of War Releases Updated List of Foreign Institutions Engaging in Problemati - U.S. Department of War (.gov)",
-            "China is gaining troubling military know-how from Russia - The Economist"
+            "China pours funding into green energy deals as Iran war hits oil demand - Financial Times"
           ],
           "escalated": false,
           "baseline_only": false
@@ -1399,7 +1408,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-26T12:53:26.579064"
+    "last_fetched": "2026-07-26T18:53:12.628492"
   },
   "macro_economy": {
     "us": {
@@ -1418,7 +1427,7 @@
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.01% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.16% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1497,7 +1506,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 76.219233
+    "duration_seconds": 82.094784
   },
   "health": {
     "pillars": {

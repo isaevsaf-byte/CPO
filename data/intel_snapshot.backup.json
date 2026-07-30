@@ -1,27 +1,21 @@
 {
-  "last_updated": "2026-07-29T18:51:42.641020",
-  "version": "c9d4cf21b235",
+  "last_updated": "2026-07-30T01:15:50.913654",
+  "version": "e99c3428b702",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
     "driven_by": [
+      "macro",
       "suppliers"
     ],
     "pillar_scores": {
-      "macro": "GREEN",
+      "macro": "AMBER",
       "peers": "GREEN",
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your supplier risk is concentrated in three distinct geopolitical flashpoints: US-China trade tensions (affecting four critical/high-exposure suppliers in electronics, batteries, and nicotine across Huizhou BYD, Smoore, EVE Energy, and Porton); Russia-NATO friction (Stora Enso in Finland); and South Asian instability (ITC in India). Beyond geography, Infineon in Germany warrants immediate investigation\u2014a 5.7% stock crash with no confirmed cause on a high-exposure component suggests either sector-wide headwinds or company-specific supply shock that could cascade across your EMS tier. Action first on Infineon (clarify the cause within 48 hours), then stress-test your China exposure for escalating semiconductor export controls, as this touches your most critical BAT suppliers (Huizhou BYD and Smoore). Stora Enso and Sappi are secondary\u2014monitor for logistics disruption but no imminent trigger. Jabil's 3.5% decline is noise unless it correlates with Infineon's drop.",
+  "executive_summary": "Your amber status reflects two distinct but interconnected pressure zones. First, geopolitical concentration: five suppliers across China (EMS, nicotine, batteries) and three across Russia-adjacent regions (Finland, South Korea) are flagged simultaneously, suggesting a systemic macro shock rather than isolated supplier problems. Second, unexplained equity sell-offs in three high-exposure names (Jabil down 5.2%, Texas Instruments down 2.1%, EVE Energy down 1.6%) with no confirmed root cause\u2014this warrants immediate investigation to distinguish between temporary sentiment and real supply disruption.\n\nAction immediately: contact Jabil on that 5.2% crash since it's your only CRITICAL-rated supplier and mechanical components are harder to substitute; simultaneously request status updates from your China-concentrated EMS and battery suppliers (Smoore, Huizhou BYD, EVE Energy) assuming this may be a market-wide China-trade anxiety event. The geopolitical signals (US-China export controls, Russia-NATO proximity, India border tensions) are structural long-term risks, not urgent this week, but flag to your CFO that your printed substrates and nicotine chains now depend heavily on either politically exposed regions or single-country concentration, which argues for a sourcing review within 60 days.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-10T19:13:23.363834",
-      "macro": "GREEN",
-      "peers": "AMBER",
-      "suppliers": "GREEN",
-      "overall": "AMBER"
-    },
     {
       "timestamp": "2026-07-10T19:55:02.506566",
       "macro": "GREEN",
@@ -574,11 +568,18 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-07-30T01:15:45.078922",
+      "macro": "AMBER",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
     "status": "success",
-    "rag_score": "GREEN",
+    "rag_score": "AMBER",
     "regions": {
       "us": {
         "status": "placeholder",
@@ -589,7 +590,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-29T18:50:11.327341"
+        "last_fetched": "2026-07-30T01:14:36.324802"
       },
       "eu": {
         "status": "success",
@@ -600,7 +601,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.138",
-        "last_fetched": "2026-07-29T18:50:12.401031"
+        "last_fetched": "2026-07-30T01:14:37.162586"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +612,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-07-29T18:50:12.401932"
+        "last_fetched": "2026-07-30T01:14:37.163459"
       }
     },
-    "volatility_pct": 0.11436614762029178,
-    "last_fetched": "2026-07-29T18:50:12.401946"
+    "volatility_pct": 0.0,
+    "last_fetched": "2026-07-30T01:14:37.163471"
   },
   "peers": {
     "status": "success",
@@ -623,7 +624,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-07-29T18:50:33.161534"
+    "last_fetched": "2026-07-30T01:14:39.542988"
   },
   "suppliers": {
     "status": "success",
@@ -637,10 +638,10 @@
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 1,
     "total_high": 0,
-    "total_medium": 10,
+    "total_medium": 11,
     "actionable_critical": 1,
     "actionable_high": 0,
-    "actionable_medium": 1,
+    "actionable_medium": 3,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -655,13 +656,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.29,
-        "current_price": 46.09,
-        "risk_analysis": "No supply chain risks identified. AMCOR (Printed Packaging) operating normally. BAT exposure: Critical.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.3%",
+        "daily_change_pct": -1.82,
+        "current_price": 45.84,
+        "risk_analysis": "Stock decline for critical-exposure supplier AMCOR. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Stock down -1.8% (no confirmed cause) - Critical exposure supplier",
         "counts_toward_rag": true,
-        "price_move_only": false,
+        "price_move_only": true,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "Critical",
@@ -684,11 +685,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 6.21,
-        "current_price": 372.43,
+        "daily_change_pct": 2.09,
+        "current_price": 357.97,
         "risk_analysis": "No supply chain risks identified. GPI (Printed Packaging) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +6.2%",
+        "last_signal": "\u2713 Normal operations. Stock: +2.1%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -713,8 +714,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.68,
-        "current_price": 9.9,
+        "daily_change_pct": null,
+        "current_price": null,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -726,8 +727,8 @@
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
             "Why Norway and Finland Should Preserve Two of Europe's Most Important Security Arrangements - War on the Rocks",
-            "542 kills? Why the Soviets feared the sniper known as \u2018White Death\u2019 - We Are The Mighty",
-            "Finland Armed and Ready for War \u2013 Part 2 of 2 - newsweekly.com.au"
+            "Finland Closes Airspace Near Russia as Drone Incursions Reach NATO Territory - UNITED24 Media",
+            "542 kills? Why the Soviets feared the sniper known as \u2018White Death\u2019 - We Are The Mighty"
           ],
           "escalated": true,
           "baseline_only": true
@@ -765,9 +766,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "EXCLUSIVE: Iran to get Chinese shoulder-launched missile systems in weeks, sources say - reuters.com",
-            "Chinese satellite imagery analysis challenges US-Iran war claims - South China Morning Post",
-            "Germany Maps China\u2019s Weaknesses in Preparation for a Trade War - Bloomberg.com"
+            "NEWSLETTER: China's crude calculus in Iran war - Reuters",
+            "China and the Iran War Oil Shock That Wasn\u2019t - ChinaTalk",
+            "Chinese satellite imagery analysis challenges US-Iran war claims - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -793,8 +794,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 5.27,
-        "current_price": 188.6,
+        "daily_change_pct": 3.81,
+        "current_price": 185.99,
         "risk_analysis": "Geopolitical risk in South Africa: Economic instability, infrastructure challenges, energy crisis. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Economic instability, infrastructure challenges, energy crisis",
@@ -862,11 +863,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.91,
-        "current_price": 67.52,
+        "daily_change_pct": -1.26,
+        "current_price": 67.28,
         "risk_analysis": "No supply chain risks identified. Eastman (Filter Materials) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.9%",
+        "last_signal": "\u2713 Normal operations. Stock: -1.3%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -932,9 +933,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "By the 1950s war had stripped South Korea's hills bare, and few believed the forests would return: yet a decades-long national planting campaign brought them back, and today woodland covers roughly two-thirds of the whole country once again - spacedaily.com",
             "403rd Wing honors Korean War airlift legacy on Korean War Veterans Armistice Day - afrc.af.mil",
-            "Reps. Frankel, Bilirakis Lead Bipartisan Resolution Honoring Korean War Veterans - Representative Lois Frankel (.gov)"
+            "Reps. Frankel, Bilirakis Lead Bipartisan Resolution Honoring Korean War Veterans - Representative Lois Frankel (.gov)",
+            "Trump says S. Korea, U.S. remain 'united' in 'steadfast' alliance in armistice anniv. message - upi.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -989,11 +990,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.11,
-        "current_price": 8.74,
+        "daily_change_pct": -0.69,
+        "current_price": 8.69,
         "risk_analysis": "No supply chain risks identified. SWM (Mativ) (Fine Papers) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.1%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.7%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1076,8 +1077,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.56,
+        "current_price": 286.25,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1088,9 +1089,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
+            "India\u2019s Economy Sends Mixed Signals as Businesses Juggle War and Trade Shocks - Bloomberg",
             "How India Is Preparing for a Sea War with China - The National Interest",
-            "India\u2019s Economy Sends Mixed Signals as Businesses Juggle War and Trade Shocks - Bloomberg.com",
-            "Middle East war escalates: Multiple dead in US-Saudi strikes in Iraq; Iran targets Hormuz ships - top dev - The Times of India"
+            "Indian rupee, bonds set for relief as Iran-US war truce eases oil fears; Fed in focus - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1128,9 +1129,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "EXCLUSIVE: Iran to get Chinese shoulder-launched missile systems in weeks, sources say - reuters.com",
-            "Chinese satellite imagery analysis challenges US-Iran war claims - South China Morning Post",
-            "Germany Maps China\u2019s Weaknesses in Preparation for a Trade War - Bloomberg.com"
+            "NEWSLETTER: China's crude calculus in Iran war - Reuters",
+            "China and the Iran War Oil Shock That Wasn\u2019t - ChinaTalk",
+            "Chinese satellite imagery analysis challenges US-Iran war claims - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1197,9 +1198,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "EXCLUSIVE: Iran to get Chinese shoulder-launched missile systems in weeks, sources say - reuters.com",
-            "Chinese satellite imagery analysis challenges US-Iran war claims - South China Morning Post",
-            "Germany Maps China\u2019s Weaknesses in Preparation for a Trade War - Bloomberg.com"
+            "NEWSLETTER: China's crude calculus in Iran war - Reuters",
+            "China and the Iran War Oil Shock That Wasn\u2019t - ChinaTalk",
+            "Chinese satellite imagery analysis challenges US-Iran war claims - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1225,8 +1226,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 2.31,
+        "current_price": 8.86,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1237,9 +1238,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "EXCLUSIVE: Iran to get Chinese shoulder-launched missile systems in weeks, sources say - reuters.com",
-            "Chinese satellite imagery analysis challenges US-Iran war claims - South China Morning Post",
-            "Germany Maps China\u2019s Weaknesses in Preparation for a Trade War - Bloomberg.com"
+            "NEWSLETTER: China's crude calculus in Iran war - Reuters",
+            "China and the Iran War Oil Shock That Wasn\u2019t - ChinaTalk",
+            "Chinese satellite imagery analysis challenges US-Iran war claims - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1265,24 +1266,24 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
-        "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "daily_change_pct": -1.59,
+        "current_price": 53.22,
+        "risk_analysis": "Stock decline for high-exposure supplier EVE Energy. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
-        "counts_toward_rag": false,
-        "price_move_only": false,
+        "last_signal": "\ud83d\udcc9 Stock down -1.6% (no confirmed cause) - High exposure supplier",
+        "counts_toward_rag": true,
+        "price_move_only": true,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "EXCLUSIVE: Iran to get Chinese shoulder-launched missile systems in weeks, sources say - reuters.com",
-            "Chinese satellite imagery analysis challenges US-Iran war claims - South China Morning Post",
-            "Germany Maps China\u2019s Weaknesses in Preparation for a Trade War - Bloomberg.com"
+            "NEWSLETTER: China's crude calculus in Iran war - Reuters",
+            "China and the Iran War Oil Shock That Wasn\u2019t - ChinaTalk",
+            "Chinese satellite imagery analysis challenges US-Iran war claims - South China Morning Post"
           ],
-          "escalated": true,
-          "baseline_only": true
+          "escalated": false,
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1305,13 +1306,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.92,
-        "current_price": 279.62,
-        "risk_analysis": "No supply chain risks identified. Texas Instruments (EE Component) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +0.9%",
+        "daily_change_pct": -2.08,
+        "current_price": 271.3,
+        "risk_analysis": "Stock decline for high-exposure supplier Texas Instruments. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Stock down -2.1% (no confirmed cause) - High exposure supplier",
         "counts_toward_rag": true,
-        "price_move_only": false,
+        "price_move_only": true,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1334,13 +1335,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -5.69,
-        "current_price": 54.48,
-        "risk_analysis": "Severe stock decline of -5.7% at Infineon. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance. A drop this size at high exposure warrants direct follow-up regardless. BAT exposure: High.",
-        "risk_level": "CRITICAL",
-        "last_signal": "\ud83d\udcc9 Severe stock crash: -5.7% (no confirmed cause yet)",
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
+        "risk_level": "LOW",
+        "last_signal": "\u2713 Normal operations. No risk signals.",
         "counts_toward_rag": true,
-        "price_move_only": true,
+        "price_move_only": false,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1421,11 +1422,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -3.52,
-        "current_price": 292.3,
-        "risk_analysis": "Notable stock decline for Jabil. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance. BAT exposure: Medium.",
-        "risk_level": "MEDIUM",
-        "last_signal": "\ud83d\udcc9 Stock down -3.5% (no confirmed cause) - monitoring",
+        "daily_change_pct": -5.22,
+        "current_price": 287.14,
+        "risk_analysis": "Severe stock decline of -5.2% at Jabil. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance. A drop this size at medium exposure warrants direct follow-up regardless. BAT exposure: Medium.",
+        "risk_level": "CRITICAL",
+        "last_signal": "\ud83d\udcc9 Severe stock crash: -5.2% (no confirmed cause yet)",
         "counts_toward_rag": true,
         "price_move_only": true,
         "geopolitical_risk": null,
@@ -1438,26 +1439,26 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-07-29T18:51:37.335598"
+    "last_fetched": "2026-07-30T01:15:44.130725"
   },
   "macro_economy": {
     "us": {
       "cpi": "2.8%",
       "rate": "4.25%",
-      "trend": "Stable",
-      "summary": "S&P 500 stable: +0.13% change. Market reflects balanced economic conditions. Fed monitoring inflation and employment data closely. Industrial output steady, consumer spending patterns normal. Economic outlook remains cautiously optimistic."
+      "trend": "Declining",
+      "summary": "S&P 500 declining: -1.52% change. Market reflects broader economic conditions. Fed signals potential rate cuts in Q3 as inflation moderates. Industrial output remains resilient despite market volatility. Investors monitoring employment data and consumer spending trends."
     },
     "eu": {
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Strengthening",
-      "summary": "EUR/USD strengthening: +0.68% change. Euro gaining against USD. ECB policy decisions supporting currency stability. Manufacturing PMI showing signs of recovery in key markets. Inflation moderating toward target, economic activity picking up. Strong euro reflects improved economic fundamentals."
+      "summary": "EUR/USD strengthening: +0.67% change. Euro gaining against USD. ECB policy decisions supporting currency stability. Manufacturing PMI showing signs of recovery in key markets. Inflation moderating toward target, economic activity picking up. Strong euro reflects improved economic fundamentals."
     },
     "china": {
-      "cpi": "0.5%",
-      "rate": "3.10%",
-      "trend": "Stable",
-      "summary": "CNY/USD stable: -0.17% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "cpi": "N/A",
+      "rate": "N/A",
+      "trend": "N/A",
+      "summary": "Unable to fetch CNY/USD data. Market may be closed."
     }
   },
   "peer_group": [
@@ -1467,9 +1468,9 @@
       "region": "Global/US ADR",
       "sentiment": "Positive",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "+1.08%",
-      "current_price": 62.970001220703125,
-      "daily_change_pct": 1.08,
+      "stock_move": "+1.24%",
+      "current_price": 63.06999969482422,
+      "daily_change_pct": 1.24,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1484,9 +1485,9 @@
       "region": "US",
       "sentiment": "Neutral",
       "latest_headline": "5 High-Yielding Dividend Stocks for Retirees to Buy and Hold Forever",
-      "stock_move": "-0.29%",
-      "current_price": 199.5800018310547,
-      "daily_change_pct": -0.29,
+      "stock_move": "-0.86%",
+      "current_price": 198.44000244140625,
+      "daily_change_pct": -0.86,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 5 High-Yielding Dividend Stocks for Retirees to Buy and Hold Forever (note: 1 routine leadership-change filing(s) also on record)",
       "news_risk": false,
@@ -1501,9 +1502,9 @@
       "region": "UK",
       "sentiment": "Neutral",
       "latest_headline": "Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
-      "stock_move": "+1.00%",
-      "current_price": 2929.0,
-      "daily_change_pct": 1.0,
+      "stock_move": "N/A",
+      "current_price": null,
+      "daily_change_pct": null,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
       "news_risk": false,
@@ -1516,11 +1517,11 @@
       "name": "Japan Tobacco",
       "ticker": "2914.T",
       "region": "Japan",
-      "sentiment": "Neutral",
+      "sentiment": "Negative",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "-1.87%",
+      "current_price": 6654.0,
+      "daily_change_pct": -1.87,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1533,10 +1534,10 @@
   "harvest_stats": {
     "total_errors": 0,
     "total_warnings": 0,
-    "total_successes": 12,
+    "total_successes": 11,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 92.786889
+    "duration_seconds": 76.302974
   },
   "health": {
     "pillars": {

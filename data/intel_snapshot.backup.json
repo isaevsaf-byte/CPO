@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-02T12:53:44.129750",
-  "version": "78dbedcfc218",
+  "last_updated": "2026-08-02T18:51:19.197522",
+  "version": "610bcc0e4d69",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -13,15 +13,8 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your supplier risk is concentrated in three overlapping fault lines: US-China trade tensions (affecting EMS, batteries, and nicotine sourcing in China); geopolitical instability in secondary regions (Finland's NATO exposure, South Africa's energy crisis, India-Pakistan border risk); and an unexplained equity slide at two high-exposure suppliers (GPI and Smoore). The immediate action is to stress-test your China-dependent electronics and battery tier\u2014Huizhou BYD and Smoore together represent critical exposure, and any Taiwan escalation or fresh export controls could cascade through your supply chain within weeks. GPI's stock decline needs rapid intelligence (demand collapse, operations issue, or just market noise?) since it's your sole high-exposure US supplier in packaging. Stora Enso, ITC, Tae Young, and Sappi pose medium-term geopolitical risk but are less time-sensitive; prioritize mapping backup sources for Chinese EMS and batteries before the next US policy cycle.",
+  "executive_summary": "Your supply chain amber status is driven entirely by supplier concentration risk across two distinct but interconnected vulnerability zones: China-exposed suppliers (EMS, batteries, nicotine, substrates) facing US-China trade and Taiwan escalation, and geopolitically fragile commodity suppliers (Stora Enso in NATO's eastern flank, Sappi in South Africa's energy crisis, ITC in India's border tensions). The immediate action is GPI's unexplained 3.4% stock drop paired with high BAT exposure\u2014verify whether this is market sentiment about tariff exposure or operational/financial deterioration, as it's your only non-geopolitical signal and may indicate broader sector stress. Within the next 30 days, stress-test your China-dependent nodes (Smoore, Huizhou BYD, EVE Energy represent critical EMS and battery supply) against realistic Taiwan/export control scenarios and map secondary sourcing for substrates; Stora Enso and Sappi are longer-term watches but warrant contingency plans given energy/infrastructure brittleness. ITC and Tae Young Filters are lower priority unless your BAT business pivots toward Indian or Korean operations.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-14T01:15:41.277932",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-07-14T07:44:07.029976",
       "macro": "AMBER",
@@ -574,6 +567,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-02T18:51:14.229132",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -589,7 +589,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-02T12:52:29.080085"
+        "last_fetched": "2026-08-02T18:50:03.105755"
       },
       "eu": {
         "status": "success",
@@ -600,7 +600,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1485",
-        "last_fetched": "2026-08-02T12:52:29.824185"
+        "last_fetched": "2026-08-02T18:50:03.914451"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +611,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-02T12:52:29.825196"
+        "last_fetched": "2026-08-02T18:50:03.915324"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-02T12:52:29.825209"
+    "last_fetched": "2026-08-02T18:50:03.915335"
   },
   "peers": {
     "status": "success",
@@ -623,7 +623,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-08-02T12:52:33.544699"
+    "last_fetched": "2026-08-02T18:50:08.832038"
   },
   "suppliers": {
     "status": "success",
@@ -713,8 +713,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.67,
-        "current_price": 9.94,
+        "daily_change_pct": null,
+        "current_price": null,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -764,8 +764,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "How did Trump\u2019s 2025 trade war affect the decoupling of US-China supply chains? - Peterson Institute for International Economics",
-            "China helps Iran chip away at US air superiority despite Xi\u2019s no-arms pledge - iranintl.com",
-            "Will Philippine Sea be the main battlefield for PLA carriers in a Taiwan war? - South China Morning Post"
+            "EU-China trade: Beijing turns the screws as Brussels tests limits of restraint - South China Morning Post",
+            "Resistance is (Not) Futile: Winning the War for the Narrative Against China about Taiwan - Small Wars Journal"
           ],
           "escalated": true,
           "baseline_only": true
@@ -803,7 +803,7 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "The U.S.-Iran war reaches Africa's maritime corridor as drone strike hits U.S.-owned tanker - Business Insider Africa",
+            "The U.S.-Iran war reaches Africa's maritime corridor as drone strike hits U.S.-owned tanker - africa.businessinsider.com",
             "Trump caged in Iran war - The Korea Times"
           ],
           "escalated": true,
@@ -1086,8 +1086,8 @@
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
             "India confirms 16 nationals killed in Mideast since Iran war began - Anadolu Ajans\u0131",
-            "Iran's war unity masks fierce split over US talks and postwar future - India Today",
-            "How US Senate Russia sanctions could spell 100% tariffs for India, China - Al Jazeera"
+            "How US Senate Russia sanctions could spell 100% tariffs for India, China - Al Jazeera",
+            "SANJAYOVACHA | India Has Huge Stake In Ending World War III | Sanjaya Baru - Deccan Chronicle"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1126,8 +1126,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "How did Trump\u2019s 2025 trade war affect the decoupling of US-China supply chains? - Peterson Institute for International Economics",
-            "China helps Iran chip away at US air superiority despite Xi\u2019s no-arms pledge - iranintl.com",
-            "Will Philippine Sea be the main battlefield for PLA carriers in a Taiwan war? - South China Morning Post"
+            "EU-China trade: Beijing turns the screws as Brussels tests limits of restraint - South China Morning Post",
+            "Resistance is (Not) Futile: Winning the War for the Narrative Against China about Taiwan - Small Wars Journal"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1195,8 +1195,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "How did Trump\u2019s 2025 trade war affect the decoupling of US-China supply chains? - Peterson Institute for International Economics",
-            "China helps Iran chip away at US air superiority despite Xi\u2019s no-arms pledge - iranintl.com",
-            "Will Philippine Sea be the main battlefield for PLA carriers in a Taiwan war? - South China Morning Post"
+            "EU-China trade: Beijing turns the screws as Brussels tests limits of restraint - South China Morning Post",
+            "Resistance is (Not) Futile: Winning the War for the Narrative Against China about Taiwan - Small Wars Journal"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1235,8 +1235,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "How did Trump\u2019s 2025 trade war affect the decoupling of US-China supply chains? - Peterson Institute for International Economics",
-            "China helps Iran chip away at US air superiority despite Xi\u2019s no-arms pledge - iranintl.com",
-            "Will Philippine Sea be the main battlefield for PLA carriers in a Taiwan war? - South China Morning Post"
+            "EU-China trade: Beijing turns the screws as Brussels tests limits of restraint - South China Morning Post",
+            "Resistance is (Not) Futile: Winning the War for the Narrative Against China about Taiwan - Small Wars Journal"
           ],
           "escalated": false,
           "baseline_only": false
@@ -1275,8 +1275,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "How did Trump\u2019s 2025 trade war affect the decoupling of US-China supply chains? - Peterson Institute for International Economics",
-            "China helps Iran chip away at US air superiority despite Xi\u2019s no-arms pledge - iranintl.com",
-            "Will Philippine Sea be the main battlefield for PLA carriers in a Taiwan war? - South China Morning Post"
+            "EU-China trade: Beijing turns the screws as Brussels tests limits of restraint - South China Morning Post",
+            "Resistance is (Not) Futile: Winning the War for the Narrative Against China about Taiwan - Small Wars Journal"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1331,11 +1331,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 3.7,
-        "current_price": 61.67,
+        "daily_change_pct": null,
+        "current_price": null,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +3.7%",
+        "last_signal": "\u2713 Normal operations. No risk signals.",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1435,7 +1435,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-02T12:53:38.736615"
+    "last_fetched": "2026-08-02T18:51:13.421532"
   },
   "macro_economy": {
     "us": {
@@ -1454,7 +1454,7 @@
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.07% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.15% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1533,7 +1533,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 78.10374
+    "duration_seconds": 77.993854
   },
   "health": {
     "pillars": {

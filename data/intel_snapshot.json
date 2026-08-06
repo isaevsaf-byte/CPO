@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-06T08:12:10.739124",
-  "version": "a32bfd92903f",
+  "last_updated": "2026-08-06T13:30:48.917822",
+  "version": "ceaff23f5a48",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -13,15 +13,8 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by peer signals\u2014your own supplier and macro environments are stable. The real urgency clusters into two distinct problems: China-exposed critical nodes (Huizhou BYD, Smoore, EVE Energy, Porton, IP Sun) facing US-China trade/Taiwan escalation risk, and a severe unexplained crash in Infineon (\u20136.0%), your highest-risk EMS/component vendor in Germany. The China cluster affects your EMS and nicotine supply chains simultaneously, so monitor for coordinated export controls or supply chain decoupling announcements that could lock you out fast. Infineon's collapse requires immediate outreach to confirm whether it's sector-wide or company-specific\u2014if it's a margin warning or geopolitical signal, your EE component resilience is compromised. Treat GPI and EVE Energy's stock drops as secondary alerts pending root-cause confirmation. Stora Enso and Sappi (printing substrates) carry geopolitical tail risk but are lower urgency than your critical-exposure China nodes and Infineon.",
+  "executive_summary": "Your RED status stems entirely from peer volatility signals that lack confirmed root causes\u2014five high-exposure suppliers (GPI, EVE Energy, Texas Instruments, and others) showing unexplained stock declines of 2\u20133% with no disclosed reasons. This warrants immediate investor-relations outreach to clarify whether these are sector-wide headwinds, company-specific issues, or noise. Separately, your geopolitical exposure is concentrated and material: four suppliers (Huizhou BYD, Smoore, IP Sun, Porton) face identical US-China trade and Taiwan risks, while three others (Stora Enso, Sappi, ITC) sit in NATO/regional flashpoints. These are not emergencies yet, but they share root causes and deserve consolidated contingency planning\u2014map dual sourcing options for EMS and batteries in particular, since Huizhou BYD and Smoore are marked critical exposure. The domestic US suppliers (GPI, Texas Instruments) merit quick financial health checks to rule out sector distress before escalating to supply-chain actions.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-17T18:50:58.694220",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-07-18T01:17:20.866435",
       "macro": "AMBER",
@@ -574,6 +567,13 @@
       "peers": "RED",
       "suppliers": "AMBER",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-08-06T13:30:44.069658",
+      "macro": "GREEN",
+      "peers": "RED",
+      "suppliers": "AMBER",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -589,7 +589,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-06T08:10:55.222739"
+        "last_fetched": "2026-08-06T13:29:06.695431"
       },
       "eu": {
         "status": "success",
@@ -600,7 +600,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1554",
-        "last_fetched": "2026-08-06T08:10:56.138506"
+        "last_fetched": "2026-08-06T13:29:07.982480"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +611,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-06T08:10:56.139422"
+        "last_fetched": "2026-08-06T13:29:07.983319"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-06T08:10:56.139435"
+    "last_fetched": "2026-08-06T13:29:07.983328"
   },
   "peers": {
     "status": "success",
@@ -623,7 +623,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-08-06T08:10:59.495029"
+    "last_fetched": "2026-08-06T13:29:38.539637"
   },
   "suppliers": {
     "status": "success",
@@ -635,10 +635,10 @@
     "suppliers_at_news_risk": 0,
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
-    "total_critical": 1,
+    "total_critical": 0,
     "total_high": 1,
     "total_medium": 10,
-    "actionable_critical": 1,
+    "actionable_critical": 0,
     "actionable_high": 1,
     "actionable_medium": 2,
     "suppliers": [
@@ -713,7 +713,7 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.34,
+        "daily_change_pct": 1.56,
         "current_price": 10.01,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
@@ -764,8 +764,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Russian and Chinese Strategic Gains from the US\u2013Iran War - Small Wars Journal",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "US has too few interceptors to deter war with China, experts say - Defense One"
+            "EXCLUSIVE: US has used 'virtually all' of its long-range precision missiles during Iran war, sources say - Reuters",
+            "How China Won the Iran War - Paul Krugman | Substack"
           ],
           "escalated": true,
           "baseline_only": true
@@ -804,8 +804,7 @@
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
             "Zimbabwe Probes Russian War Recruiting Schemes - Eurasia Review",
-            "War and floods cost SA citrus growers millions in exports - Business Day",
-            "PROJECT: IS OPERATION PROSPER WINNING THE WAR AGAINST ILLEGAL MINING? (PART 3) - Mike Bolhuis Specialised Security Services"
+            "South Africa has finally turned the corner - businesstech.co.za"
           ],
           "escalated": true,
           "baseline_only": true
@@ -930,9 +929,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "Explainer-What we know about North Korean forces joining Russia\u2019s war against Ukraine - The Mighty 790 KFGO",
-            "North Korea Warns Japan Against Military Buildup, Cites 'War State' Transformation - Kurdistan24",
-            "Korean War Veteran Who Went Missing in 1950 Ambush Has Remains Returned - Military.com"
+            "What we know about North Korean forces joining Russia's war against Ukraine - Reuters",
+            "North Korea launches a short-range ballistic missile toward sea, South Korea says - Voice of Alexandria",
+            "North Korea fires \u2018unidentified projectile\u2019: South Korea - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1086,9 +1085,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "Trump confronts Hegseth about missile shortage in US-Iran war: Report - Firstpost",
-            "US-Iran War Live: Yemen's Houthis say they targeted Saudi oil vessel in Gulf of Aden - India Today",
-            "War Is A True Chameleon \u2013 Book Review - Eurasia Review"
+            "India\u2019s internet war - vox.com",
+            "Between Precision and Legitimacy: How the Kargil War Shaped India's Strategic Partnerships - Begin-Sadat Center for Strategic Studies",
+            "Trump confronts Hegseth about missile shortage in US-Iran war: Report - Firstpost"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1127,8 +1126,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Russian and Chinese Strategic Gains from the US\u2013Iran War - Small Wars Journal",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "US has too few interceptors to deter war with China, experts say - Defense One"
+            "EXCLUSIVE: US has used 'virtually all' of its long-range precision missiles during Iran war, sources say - Reuters",
+            "How China Won the Iran War - Paul Krugman | Substack"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1196,8 +1195,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Russian and Chinese Strategic Gains from the US\u2013Iran War - Small Wars Journal",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "US has too few interceptors to deter war with China, experts say - Defense One"
+            "EXCLUSIVE: US has used 'virtually all' of its long-range precision missiles during Iran war, sources say - Reuters",
+            "How China Won the Iran War - Paul Krugman | Substack"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1236,8 +1235,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Russian and Chinese Strategic Gains from the US\u2013Iran War - Small Wars Journal",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "US has too few interceptors to deter war with China, experts say - Defense One"
+            "EXCLUSIVE: US has used 'virtually all' of its long-range precision missiles during Iran war, sources say - Reuters",
+            "How China Won the Iran War - Paul Krugman | Substack"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1276,8 +1275,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Russian and Chinese Strategic Gains from the US\u2013Iran War - Small Wars Journal",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "US has too few interceptors to deter war with China, experts say - Defense One"
+            "EXCLUSIVE: US has used 'virtually all' of its long-range precision missiles during Iran war, sources say - Reuters",
+            "How China Won the Iran War - Paul Krugman | Substack"
           ],
           "escalated": false,
           "baseline_only": false
@@ -1332,13 +1331,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -6.01,
+        "daily_change_pct": -0.32,
         "current_price": 59.89,
-        "risk_analysis": "Severe stock decline of -6.0% at Infineon. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance. A drop this size at high exposure warrants direct follow-up regardless. BAT exposure: High.",
-        "risk_level": "CRITICAL",
-        "last_signal": "\ud83d\udcc9 Severe stock crash: -6.0% (no confirmed cause yet)",
+        "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
+        "risk_level": "LOW",
+        "last_signal": "\u2713 Normal operations. Stock: -0.3%",
         "counts_toward_rag": true,
-        "price_move_only": true,
+        "price_move_only": false,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1436,14 +1435,14 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-06T08:12:04.360867"
+    "last_fetched": "2026-08-06T13:30:43.378285"
   },
   "macro_economy": {
     "us": {
-      "cpi": "2.8%",
-      "rate": "4.25%",
-      "trend": "Stable",
-      "summary": "S&P 500 stable: -0.17% change. Market reflects balanced economic conditions. Fed monitoring inflation and employment data closely. Industrial output steady, consumer spending patterns normal. Economic outlook remains cautiously optimistic."
+      "cpi": "N/A",
+      "rate": "N/A",
+      "trend": "N/A",
+      "summary": "Unable to fetch S&P 500 data. Market may be closed."
     },
     "eu": {
       "cpi": "2.2%",
@@ -1464,12 +1463,12 @@
       "ticker": "BTI",
       "region": "Global/US ADR",
       "sentiment": "Neutral",
-      "latest_headline": "British American Tobacco PLC (BTI) (H1 2026) Earnings Call Highlights: Strong New Category ...",
+      "latest_headline": "Philip Morris (PM) Bets $1.2B on ZYN as BAT (BTI) Steps Up Its Pouch Push",
       "stock_move": "+0.25%",
       "current_price": 59.27000045776367,
       "daily_change_pct": 0.25,
       "risk_level": "LOW",
-      "last_signal": "\ud83d\udcf0 British American Tobacco PLC (BTI) (H1 2026) Earnings Call Highlights: Strong New Category ...",
+      "last_signal": "\ud83d\udcf0 Philip Morris (PM) Bets $1.2B on ZYN as BAT (BTI) Steps Up Its Pouch Push",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1481,7 +1480,7 @@
       "ticker": "PM",
       "region": "US",
       "sentiment": "Positive",
-      "latest_headline": "Philip Morris International (PM) Opens Its Largest US Manufacturing Campus For ZYN",
+      "latest_headline": "Philip Morris (PM) Bets $1.2B on ZYN as BAT (BTI) Steps Up Its Pouch Push",
       "stock_move": "+1.08%",
       "current_price": 188.92999267578125,
       "daily_change_pct": 1.08,
@@ -1497,11 +1496,11 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Positive",
+      "sentiment": "Neutral",
       "latest_headline": "Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
-      "stock_move": "+1.24%",
-      "current_price": 2770.0,
-      "daily_change_pct": 1.24,
+      "stock_move": "+0.76%",
+      "current_price": 2768.0,
+      "daily_change_pct": 0.76,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
       "news_risk": false,
@@ -1531,10 +1530,10 @@
   "harvest_stats": {
     "total_errors": 0,
     "total_warnings": 0,
-    "total_successes": 12,
+    "total_successes": 11,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 78.1283
+    "duration_seconds": 104.81381
   },
   "health": {
     "pillars": {

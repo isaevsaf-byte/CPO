@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-07T02:00:49.446356",
-  "version": "7dbd0ff71f54",
+  "last_updated": "2026-08-07T06:58:02.172580",
+  "version": "1ccdf825b2b5",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -13,15 +13,8 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by geopolitical concentration risk, not financial distress or supplier failure. Seven of nine flagged suppliers sit in US-China trade war exposure (Huizhou BYD, Smoore, IP Sun, Porton, EVE Energy\u2014all critical or high BAT exposure in EMS, batteries, and nicotine) plus three more in secondary flashpoints (Russia-NATO via Stora Enso, India-China via ITC, Korea tensions via Tae Young). The one domestic anomaly, GPI's unexplained 2.4% stock dip, is noise by comparison.\n\nImmediate action: escalate the China-based EMS and battery suppliers (Huizhou BYD and Smoore are critical BAT exposure; EVE Energy is high exposure). These three should trigger contingency sourcing reviews and inventory buffers within 2 weeks, given Taiwan-risk sensitivity and export-control volatility. ITC in India and Porton in China (both nicotine) warrant secondary dual-sourcing plans on a 4-6 week horizon. The geopolitical risks are real but not *imminent*\u2014no active supply disruptions yet\u2014so this is strategic repositioning, not crisis firefighting. Finland and South Korea suppliers are lower priority unless regional escalation occurs; South Africa (Sappi) and US (GPI) are holdable with standard monitoring.",
+  "executive_summary": "Your RED status is driven entirely by peer-level disruption signals\u2014macro conditions remain stable and your direct supplier base shows only AMBER risk, so this is a lateral threat rather than a fundamental supply shock. The real pressure point is geopolitical concentration: five suppliers across China-facing trade tensions (Huizhou BYD, Smoore, EVE Energy, IP Sun, Porton) plus three more in fragile regions (Stora Enso near NATO/Russia, Sappi in South Africa's energy crisis, ITC in India's border tensions). These aren't isolated incidents but overlapping risk zones that could cascade if any trigger an actual disruption. Your immediate action is to map dual-source options for the two CRITICAL EMS suppliers in China and confirm whether peer inventory is already drawing down\u2014if competitors are hedging, your lead times compress fast. GPI's unexplained stock decline is worth one focused call, but it's secondary to confirming your own buffer stock on Nicotine and EMS components before any Taiwan or India flashpoint narrows options further.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-18T12:45:24.232500",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-07-18T18:43:53.614355",
       "macro": "AMBER",
@@ -574,6 +567,13 @@
       "peers": "RED",
       "suppliers": "AMBER",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-08-07T06:57:56.946911",
+      "macro": "GREEN",
+      "peers": "RED",
+      "suppliers": "AMBER",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -589,7 +589,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-07T01:59:27.739339"
+        "last_fetched": "2026-08-07T06:56:49.182803"
       },
       "eu": {
         "status": "success",
@@ -600,7 +600,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1542",
-        "last_fetched": "2026-08-07T01:59:28.631156"
+        "last_fetched": "2026-08-07T06:56:49.785830"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +611,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-07T01:59:28.632427"
+        "last_fetched": "2026-08-07T06:56:49.786777"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-07T01:59:28.632441"
+    "last_fetched": "2026-08-07T06:56:49.786790"
   },
   "peers": {
     "status": "success",
@@ -623,7 +623,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-08-07T01:59:39.125031"
+    "last_fetched": "2026-08-07T06:56:52.368438"
   },
   "suppliers": {
     "status": "success",
@@ -725,7 +725,7 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
-            "Finland beat the Russians so hard we\u2019re still cheering for them 80 years later - We Are The Mighty"
+            "Finland beat the Russians so hard we\u2019re still cheering for them 80 years later - wearethemighty.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -764,8 +764,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
-            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
+            "How China Won the Iran War - Paul Krugman | Substack"
           ],
           "escalated": true,
           "baseline_only": true
@@ -804,8 +804,7 @@
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
             "Before 1956, there was 1913: The forgotten women of the first pass war - Mail & Guardian",
-            "Zimbabwe Probes Russian War Recruiting Schemes - Eurasia Review",
-            "The Green War: Inside the poaching stripping the Succulent Karoo bare - News24"
+            "Zimbabwe Probes Russian War Recruiting Schemes - Eurasia Review"
           ],
           "escalated": true,
           "baseline_only": true
@@ -930,9 +929,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "South Korea honoring veterans of war that secured its existence - Washington Times",
+            "South Korea honoring veterans of war that secured its existence - washingtontimes.com",
             "\u2018The Forgotten War\u2019 - Connection Newspapers",
-            "What we know about North Korean forces joining Russia's war against Ukraine - Reuters"
+            "Korea, U.S. to sign MOU to expand cooperation on Korean War veterans affairs - Korea JoongAng Daily"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1074,8 +1073,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.37,
-        "current_price": 285.9,
+        "daily_change_pct": -0.24,
+        "current_price": 285.2,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1127,8 +1126,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
-            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
+            "How China Won the Iran War - Paul Krugman | Substack"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1196,8 +1195,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
-            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
+            "How China Won the Iran War - Paul Krugman | Substack"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1223,8 +1222,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.28,
-        "current_price": 8.48,
+        "daily_change_pct": -1.05,
+        "current_price": 8.5,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1236,8 +1235,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
-            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
+            "How China Won the Iran War - Paul Krugman | Substack"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1263,8 +1262,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.5,
-        "current_price": 53.32,
+        "daily_change_pct": 1.39,
+        "current_price": 54.88,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1276,8 +1275,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
-            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
+            "How China Won the Iran War - Paul Krugman | Substack"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1436,7 +1435,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-07T02:00:43.376127"
+    "last_fetched": "2026-08-07T06:57:56.312606"
   },
   "macro_economy": {
     "us": {
@@ -1449,13 +1448,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: -0.28% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: -0.27% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.19% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.05% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1516,9 +1515,9 @@
       "region": "Japan",
       "sentiment": "Positive",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "+1.66%",
-      "current_price": 7147.0,
-      "daily_change_pct": 1.66,
+      "stock_move": "+1.11%",
+      "current_price": 7108.0,
+      "daily_change_pct": 1.11,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1534,7 +1533,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 84.32135
+    "duration_seconds": 75.80224
   },
   "health": {
     "pillars": {

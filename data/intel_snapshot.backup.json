@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-07T06:58:02.172580",
-  "version": "1ccdf825b2b5",
+  "last_updated": "2026-08-07T12:36:33.962859",
+  "version": "c8cfce404394",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -13,15 +13,8 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by peer-level disruption signals\u2014macro conditions remain stable and your direct supplier base shows only AMBER risk, so this is a lateral threat rather than a fundamental supply shock. The real pressure point is geopolitical concentration: five suppliers across China-facing trade tensions (Huizhou BYD, Smoore, EVE Energy, IP Sun, Porton) plus three more in fragile regions (Stora Enso near NATO/Russia, Sappi in South Africa's energy crisis, ITC in India's border tensions). These aren't isolated incidents but overlapping risk zones that could cascade if any trigger an actual disruption. Your immediate action is to map dual-source options for the two CRITICAL EMS suppliers in China and confirm whether peer inventory is already drawing down\u2014if competitors are hedging, your lead times compress fast. GPI's unexplained stock decline is worth one focused call, but it's secondary to confirming your own buffer stock on Nicotine and EMS components before any Taiwan or India flashpoint narrows options further.",
+  "executive_summary": "Your RED status is driven entirely by peer-level disruptions in your supply base, not macro headwinds or supplier-specific operational failures. The core issue is geopolitical concentration: five of your nine critical and high-exposure suppliers sit in China (Huizhou BYD, Smoore, EVE Energy, IP Sun, Porton), all flagged for US-China trade war and Taiwan risk. These suppliers span EMS, batteries, and substrates\u2014your most sensitive categories for BAT exposure. Separately, your three printing substrate suppliers (Stora Enso, Sappi, IP Sun) face different but simultaneous regional shocks: Nordic NATO exposure, South African energy/infrastructure collapse, and Chinese export controls. GPI's unexplained 2.4% stock drop is secondary noise; the urgent action is stress-testing your China exposure across EMS and battery categories and accelerating geographic diversification away from Taiwan-linked supply chains. Sappi's energy crisis warrants a near-term sourcing review for substrates, but the China cluster is where you have the least hedging and highest tail risk.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-18T18:43:53.614355",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-07-19T01:23:04.571484",
       "macro": "AMBER",
@@ -574,6 +567,13 @@
       "peers": "RED",
       "suppliers": "AMBER",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-08-07T12:36:29.429155",
+      "macro": "GREEN",
+      "peers": "RED",
+      "suppliers": "AMBER",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -589,7 +589,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-07T06:56:49.182803"
+        "last_fetched": "2026-08-07T12:35:16.497769"
       },
       "eu": {
         "status": "success",
@@ -600,7 +600,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1542",
-        "last_fetched": "2026-08-07T06:56:49.785830"
+        "last_fetched": "2026-08-07T12:35:17.318446"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +611,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-07T06:56:49.786777"
+        "last_fetched": "2026-08-07T12:35:17.319310"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-07T06:56:49.786790"
+    "last_fetched": "2026-08-07T12:35:17.319319"
   },
   "peers": {
     "status": "success",
@@ -623,7 +623,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-08-07T06:56:52.368438"
+    "last_fetched": "2026-08-07T12:35:23.314740"
   },
   "suppliers": {
     "status": "success",
@@ -713,8 +713,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": -0.86,
+        "current_price": 9.67,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -725,7 +725,7 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
-            "Finland beat the Russians so hard we\u2019re still cheering for them 80 years later - wearethemighty.com"
+            "Finland beat the Russians so hard we\u2019re still cheering for them 80 years later - We Are The Mighty"
           ],
           "escalated": true,
           "baseline_only": true
@@ -763,9 +763,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
             "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "How China Won the Iran War - Paul Krugman | Substack"
+            "Solar stocks shine after Trump extends China tariffs to polysilicon products - CNBC",
+            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -929,9 +929,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "South Korea honoring veterans of war that secured its existence - washingtontimes.com",
-            "\u2018The Forgotten War\u2019 - Connection Newspapers",
-            "Korea, U.S. to sign MOU to expand cooperation on Korean War veterans affairs - Korea JoongAng Daily"
+            "South Korea honoring veterans of war that secured its existence - Washington Times",
+            "Marines Make History With First Attack Drone Live-Fire Series in South Korea - U.S. Department of War (.gov)",
+            "\u2018The Forgotten War\u2019 - Connection Newspapers"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1073,8 +1073,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.24,
-        "current_price": 285.2,
+        "daily_change_pct": 0.07,
+        "current_price": 286.1,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1086,8 +1086,8 @@
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
             "India\u2019s internet war - vox.com",
-            "India's Britannia misses profit estimates as Middle East war lifts costs - Reuters",
-            "Asia\u2019s long war against Imperial Japan - Engelsberg Ideas"
+            "The Dawn of a New Strategic Era: India has begun to absorb the lessons from the Iran war - Open Magazine",
+            "India and Pakistan\u2019s 79-year rivalry has made the dangerous move into space - The Conversation"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1125,9 +1125,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
             "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "How China Won the Iran War - Paul Krugman | Substack"
+            "Solar stocks shine after Trump extends China tariffs to polysilicon products - CNBC",
+            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1194,9 +1194,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
             "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "How China Won the Iran War - Paul Krugman | Substack"
+            "Solar stocks shine after Trump extends China tariffs to polysilicon products - CNBC",
+            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1222,8 +1222,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.05,
-        "current_price": 8.5,
+        "daily_change_pct": -0.47,
+        "current_price": 8.55,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1234,9 +1234,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
             "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "How China Won the Iran War - Paul Krugman | Substack"
+            "Solar stocks shine after Trump extends China tariffs to polysilicon products - CNBC",
+            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1262,8 +1262,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.39,
-        "current_price": 54.88,
+        "daily_change_pct": 1.5,
+        "current_price": 54.94,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1274,9 +1274,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
             "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "How China Won the Iran War - Paul Krugman | Substack"
+            "Solar stocks shine after Trump extends China tariffs to polysilicon products - CNBC",
+            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1331,11 +1331,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 3.65,
+        "current_price": 62.52,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "last_signal": "\u2713 Normal operations. Stock: +3.6%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1435,7 +1435,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-07T06:57:56.312606"
+    "last_fetched": "2026-08-07T12:36:28.294707"
   },
   "macro_economy": {
     "us": {
@@ -1448,13 +1448,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: -0.27% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: +0.10% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.05% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.18% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1498,9 +1498,9 @@
       "region": "UK",
       "sentiment": "Neutral",
       "latest_headline": "Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "+0.98%",
+      "current_price": 2786.0,
+      "daily_change_pct": 0.98,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
       "news_risk": false,
@@ -1533,7 +1533,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 75.80224
+    "duration_seconds": 79.65213
   },
   "health": {
     "pillars": {

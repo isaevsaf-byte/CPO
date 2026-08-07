@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-06T13:30:48.917822",
-  "version": "ceaff23f5a48",
+  "last_updated": "2026-08-06T23:47:39.078847",
+  "version": "432c5f7287ba",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -13,15 +13,8 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your RED status stems entirely from peer volatility signals that lack confirmed root causes\u2014five high-exposure suppliers (GPI, EVE Energy, Texas Instruments, and others) showing unexplained stock declines of 2\u20133% with no disclosed reasons. This warrants immediate investor-relations outreach to clarify whether these are sector-wide headwinds, company-specific issues, or noise. Separately, your geopolitical exposure is concentrated and material: four suppliers (Huizhou BYD, Smoore, IP Sun, Porton) face identical US-China trade and Taiwan risks, while three others (Stora Enso, Sappi, ITC) sit in NATO/regional flashpoints. These are not emergencies yet, but they share root causes and deserve consolidated contingency planning\u2014map dual sourcing options for EMS and batteries in particular, since Huizhou BYD and Smoore are marked critical exposure. The domestic US suppliers (GPI, Texas Instruments) merit quick financial health checks to rule out sector distress before escalating to supply-chain actions.",
+  "executive_summary": "Your RED status is driven entirely by geopolitical concentration risk, not by financial stress or supplier-specific failures. You have ten suppliers across printing substrates, nicotine, EMS, and batteries clustered in three hotspots: China (six suppliers including two critical EMS providers and a high-exposure battery maker), India/Pakistan borders (one high-exposure nicotine source), and Russia-adjacent Europe (one medium printing substrate supplier). The immediate urgency is China\u2014Huizhou BYD and Smoore together represent critical EMS capacity under active US-China trade and Taiwan contingency pressures, amplified by EVE Energy's unexplained stock drop suggesting market awareness of broader China supply stress. Action now: map redundancy in EMS and battery sourcing (consider Japan or Southeast Asia equivalents), stress-test your nicotine supply if India-Pakistan tensions escalate, and monitor GPI and EVE Energy's next earnings calls to confirm whether their stock moves reflect sector-wide China anxiety or company-specific issues. The geopolitical risks are real but many remain conditional; you have runway to build alternate capacity before any single event triggers simultaneous failures.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-18T01:17:20.866435",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-07-18T07:24:21.688958",
       "macro": "AMBER",
@@ -574,6 +567,13 @@
       "peers": "RED",
       "suppliers": "AMBER",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-08-06T23:47:33.553303",
+      "macro": "GREEN",
+      "peers": "RED",
+      "suppliers": "AMBER",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -589,18 +589,18 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-06T13:29:06.695431"
+        "last_fetched": "2026-08-06T23:46:04.100332"
       },
       "eu": {
         "status": "success",
         "region": "EU",
         "indicators": {
-          "fx_rate": 1.1554,
+          "fx_rate": 1.1542,
           "inflation": "Placeholder - HICP data",
           "policy": "Placeholder - ECB policy updates"
         },
-        "summary": "EU economic indicators - EUR/USD: 1.1554",
-        "last_fetched": "2026-08-06T13:29:07.982480"
+        "summary": "EU economic indicators - EUR/USD: 1.1542",
+        "last_fetched": "2026-08-06T23:46:04.716526"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +611,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-06T13:29:07.983319"
+        "last_fetched": "2026-08-06T23:46:04.717628"
       }
     },
-    "volatility_pct": 0.0,
-    "last_fetched": "2026-08-06T13:29:07.983328"
+    "volatility_pct": 0.10386013501818331,
+    "last_fetched": "2026-08-06T23:46:04.717642"
   },
   "peers": {
     "status": "success",
@@ -623,7 +623,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 1,
-    "last_fetched": "2026-08-06T13:29:38.539637"
+    "last_fetched": "2026-08-06T23:46:28.403999"
   },
   "suppliers": {
     "status": "success",
@@ -637,10 +637,10 @@
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 0,
     "total_high": 1,
-    "total_medium": 10,
+    "total_medium": 9,
     "actionable_critical": 0,
     "actionable_high": 1,
-    "actionable_medium": 2,
+    "actionable_medium": 1,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -655,11 +655,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.29,
-        "current_price": 47.75,
+        "daily_change_pct": -1.45,
+        "current_price": 47.06,
         "risk_analysis": "No supply chain risks identified. AMCOR (Printed Packaging) operating normally. BAT exposure: Critical.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.3%",
+        "last_signal": "\u2713 Normal operations. Stock: -1.4%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -684,11 +684,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.9,
-        "current_price": 277.6,
+        "daily_change_pct": -2.44,
+        "current_price": 270.82,
         "risk_analysis": "Stock decline for high-exposure supplier GPI. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83d\udcc9 Stock down -2.9% (no confirmed cause) - High exposure supplier",
+        "last_signal": "\ud83d\udcc9 Stock down -2.4% (no confirmed cause) - High exposure supplier",
         "counts_toward_rag": true,
         "price_move_only": true,
         "geopolitical_risk": null,
@@ -713,8 +713,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.56,
-        "current_price": 10.01,
+        "daily_change_pct": null,
+        "current_price": null,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -763,9 +763,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Russian and Chinese Strategic Gains from the US\u2013Iran War - Small Wars Journal",
-            "EXCLUSIVE: US has used 'virtually all' of its long-range precision missiles during Iran war, sources say - Reuters",
-            "How China Won the Iran War - Paul Krugman | Substack"
+            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
+            "How China Won the Iran War - Paul Krugman | Substack",
+            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -791,8 +791,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.94,
-        "current_price": 197.33,
+        "daily_change_pct": 1.08,
+        "current_price": 199.46,
         "risk_analysis": "Geopolitical risk in South Africa: Economic instability, infrastructure challenges, energy crisis. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Economic instability, infrastructure challenges, energy crisis",
@@ -803,8 +803,9 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
+            "Before 1956, there was 1913: The forgotten women of the first pass war - mg.co.za",
             "Zimbabwe Probes Russian War Recruiting Schemes - Eurasia Review",
-            "South Africa has finally turned the corner - businesstech.co.za"
+            "The Green War: Inside the poaching stripping the Succulent Karoo bare - News24"
           ],
           "escalated": true,
           "baseline_only": true
@@ -859,11 +860,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.74,
-        "current_price": 73.35,
+        "daily_change_pct": 0.2,
+        "current_price": 73.5,
         "risk_analysis": "No supply chain risks identified. Eastman (Filter Materials) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.7%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.2%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -929,9 +930,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
+            "\u2018The Forgotten War\u2019 - Connection Newspapers",
             "What we know about North Korean forces joining Russia's war against Ukraine - Reuters",
-            "North Korea launches a short-range ballistic missile toward sea, South Korea says - Voice of Alexandria",
-            "North Korea fires \u2018unidentified projectile\u2019: South Korea - South China Morning Post"
+            "Korean War participating countries call for stronger solidarity in Washington forum - Yonhap News Agency"
           ],
           "escalated": true,
           "baseline_only": true
@@ -986,11 +987,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 4.02,
-        "current_price": 9.57,
+        "daily_change_pct": 22.05,
+        "current_price": 11.68,
         "risk_analysis": "No supply chain risks identified. SWM (Mativ) (Fine Papers) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +4.0%",
+        "last_signal": "\u2713 Normal operations. Stock: +22.0%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1073,8 +1074,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.82,
-        "current_price": 284.6,
+        "daily_change_pct": -0.37,
+        "current_price": 285.9,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1086,8 +1087,8 @@
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
             "India\u2019s internet war - vox.com",
-            "Between Precision and Legitimacy: How the Kargil War Shaped India's Strategic Partnerships - Begin-Sadat Center for Strategic Studies",
-            "Trump confronts Hegseth about missile shortage in US-Iran war: Report - Firstpost"
+            "Asia\u2019s long war against Imperial Japan - Engelsberg Ideas",
+            "India's Britannia misses profit estimates as Middle East war lifts costs - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1125,9 +1126,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Russian and Chinese Strategic Gains from the US\u2013Iran War - Small Wars Journal",
-            "EXCLUSIVE: US has used 'virtually all' of its long-range precision missiles during Iran war, sources say - Reuters",
-            "How China Won the Iran War - Paul Krugman | Substack"
+            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
+            "How China Won the Iran War - Paul Krugman | Substack",
+            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1194,9 +1195,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Russian and Chinese Strategic Gains from the US\u2013Iran War - Small Wars Journal",
-            "EXCLUSIVE: US has used 'virtually all' of its long-range precision missiles during Iran war, sources say - Reuters",
-            "How China Won the Iran War - Paul Krugman | Substack"
+            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
+            "How China Won the Iran War - Paul Krugman | Substack",
+            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1222,8 +1223,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.03,
-        "current_price": 8.61,
+        "daily_change_pct": -1.32,
+        "current_price": 8.59,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1234,9 +1235,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Russian and Chinese Strategic Gains from the US\u2013Iran War - Small Wars Journal",
-            "EXCLUSIVE: US has used 'virtually all' of its long-range precision missiles during Iran war, sources say - Reuters",
-            "How China Won the Iran War - Paul Krugman | Substack"
+            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
+            "How China Won the Iran War - Paul Krugman | Substack",
+            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1274,9 +1275,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Russian and Chinese Strategic Gains from the US\u2013Iran War - Small Wars Journal",
-            "EXCLUSIVE: US has used 'virtually all' of its long-range precision missiles during Iran war, sources say - Reuters",
-            "How China Won the Iran War - Paul Krugman | Substack"
+            "Pentagon drafting a new U.S. nuclear strategy in case of regional war with China or Russia, sources say - NBC News",
+            "How China Won the Iran War - Paul Krugman | Substack",
+            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC"
           ],
           "escalated": false,
           "baseline_only": false
@@ -1302,13 +1303,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.08,
-        "current_price": 277.72,
-        "risk_analysis": "Stock decline for high-exposure supplier Texas Instruments. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
-        "risk_level": "MEDIUM",
-        "last_signal": "\ud83d\udcc9 Stock down -2.1% (no confirmed cause) - High exposure supplier",
+        "daily_change_pct": 0.24,
+        "current_price": 278.4,
+        "risk_analysis": "No supply chain risks identified. Texas Instruments (EE Component) operating normally. BAT exposure: High.",
+        "risk_level": "LOW",
+        "last_signal": "\u2713 Normal operations. Stock: +0.2%",
         "counts_toward_rag": true,
-        "price_move_only": true,
+        "price_move_only": false,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1331,11 +1332,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.32,
-        "current_price": 59.89,
+        "daily_change_pct": null,
+        "current_price": null,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.3%",
+        "last_signal": "\u2713 Normal operations. No risk signals.",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1418,11 +1419,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.41,
-        "current_price": 338.62,
+        "daily_change_pct": 1.79,
+        "current_price": 344.67,
         "risk_analysis": "No supply chain risks identified. Jabil (Mechanical) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.4%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.8%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1435,26 +1436,26 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-06T13:30:43.378285"
+    "last_fetched": "2026-08-06T23:47:32.764441"
   },
   "macro_economy": {
     "us": {
-      "cpi": "N/A",
-      "rate": "N/A",
-      "trend": "N/A",
-      "summary": "Unable to fetch S&P 500 data. Market may be closed."
+      "cpi": "2.8%",
+      "rate": "4.25%",
+      "trend": "Stable",
+      "summary": "S&P 500 stable: -0.18% change. Market reflects balanced economic conditions. Fed monitoring inflation and employment data closely. Industrial output steady, consumer spending patterns normal. Economic outlook remains cautiously optimistic."
     },
     "eu": {
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: +0.12% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: -0.26% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
-      "cpi": "0.5%",
-      "rate": "3.10%",
-      "trend": "Stable",
-      "summary": "CNY/USD stable: -0.05% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "cpi": "N/A",
+      "rate": "N/A",
+      "trend": "N/A",
+      "summary": "Unable to fetch CNY/USD data. Market may be closed."
     }
   },
   "peer_group": [
@@ -1464,9 +1465,9 @@
       "region": "Global/US ADR",
       "sentiment": "Neutral",
       "latest_headline": "Philip Morris (PM) Bets $1.2B on ZYN as BAT (BTI) Steps Up Its Pouch Push",
-      "stock_move": "+0.25%",
-      "current_price": 59.27000045776367,
-      "daily_change_pct": 0.25,
+      "stock_move": "-0.91%",
+      "current_price": 58.72999954223633,
+      "daily_change_pct": -0.91,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Philip Morris (PM) Bets $1.2B on ZYN as BAT (BTI) Steps Up Its Pouch Push",
       "news_risk": false,
@@ -1479,11 +1480,11 @@
       "name": "Philip Morris Int.",
       "ticker": "PM",
       "region": "US",
-      "sentiment": "Positive",
+      "sentiment": "Neutral",
       "latest_headline": "Philip Morris (PM) Bets $1.2B on ZYN as BAT (BTI) Steps Up Its Pouch Push",
-      "stock_move": "+1.08%",
-      "current_price": 188.92999267578125,
-      "daily_change_pct": 1.08,
+      "stock_move": "-0.47%",
+      "current_price": 188.0500030517578,
+      "daily_change_pct": -0.47,
       "risk_level": "CRITICAL",
       "last_signal": "\ud83d\udea8 News Alert: Philip Morris International (PM) Faces Brazil Lawsuit Pressure, Is The Upside Already Priced In? (note: 1 routine leadership-change filing(s) also on record)",
       "news_risk": true,
@@ -1498,9 +1499,9 @@
       "region": "UK",
       "sentiment": "Neutral",
       "latest_headline": "Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
-      "stock_move": "+0.76%",
-      "current_price": 2768.0,
-      "daily_change_pct": 0.76,
+      "stock_move": "+0.40%",
+      "current_price": 2747.0,
+      "daily_change_pct": 0.4,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
       "news_risk": false,
@@ -1533,7 +1534,7 @@
     "total_successes": 11,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 104.81381
+    "duration_seconds": 97.219555
   },
   "health": {
     "pillars": {

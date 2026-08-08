@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-08T06:32:11.821381",
-  "version": "01cb79f176ca",
+  "last_updated": "2026-08-08T12:23:32.134271",
+  "version": "fd916103bd62",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -13,15 +13,8 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by geopolitical concentration risk, not financial stress or supplier defaults. Six of your nine critical and high-exposure suppliers are in China (Huizhou BYD, Smoore, EVE Energy, IP Sun, Porton) facing identical US trade war and Taiwan contingency pressures, while your three printing substrate suppliers (Stora Enso, Sappi, ITC) each sit in distinct hot zones\u2014NATO's eastern flank, sub-Saharan instability, and India-China tensions respectively. GPI's stock dip is a minor noise signal by comparison.\n\nThe urgent action is dual-sourcing your EMS and battery tiers immediately; Huizhou BYD and Smoore supply the critical path, and any Taiwan escalation or export control tightening would paralyze electronics assembly. Secondary urgency is geographic redundancy for nicotine (ITC exposure in India-Pakistan border risk) and substrates (Sappi's energy crisis in South Africa could disrupt within weeks). Your macro GREEN and supplier AMBER suggest individual suppliers are operationally sound\u2014the risk is binary geopolitical, not gradual degradation, so contingency planning and alternative qualification matter more than monitoring.",
+  "executive_summary": "Your RED status is driven entirely by geopolitical concentration\u2014six of nine critical suppliers sit in or depend on US-China trade tensions (Huizhou BYD, Smoore, EVE Energy, IP Sun, Porton), creating a single point of failure across your EMS and battery tiers where you have critical exposure. This cluster is genuinely urgent: Taiwan escalation or expanded export controls could halt production in days. Separate from that, your three substrate suppliers (Stora Enso, Sappi, Tae Young) each face distinct regional risks\u2014NATO border, African energy crisis, Korea military tensions\u2014but these are slower-moving and lower immediate urgency. GPI's unexplained stock drop warrants a quick call to confirm it's not contagion; if it's isolated, it's noise. Your next move: map dual-source options for EMS and batteries now (particularly away from China), and stress-test lead times for the geopolitically isolated suppliers to understand your true vulnerability window.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-19T18:46:14.415924",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-07-20T01:26:38.974411",
       "macro": "AMBER",
@@ -574,6 +567,13 @@
       "peers": "RED",
       "suppliers": "AMBER",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-08-08T12:23:27.545353",
+      "macro": "GREEN",
+      "peers": "RED",
+      "suppliers": "AMBER",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -589,7 +589,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-08T06:30:32.007564"
+        "last_fetched": "2026-08-08T12:21:01.744523"
       },
       "eu": {
         "status": "success",
@@ -600,7 +600,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1535",
-        "last_fetched": "2026-08-08T06:30:32.704544"
+        "last_fetched": "2026-08-08T12:21:02.557490"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +611,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-08T06:30:32.705565"
+        "last_fetched": "2026-08-08T12:21:02.558494"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-08T06:30:32.705578"
+    "last_fetched": "2026-08-08T12:21:02.558507"
   },
   "peers": {
     "status": "success",
@@ -623,7 +623,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-08T06:31:02.232475"
+    "last_fetched": "2026-08-08T12:21:07.074880"
   },
   "suppliers": {
     "status": "success",
@@ -713,8 +713,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.0,
+        "current_price": 9.76,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -724,9 +724,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
-          "headlines": [
-            "Finland beat the Russians so hard we\u2019re still cheering for them 80 years later - We Are The Mighty"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -762,11 +760,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC",
-            "How Can U.S. Special Operations Forces Help Defeat China on Taiwan? - War on the Rocks"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -802,9 +796,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
-          "headlines": [
-            "Uganda Approves Troops Deployment To Gaza Under Trump's Post-War Plan For Israel | Firstpost Africa - Firstpost"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -927,11 +919,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
-          "headlines": [
-            "South Korea planted more than ten billion trees after the Korean War \u2014 and the volume of wood standing on its hills has risen roughly thirtyfold since 1953 - Space Daily",
-            "North Korea expert warns US can 'never take their eye off' Kim Jong Un following missile test during Iran war - Fox News",
-            "U.S. Identifies 800th Korean War Soldier - \uc870\uc120\uc77c\ubcf4"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -1083,11 +1071,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
-          "headlines": [
-            "US Senate passes Russia sanctions that could hurt India and China - Al Jazeera",
-            "This War Changed India\u2019s Future \u2014 and Its Relations with Israel and the United States - algemeiner.com",
-            "India\u2019s internet war - vox.com"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -1123,11 +1107,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC",
-            "How Can U.S. Special Operations Forces Help Defeat China on Taiwan? - War on the Rocks"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -1192,11 +1172,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC",
-            "How Can U.S. Special Operations Forces Help Defeat China on Taiwan? - War on the Rocks"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -1232,11 +1208,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC",
-            "How Can U.S. Special Operations Forces Help Defeat China on Taiwan? - War on the Rocks"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -1272,11 +1244,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
-            "Beijing flips the script on the U.S. tech war \u2014 and tests the truce weeks before Xi's visit - CNBC",
-            "How Can U.S. Special Operations Forces Help Defeat China on Taiwan? - War on the Rocks"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -1330,11 +1298,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 2.92,
+        "current_price": 62.08,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "last_signal": "\u2713 Normal operations. Stock: +2.9%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1434,7 +1402,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-08T06:32:06.094612"
+    "last_fetched": "2026-08-08T12:23:26.775930"
   },
   "macro_economy": {
     "us": {
@@ -1495,11 +1463,11 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Neutral",
+      "sentiment": "Positive",
       "latest_headline": "Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "+1.16%",
+      "current_price": 2791.0,
+      "daily_change_pct": 1.16,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Imperial Brands Touts Strong 2026 Start as NGP Growth and \u00a3320M Savings Plan Advance",
       "news_risk": false,
@@ -1532,7 +1500,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 101.926911
+    "duration_seconds": 153.125858
   },
   "health": {
     "pillars": {

@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-08T12:23:32.134271",
-  "version": "fd916103bd62",
+  "last_updated": "2026-08-08T18:20:20.791717",
+  "version": "f289b4eea150",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -13,15 +13,8 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by geopolitical concentration\u2014six of nine critical suppliers sit in or depend on US-China trade tensions (Huizhou BYD, Smoore, EVE Energy, IP Sun, Porton), creating a single point of failure across your EMS and battery tiers where you have critical exposure. This cluster is genuinely urgent: Taiwan escalation or expanded export controls could halt production in days. Separate from that, your three substrate suppliers (Stora Enso, Sappi, Tae Young) each face distinct regional risks\u2014NATO border, African energy crisis, Korea military tensions\u2014but these are slower-moving and lower immediate urgency. GPI's unexplained stock drop warrants a quick call to confirm it's not contagion; if it's isolated, it's noise. Your next move: map dual-source options for EMS and batteries now (particularly away from China), and stress-test lead times for the geopolitically isolated suppliers to understand your true vulnerability window.",
+  "executive_summary": "Your RED status is driven entirely by geopolitical concentration, not financial distress or supplier insolvency. Five of your nine at-risk suppliers are in China facing US trade/export control exposure (Huizhou BYD, Smoore, EVE Energy, IP Sun, Porton), and they span critical categories\u2014EMS and batteries are particularly exposed. Separately, you have three printing substrate suppliers in geopolitically fragile regions (Stora Enso near the Russia-NATO border, Sappi in South Africa's energy crisis, and ITC in India with border tensions), plus a Korea-based filter supplier near North Korea. The one domestic US concern (GPI) shows a minor unexplained stock dip but isn't the RED driver. \n\n**What's urgent:** Map your China exposure (especially EMS and battery tiers) against actual US export control lists and validate your Taiwan-contingency plans for Huizhou BYD and Smoore\u2014this is your single biggest concentration risk. **What can wait:** The geopolitical signals for Stora Enso, Sappi, and Tae Young are real but slower-burn unless you see operational shutdowns; monitor quarterly earnings for any logistics delays. GPI's stock move warrants a brief check-in to rule out supply-side stress, but it's not systemic.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-20T01:26:38.974411",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-07-20T08:35:03.010134",
       "macro": "AMBER",
@@ -574,6 +567,13 @@
       "peers": "RED",
       "suppliers": "AMBER",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-08-08T18:20:15.497174",
+      "macro": "GREEN",
+      "peers": "RED",
+      "suppliers": "AMBER",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -589,7 +589,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-08T12:21:01.744523"
+        "last_fetched": "2026-08-08T18:19:05.564674"
       },
       "eu": {
         "status": "success",
@@ -600,7 +600,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1535",
-        "last_fetched": "2026-08-08T12:21:02.557490"
+        "last_fetched": "2026-08-08T18:19:06.450883"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +611,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-08T12:21:02.558494"
+        "last_fetched": "2026-08-08T18:19:06.451679"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-08T12:21:02.558507"
+    "last_fetched": "2026-08-08T18:19:06.451692"
   },
   "peers": {
     "status": "success",
@@ -623,7 +623,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-08T12:21:07.074880"
+    "last_fetched": "2026-08-08T18:19:10.004113"
   },
   "suppliers": {
     "status": "success",
@@ -724,7 +724,9 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
-          "headlines": [],
+          "headlines": [
+            "Finland beat the Russians so hard we\u2019re still cheering for them 80 years later - We Are The Mighty"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -760,7 +762,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [],
+          "headlines": [
+            "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
+            "Taiwan Tests War Plans to Thwart Chinese Invasion - WSJ",
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -796,7 +802,9 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
-          "headlines": [],
+          "headlines": [
+            "Before 1956, there was 1913: The forgotten women of the first pass war - Mail & Guardian"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -919,7 +927,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
-          "headlines": [],
+          "headlines": [
+            "South Korea honoring veterans of war that secured its existence - washingtontimes.com",
+            "\u2018The Forgotten War\u2019 - Connection Newspapers",
+            "Explainer: What we know about North Korean forces joining Russia's war against Ukraine - Reuters"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -1071,7 +1083,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
-          "headlines": [],
+          "headlines": [
+            "US Senate passes sweeping Russian energy sanctions bill amid Ukraine war - Al Jazeera",
+            "India and Pakistan\u2019s 79-year rivalry has made the dangerous move into space - The Conversation",
+            "This War Changed India\u2019s Future \u2014 and Its Relations with Israel and the United States - Algemeiner.com"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -1107,7 +1123,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [],
+          "headlines": [
+            "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
+            "Taiwan Tests War Plans to Thwart Chinese Invasion - WSJ",
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -1172,7 +1192,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [],
+          "headlines": [
+            "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
+            "Taiwan Tests War Plans to Thwart Chinese Invasion - WSJ",
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -1208,7 +1232,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [],
+          "headlines": [
+            "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
+            "Taiwan Tests War Plans to Thwart Chinese Invasion - WSJ",
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -1244,7 +1272,11 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
-          "headlines": [],
+          "headlines": [
+            "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
+            "Taiwan Tests War Plans to Thwart Chinese Invasion - WSJ",
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+          ],
           "escalated": true,
           "baseline_only": true
         },
@@ -1402,7 +1434,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-08T12:23:26.775930"
+    "last_fetched": "2026-08-08T18:20:14.817607"
   },
   "macro_economy": {
     "us": {
@@ -1421,7 +1453,7 @@
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.01% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.17% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1500,7 +1532,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 153.125858
+    "duration_seconds": 78.688396
   },
   "health": {
     "pillars": {

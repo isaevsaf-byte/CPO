@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-08T18:20:20.791717",
-  "version": "f289b4eea150",
+  "last_updated": "2026-08-09T00:46:01.757625",
+  "version": "b143a3140aaf",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -13,15 +13,8 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by geopolitical concentration, not financial distress or supplier insolvency. Five of your nine at-risk suppliers are in China facing US trade/export control exposure (Huizhou BYD, Smoore, EVE Energy, IP Sun, Porton), and they span critical categories\u2014EMS and batteries are particularly exposed. Separately, you have three printing substrate suppliers in geopolitically fragile regions (Stora Enso near the Russia-NATO border, Sappi in South Africa's energy crisis, and ITC in India with border tensions), plus a Korea-based filter supplier near North Korea. The one domestic US concern (GPI) shows a minor unexplained stock dip but isn't the RED driver. \n\n**What's urgent:** Map your China exposure (especially EMS and battery tiers) against actual US export control lists and validate your Taiwan-contingency plans for Huizhou BYD and Smoore\u2014this is your single biggest concentration risk. **What can wait:** The geopolitical signals for Stora Enso, Sappi, and Tae Young are real but slower-burn unless you see operational shutdowns; monitor quarterly earnings for any logistics delays. GPI's stock move warrants a brief check-in to rule out supply-side stress, but it's not systemic.",
+  "executive_summary": "Your RED status is driven entirely by geopolitical concentration risk, not financial distress or supplier-specific failures. Six of your ten flagged suppliers sit in China (EMS, batteries, nicotine substrates, filters) facing identical US-China trade war and Taiwan exposure, while three others (Stora Enso, Sappi, Tae Young) face distinct but acute regional destabilization\u2014Finland's NATO exposure, South Africa's energy crisis, and Korea's military proximity. GPI's unexplained 1.6% stock dip is noise compared to this macro picture.\n\nThe urgent action is dual-sourcing your China-exposed critical items: Huizhou BYD and Smoore (EMS) and EVE Energy (batteries) together represent single points of failure if export controls or Taiwan events trigger supply locks. Porton and IP Sun in nicotine and substrates should move into parallel qualification immediately. The other geopolitical risks (Stora Enso, Sappi, Tae Young) are material but slower-moving\u2014monitor quarterly; they won't fail overnight.\n\nSkip the GPI stock investigation; it's immaterial unless volume orders slip. Your macro backdrop is still GREEN, so this is containable with 90 days of decisive dual-sourcing work on the China and Korea nodes.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-20T08:35:03.010134",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-07-20T12:35:29.596562",
       "macro": "AMBER",
@@ -574,6 +567,13 @@
       "peers": "RED",
       "suppliers": "AMBER",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-08-09T00:45:56.446091",
+      "macro": "GREEN",
+      "peers": "RED",
+      "suppliers": "AMBER",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -589,7 +589,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-08T18:19:05.564674"
+        "last_fetched": "2026-08-09T00:44:44.873981"
       },
       "eu": {
         "status": "success",
@@ -600,7 +600,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1535",
-        "last_fetched": "2026-08-08T18:19:06.450883"
+        "last_fetched": "2026-08-09T00:44:45.633230"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +611,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-08T18:19:06.451679"
+        "last_fetched": "2026-08-09T00:44:45.634526"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-08T18:19:06.451692"
+    "last_fetched": "2026-08-09T00:44:45.634548"
   },
   "peers": {
     "status": "success",
@@ -623,7 +623,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-08T18:19:10.004113"
+    "last_fetched": "2026-08-09T00:44:49.814454"
   },
   "suppliers": {
     "status": "success",
@@ -764,8 +764,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
-            "Taiwan Tests War Plans to Thwart Chinese Invasion - WSJ",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
+            "Iran war drains US weapons stockpiles, raising fears Russia and China could exploit gaps - Ynetnews"
           ],
           "escalated": true,
           "baseline_only": true
@@ -803,6 +803,7 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
+            "Uganda Approves Troops Deployment To Gaza Under Trump's Post-War Plan For Israel | Firstpost Africa - firstpost.com",
             "Before 1956, there was 1913: The forgotten women of the first pass war - Mail & Guardian"
           ],
           "escalated": true,
@@ -928,9 +929,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "South Korea honoring veterans of war that secured its existence - washingtontimes.com",
-            "\u2018The Forgotten War\u2019 - Connection Newspapers",
-            "Explainer: What we know about North Korean forces joining Russia's war against Ukraine - Reuters"
+            "South Korea honoring veterans of war that secured its existence - Washington Times",
+            "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
+            "\u2018The Forgotten War\u2019 - Connection Newspapers"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1084,9 +1085,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "US Senate passes sweeping Russian energy sanctions bill amid Ukraine war - Al Jazeera",
             "India and Pakistan\u2019s 79-year rivalry has made the dangerous move into space - The Conversation",
-            "This War Changed India\u2019s Future \u2014 and Its Relations with Israel and the United States - Algemeiner.com"
+            "This War Changed India\u2019s Future \u2014 and Its Relations with Israel and the United States - Algemeiner.com",
+            "India\u2019s internet war - vox.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1125,8 +1126,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
-            "Taiwan Tests War Plans to Thwart Chinese Invasion - WSJ",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
+            "Iran war drains US weapons stockpiles, raising fears Russia and China could exploit gaps - Ynetnews"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1194,8 +1195,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
-            "Taiwan Tests War Plans to Thwart Chinese Invasion - WSJ",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
+            "Iran war drains US weapons stockpiles, raising fears Russia and China could exploit gaps - Ynetnews"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1234,8 +1235,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
-            "Taiwan Tests War Plans to Thwart Chinese Invasion - WSJ",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
+            "Iran war drains US weapons stockpiles, raising fears Russia and China could exploit gaps - Ynetnews"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1274,8 +1275,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "The U.S. Is Burning Through Weapons in Iran. Russia and China Are Taking Note. - The New York Times",
-            "Taiwan Tests War Plans to Thwart Chinese Invasion - WSJ",
-            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post"
+            "China\u2019s retaliation against US shows depth of its trade war strategy: analysts - South China Morning Post",
+            "Iran war drains US weapons stockpiles, raising fears Russia and China could exploit gaps - Ynetnews"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1434,7 +1435,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-08T18:20:14.817607"
+    "last_fetched": "2026-08-09T00:45:56.015310"
   },
   "macro_economy": {
     "us": {
@@ -1532,7 +1533,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 78.688396
+    "duration_seconds": 79.541086
   },
   "health": {
     "pillars": {

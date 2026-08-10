@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-10T00:48:14.193975",
-  "version": "70e253347721",
+  "last_updated": "2026-08-10T07:05:15.558428",
+  "version": "7fb5080e1a05",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -13,15 +13,8 @@
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by peer-level disruption signals, not fundamental supplier risk or macro headwinds\u2014this is a market timing issue rather than a structural crisis. The real urgency clusters into two geopolitical zones: US-China friction (affecting your critical EMS and battery suppliers Huizhou BYD, Smoore, EVE Energy, plus Porton nicotine) and secondary risks in Russia-adjacent (Stora Enso), South Asia (ITC), and South Africa (Sappi) that are less immediately threatening but worth monitoring for Q2 escalation. GPI's unexplained 1.6% stock dip warrants a quick call to confirm no hidden operational issue, but it's lower priority than mapping dual-sourcing options for your China-concentrated electronics and battery tiers\u2014those carry critical BAT exposure and zero redundancy in a Taiwan strait or export-control shock scenario. The printer substrate suppliers are medium-risk spread across geographies; no immediate action needed there unless China tensions spike sharply.",
+  "executive_summary": "Your RED status is driven entirely by geopolitical concentration, not supplier financials or macro headwinds. Five of your nine at-risk suppliers sit in China (Huizhou BYD, Smoore, IP Sun, Porton, EVE Energy), all exposed to identical US-China trade and Taiwan-related risks; together they cover critical EMS, batteries, and nicotine inputs. This cluster demands immediate attention because a single escalation event (tariffs, export controls, or Taiwan supply disruption) could cascade across multiple categories simultaneously. GPI's unexplained stock dip is lower priority\u2014it's localized to the US and printed packaging has more substitutes than your electronic and chemical components. The three geopolitical outliers (Stora Enso in NATO-adjacent Finland, Sappi in South Africa energy crisis, Tae Young in Korea) are individually medium-risk but not interconnected, so treat them as secondary monitoring. Urgently model China supplier redundancy and nearshoring timelines for EMS and batteries; consider whether ITC's India exposure for nicotine offers a viable hedge against the China cluster.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-21T08:05:07.833926",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "AMBER",
-      "overall": "AMBER"
-    },
     {
       "timestamp": "2026-07-21T13:11:34.198708",
       "macro": "GREEN",
@@ -574,6 +567,13 @@
       "peers": "RED",
       "suppliers": "AMBER",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-08-10T07:05:10.852771",
+      "macro": "GREEN",
+      "peers": "RED",
+      "suppliers": "AMBER",
+      "overall": "RED"
     }
   ],
   "macro": {
@@ -589,7 +589,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-10T00:46:58.851049"
+        "last_fetched": "2026-08-10T07:04:03.553868"
       },
       "eu": {
         "status": "success",
@@ -600,7 +600,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1535",
-        "last_fetched": "2026-08-10T00:46:59.705987"
+        "last_fetched": "2026-08-10T07:04:04.031855"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +611,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-10T00:46:59.707006"
+        "last_fetched": "2026-08-10T07:04:04.032691"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-10T00:46:59.707022"
+    "last_fetched": "2026-08-10T07:04:04.032704"
   },
   "peers": {
     "status": "success",
@@ -623,7 +623,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-10T00:47:03.434317"
+    "last_fetched": "2026-08-10T07:04:06.283604"
   },
   "suppliers": {
     "status": "success",
@@ -713,8 +713,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.0,
-        "current_price": 9.76,
+        "daily_change_pct": -0.82,
+        "current_price": 9.68,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -764,9 +764,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Russia, China could take advantage of low US weapons stockpiles to start war with America - NYT - The Jerusalem Post",
+            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters",
             "Taiwan prepares for potential war with China as US considers $14B arms sale - foxnews.com",
-            "Taiwan simulates repelling Chinese assault, to slow mobile internet in annual war games - Reuters"
+            "Russia, China could take advantage of low US weapons stockpiles to start war with America - NYT - The Jerusalem Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -805,8 +805,8 @@
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
             "How Sudan\u2019s war is destroying its development future - ISS Africa",
-            "Boer War hero's medals return home after century apart as family reunites - Islington Gazette",
-            "Before 1956, there was 1913: The forgotten women of the first pass war - Mail & Guardian"
+            "Tyla, Trevor and culture war - The Nation Newspaper",
+            "Boer War hero's medals return home after century apart as family reunites - Islington Gazette"
           ],
           "escalated": true,
           "baseline_only": true
@@ -932,8 +932,8 @@
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
             "South Korea, U.S. vow to find every missing Korean War service member - upi.com",
-            "Ukraine\u2019s Volodymyr Zelenskyy says up to 50,000 North Korean troops to be deployed in Russia - NBC News",
-            "\u2018The Forgotten War\u2019 - Connection Newspapers"
+            "US, South Korea search seabed for Korean War aircraft and missing troops - stripes.com",
+            "Ukraine war briefing: North Korea sending 50,000 troops to Russia \u2013 Zelenskyy - The Guardian"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1075,8 +1075,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.07,
-        "current_price": 286.1,
+        "daily_change_pct": -0.96,
+        "current_price": 283.35,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1127,9 +1127,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Russia, China could take advantage of low US weapons stockpiles to start war with America - NYT - The Jerusalem Post",
+            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters",
             "Taiwan prepares for potential war with China as US considers $14B arms sale - foxnews.com",
-            "Taiwan simulates repelling Chinese assault, to slow mobile internet in annual war games - Reuters"
+            "Russia, China could take advantage of low US weapons stockpiles to start war with America - NYT - The Jerusalem Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1196,9 +1196,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Russia, China could take advantage of low US weapons stockpiles to start war with America - NYT - The Jerusalem Post",
+            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters",
             "Taiwan prepares for potential war with China as US considers $14B arms sale - foxnews.com",
-            "Taiwan simulates repelling Chinese assault, to slow mobile internet in annual war games - Reuters"
+            "Russia, China could take advantage of low US weapons stockpiles to start war with America - NYT - The Jerusalem Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1224,8 +1224,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.47,
-        "current_price": 8.55,
+        "daily_change_pct": 3.51,
+        "current_price": 8.85,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1236,9 +1236,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Russia, China could take advantage of low US weapons stockpiles to start war with America - NYT - The Jerusalem Post",
+            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters",
             "Taiwan prepares for potential war with China as US considers $14B arms sale - foxnews.com",
-            "Taiwan simulates repelling Chinese assault, to slow mobile internet in annual war games - Reuters"
+            "Russia, China could take advantage of low US weapons stockpiles to start war with America - NYT - The Jerusalem Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1264,8 +1264,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.5,
-        "current_price": 54.94,
+        "daily_change_pct": 0.44,
+        "current_price": 55.18,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1276,9 +1276,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Russia, China could take advantage of low US weapons stockpiles to start war with America - NYT - The Jerusalem Post",
+            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters",
             "Taiwan prepares for potential war with China as US considers $14B arms sale - foxnews.com",
-            "Taiwan simulates repelling Chinese assault, to slow mobile internet in annual war games - Reuters"
+            "Russia, China could take advantage of low US weapons stockpiles to start war with America - NYT - The Jerusalem Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1437,7 +1437,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-10T00:48:08.618568"
+    "last_fetched": "2026-08-10T07:05:10.175174"
   },
   "macro_economy": {
     "us": {
@@ -1450,13 +1450,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: +0.29% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: +0.27% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.17% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.07% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1517,9 +1517,9 @@
       "region": "Japan",
       "sentiment": "Neutral",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "+0.17%",
-      "current_price": 7120.0,
-      "daily_change_pct": 0.17,
+      "stock_move": "-0.18%",
+      "current_price": 7095.0,
+      "daily_change_pct": -0.18,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1535,7 +1535,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 77.618767
+    "duration_seconds": 74.225979
   },
   "health": {
     "pillars": {

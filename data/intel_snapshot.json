@@ -1,27 +1,21 @@
 {
-  "last_updated": "2026-08-10T18:40:23.409912",
-  "version": "faf6e469f95d",
+  "last_updated": "2026-08-11T00:47:32.687424",
+  "version": "fc556c89be0c",
   "status": "healthy",
   "overall_rag": {
-    "score": "RED",
+    "score": "AMBER",
     "driven_by": [
-      "peers"
+      "peers",
+      "suppliers"
     ],
     "pillar_scores": {
       "macro": "GREEN",
-      "peers": "RED",
+      "peers": "AMBER",
       "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your RED status is driven entirely by peer-level risk concentration, not macro weakness or supplier fundamentals. The core issue: six of your nine flagged suppliers sit in US-China trade friction zones (China-based EMS, nicotine, battery makers plus Taiwan-exposed peers), creating correlated geopolitical exposure rather than isolated failures. Urgent action needed on your two critical-exposure suppliers\u2014Huizhou BYD and Smoore in EMS, plus ITC in nicotine\u2014where tariffs, export controls, or Taiwan escalation would cascade through your BAT business simultaneously. Secondary priority is Stora Enso and Sappi (printing substrates in NATO/African instability) but these are lower-velocity risk. AMCOR's stock dip warrants a quick call to understand the cause, but it's a single signal without geopolitical or sector-wide context. Start with immediate dual-sourcing assessments or nearshoring plans for EMS and nicotine before Q1 trade policy deadlines; peers may be signaling similar supply chain tightening ahead.",
+  "executive_summary": "Your supply chain is caught in a geopolitical squeeze rather than a macro downturn. Six of your eleven flagged suppliers sit in China-exposed categories (EMS, batteries, nicotine, substrates) where US-China trade tensions and Taiwan risk create a shared vulnerability that no diversification within that region will solve. Simultaneously, you have critical exposure in AMCOR (Switzerland, printed packaging) showing unexplained stock weakness and two critical EMS players (Huizhou BYD, Smoore) that amplify dependency on a single geopolitically volatile region. The secondary cluster around energy-constrained or border-adjacent nations (South Africa, Finland, South Korea, India) adds friction but is less immediately systemic.\n\nAct now on the China EMS and battery suppliers\u2014initiate contingency sourcing conversations with Taiwan-based or Southeast Asian alternatives, and confirm your export compliance posture if tariffs escalate. AMCOR's stock drop warrants a direct call to assess whether it's random market noise or early-warning signal of operational stress. The Nordic and African suppliers require quarterly monitoring but can absorb near-term disruption without cascading failure. Macro data gaps (US, China) are hampering precision; prioritize filling those once available to confirm whether this is tactical geopolitical hedging or a signal of broader demand contraction.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-22T01:21:59.118830",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "GREEN",
-      "overall": "GREEN"
-    },
     {
       "timestamp": "2026-07-22T08:05:22.234682",
       "macro": "GREEN",
@@ -574,6 +568,13 @@
       "peers": "RED",
       "suppliers": "AMBER",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-08-11T00:47:26.964789",
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -589,7 +590,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-10T18:39:10.244081"
+        "last_fetched": "2026-08-11T00:46:16.933435"
       },
       "eu": {
         "status": "success",
@@ -600,7 +601,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1555",
-        "last_fetched": "2026-08-10T18:39:10.660475"
+        "last_fetched": "2026-08-11T00:46:17.746374"
       },
       "china": {
         "status": "placeholder",
@@ -611,19 +612,19 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-10T18:39:10.661664"
+        "last_fetched": "2026-08-11T00:46:17.747384"
       }
     },
-    "volatility_pct": 0.17338534893801488,
-    "last_fetched": "2026-08-10T18:39:10.661679"
+    "volatility_pct": 0.0,
+    "last_fetched": "2026-08-11T00:46:17.747395"
   },
   "peers": {
     "status": "success",
-    "rag_score": "RED",
+    "rag_score": "AMBER",
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-10T18:39:13.035962"
+    "last_fetched": "2026-08-11T00:46:21.607674"
   },
   "suppliers": {
     "status": "success",
@@ -637,10 +638,10 @@
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 0,
     "total_high": 0,
-    "total_medium": 10,
+    "total_medium": 11,
     "actionable_critical": 0,
     "actionable_high": 0,
-    "actionable_medium": 1,
+    "actionable_medium": 2,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -655,11 +656,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.8,
-        "current_price": 47.0,
+        "daily_change_pct": -1.57,
+        "current_price": 47.11,
         "risk_analysis": "Stock decline for critical-exposure supplier AMCOR. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83d\udcc9 Stock down -1.8% (no confirmed cause) - Critical exposure supplier",
+        "last_signal": "\ud83d\udcc9 Stock down -1.6% (no confirmed cause) - Critical exposure supplier",
         "counts_toward_rag": true,
         "price_move_only": true,
         "geopolitical_risk": null,
@@ -684,11 +685,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.65,
-        "current_price": 264.74,
+        "daily_change_pct": -0.51,
+        "current_price": 265.12,
         "risk_analysis": "No supply chain risks identified. GPI (Printed Packaging) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.6%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.5%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -713,8 +714,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.68,
-        "current_price": 9.69,
+        "daily_change_pct": null,
+        "current_price": null,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -724,10 +725,7 @@
           "detected": true,
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
-          "headlines": [
-            "Finland beat the Russians so hard we\u2019re still cheering for them 80 years later - We Are The Mighty",
-            "Finland Explains Why It Will Not Supply Ukraine with Patriot Missiles \u2014 Ilta-Sanomat - ua.news"
-          ],
+          "headlines": [],
           "escalated": true,
           "baseline_only": true
         },
@@ -764,9 +762,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters",
-            "Gordon Chang predicts China is going to \u2018back into a war\u2019 - Fox Business",
-            "Taiwan prepares for potential war with China as US considers $14B arms sale - Fox News"
+            "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
+            "The Adaptation War Deepens - Futura Doctrina | Mick Ryan",
+            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -792,8 +790,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.89,
-        "current_price": 208.0,
+        "daily_change_pct": 1.16,
+        "current_price": 208.55,
         "risk_analysis": "Geopolitical risk in South Africa: Economic instability, infrastructure challenges, energy crisis. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Economic instability, infrastructure challenges, energy crisis",
@@ -861,11 +859,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.5,
-        "current_price": 73.27,
+        "daily_change_pct": -0.3,
+        "current_price": 73.42,
         "risk_analysis": "No supply chain risks identified. Eastman (Filter Materials) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.5%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.3%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -931,9 +929,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "South Korea, US to conduct military drills amid evolving North Korea threats - Reuters",
             "South Korea, U.S. vow to find every missing Korean War service member - upi.com",
-            "US, South Korea search seabed for Korean War aircraft and missing troops - stripes.com"
+            "South Korea faces quandary over Ukraine\u2019s air defence system request - South China Morning Post",
+            "World War II and Korean War veteran identified after 76 years, laid to rest in Brady, Texas - ConchoValleyHomepage.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -988,11 +986,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.86,
-        "current_price": 12.65,
+        "daily_change_pct": -0.7,
+        "current_price": 12.8,
         "risk_analysis": "No supply chain risks identified. SWM (Mativ) (Fine Papers) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.9%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.7%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1075,8 +1073,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": -1.21,
+        "current_price": 282.65,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1087,9 +1085,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "Opinion | 86 Votes, 1 Warning: Is India Turning Into Collateral Damage In US' War On Russia? - NDTV",
             "Amnesty targets India-Israel defense ties over weapons shipments amid Gaza war - The Jerusalem Post",
-            "This War Changed India\u2019s Future \u2014 and Its Relations with Israel and the United States - algemeiner.com"
+            "Opinion | 86 Votes, 1 Warning: Is India Turning Into Collateral Damage In US' War On Russia? - NDTV",
+            "Russia-Ukraine war: At least 17 killed in latest wave of drone and artillery strikes - Firstpost"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1127,9 +1125,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters",
-            "Gordon Chang predicts China is going to \u2018back into a war\u2019 - Fox Business",
-            "Taiwan prepares for potential war with China as US considers $14B arms sale - Fox News"
+            "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
+            "The Adaptation War Deepens - Futura Doctrina | Mick Ryan",
+            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1196,9 +1194,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters",
-            "Gordon Chang predicts China is going to \u2018back into a war\u2019 - Fox Business",
-            "Taiwan prepares for potential war with China as US considers $14B arms sale - Fox News"
+            "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
+            "The Adaptation War Deepens - Futura Doctrina | Mick Ryan",
+            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1224,8 +1222,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 3.98,
+        "current_price": 8.89,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1236,9 +1234,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters",
-            "Gordon Chang predicts China is going to \u2018back into a war\u2019 - Fox Business",
-            "Taiwan prepares for potential war with China as US considers $14B arms sale - Fox News"
+            "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
+            "The Adaptation War Deepens - Futura Doctrina | Mick Ryan",
+            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1264,8 +1262,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.51,
+        "current_price": 55.22,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1276,9 +1274,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters",
-            "Gordon Chang predicts China is going to \u2018back into a war\u2019 - Fox Business",
-            "Taiwan prepares for potential war with China as US considers $14B arms sale - Fox News"
+            "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
+            "The Adaptation War Deepens - Futura Doctrina | Mick Ryan",
+            "Taiwan 'throttles' mobile internet for first time during annual war games - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1304,13 +1302,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.2,
-        "current_price": 282.66,
-        "risk_analysis": "No supply chain risks identified. Texas Instruments (EE Component) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.2%",
+        "daily_change_pct": -1.97,
+        "current_price": 280.44,
+        "risk_analysis": "Stock decline for high-exposure supplier Texas Instruments. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Stock down -2.0% (no confirmed cause) - High exposure supplier",
         "counts_toward_rag": true,
-        "price_move_only": false,
+        "price_move_only": true,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1333,11 +1331,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.72,
-        "current_price": 62.53,
+        "daily_change_pct": null,
+        "current_price": null,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +0.7%",
+        "last_signal": "\u2713 Normal operations. No risk signals.",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1420,11 +1418,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.39,
-        "current_price": 342.54,
+        "daily_change_pct": -1.35,
+        "current_price": 336.63,
         "risk_analysis": "No supply chain risks identified. Jabil (Mechanical) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +0.4%",
+        "last_signal": "\u2713 Normal operations. Stock: -1.3%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1437,26 +1435,26 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-10T18:40:17.453932"
+    "last_fetched": "2026-08-11T00:47:26.180500"
   },
   "macro_economy": {
     "us": {
       "cpi": "2.8%",
       "rate": "4.25%",
       "trend": "Stable",
-      "summary": "S&P 500 stable: -0.11% change. Market reflects balanced economic conditions. Fed monitoring inflation and employment data closely. Industrial output steady, consumer spending patterns normal. Economic outlook remains cautiously optimistic."
+      "summary": "S&P 500 stable: -0.06% change. Market reflects balanced economic conditions. Fed monitoring inflation and employment data closely. Industrial output steady, consumer spending patterns normal. Economic outlook remains cautiously optimistic."
     },
     "eu": {
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: +0.18% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: -0.04% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.21% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.15% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1482,12 +1480,12 @@
       "ticker": "PM",
       "region": "US",
       "sentiment": "Negative",
-      "latest_headline": "Universal Corp (UVV) Stock Is Falling Today: What\u2019s Behind the Drop, and Are Other Tobacco Stocks Plummeting Today?",
-      "stock_move": "-1.91%",
-      "current_price": 185.9499969482422,
-      "daily_change_pct": -1.91,
-      "risk_level": "CRITICAL",
-      "last_signal": "\ud83d\udea8 News Alert: Philip Morris International (PM) Faces Brazil Lawsuit Pressure, Is The Upside Already Priced In?",
+      "latest_headline": "1 Mega-Cap Stock with Impressive Fundamentals and 2 We Brush Off",
+      "stock_move": "-1.88%",
+      "current_price": 186.0,
+      "daily_change_pct": -1.88,
+      "risk_level": "MEDIUM",
+      "last_signal": "\u26a0\ufe0f News Alert: Universal Corp (UVV) Stock Is Falling Today: What\u2019s Behind the Drop, and Are Other Tobacco Stocks Plummeting Today?",
       "news_risk": true,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1498,15 +1496,15 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Negative",
+      "sentiment": "Neutral",
       "latest_headline": "Imperial Brands cutting thousands of jobs in U.S. and Europe",
-      "stock_move": "-4.55%",
-      "current_price": 2664.0,
-      "daily_change_pct": -4.55,
+      "stock_move": "N/A",
+      "current_price": null,
+      "daily_change_pct": null,
       "risk_level": "MEDIUM",
       "last_signal": "\u26a0\ufe0f News Alert: Imperial Brands cutting thousands of jobs in U.S. and Europe",
       "news_risk": true,
-      "stock_risk": true,
+      "stock_risk": false,
       "sec_red_signals": 0,
       "sec_amber_signals": 0,
       "summary": "Neutral: Company not US-listed. Monitoring international filings and news sources."
@@ -1517,9 +1515,9 @@
       "region": "Japan",
       "sentiment": "Neutral",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "-0.18%",
+      "current_price": 7095.0,
+      "daily_change_pct": -0.18,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1535,7 +1533,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 75.34014
+    "duration_seconds": 78.603227
   },
   "health": {
     "pillars": {

@@ -1,27 +1,21 @@
 {
-  "last_updated": "2026-08-12T00:55:22.818628",
-  "version": "6280a8d52350",
+  "last_updated": "2026-08-12T07:04:36.921780",
+  "version": "34a055bb6cd6",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
     "driven_by": [
-      "peers"
+      "peers",
+      "suppliers"
     ],
     "pillar_scores": {
       "macro": "GREEN",
       "peers": "AMBER",
-      "suppliers": "GREEN"
+      "suppliers": "AMBER"
     }
   },
-  "executive_summary": "Your AMBER status is driven entirely by peer-level exposure to geopolitical shocks, not by macro weakness or supplier-specific failures. The core issue is concentration: five suppliers clustered in China face identical US-China trade and Taiwan risks (Porton, Huizhou BYD, Smoore, EVE Energy, and IP Sun), while three others depend on single-country vulnerabilities that lack redundancy (Stora Enso on NATO proximity, Sappi on South African infrastructure, ITC on India-Pakistan tensions). The two China-based EMS providers with critical battery exposure warrant immediate attention for dual-sourcing or nearshoring pilots, since a Taiwan supply shock or tech export freeze would cripple production. The nicotine and printing substrate risks are lower-urgency unless geopolitical temperatures spike; focus near-term energy on mapping alternative suppliers in Southeast Asia or Eastern Europe for the EMS and battery categories, then tier the rest by your contractual flexibility and safety stock buffers.",
+  "executive_summary": "Your supply chain risk is concentrated in geopolitical fault lines rather than dispersed across independent suppliers. Three distinct clusters demand attention: China-exposed electronics and battery makers (Huizhou BYD, Smoore, EVE Energy, Porton, IP Sun) facing US export controls and Taiwan contingency risks; Nordic and Southern African substrates (Stora Enso, Sappi) vulnerable to Russia-NATO escalation and infrastructure collapse respectively; and India's nicotine sourcing (ITC) caught between China-Pakistan tensions. The Smoore stock dip signals market concern about critical EMS exposure, which warrants immediate visibility into their customer concentration and alternative capacity.\n\nPrioritize the China cluster\u2014it represents your highest BAT-critical exposure (Huizhou BYD and Smoore are essential) in the highest-pressure geopolitical zone, and export control tightening could cascade within weeks rather than months. Sappi's energy crisis in South Africa is slower-moving but threatens substrate continuity; establish secondary sourcing there now. Stora Enso is your only direct NATO-frontline risk and should be stress-tested for a 30-day supply interruption scenario, though this is lower probability. ITC's geopolitical risk is real but lower-urgency given medium BAT exposure; monitor quarterly rather than weekly.",
   "rag_history": [
-    {
-      "timestamp": "2026-07-23T08:08:05.791244",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "AMBER",
-      "overall": "AMBER"
-    },
     {
       "timestamp": "2026-07-23T13:20:14.804132",
       "macro": "GREEN",
@@ -574,6 +568,13 @@
       "peers": "AMBER",
       "suppliers": "GREEN",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-12T07:04:31.262613",
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -589,7 +590,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-12T00:54:06.606288"
+        "last_fetched": "2026-08-12T07:03:20.188287"
       },
       "eu": {
         "status": "success",
@@ -600,7 +601,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.154",
-        "last_fetched": "2026-08-12T00:54:07.426719"
+        "last_fetched": "2026-08-12T07:03:20.844864"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +612,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-12T00:54:07.427778"
+        "last_fetched": "2026-08-12T07:03:20.845865"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-12T00:54:07.427792"
+    "last_fetched": "2026-08-12T07:03:20.845881"
   },
   "peers": {
     "status": "success",
@@ -623,11 +624,11 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-12T00:54:11.806819"
+    "last_fetched": "2026-08-12T07:03:24.972031"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "GREEN",
+    "rag_score": "AMBER",
     "total_suppliers": 24,
     "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 0,
@@ -640,7 +641,7 @@
     "total_medium": 9,
     "actionable_critical": 0,
     "actionable_high": 0,
-    "actionable_medium": 0,
+    "actionable_medium": 1,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -713,8 +714,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": -0.52,
+        "current_price": 9.64,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -763,9 +764,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Pentagon races to buy 10X more missiles as Iran war dwindles arsenal, threatens readiness for China aggression - Fox News",
+            "Review of Bing West\u2019s Cat 5: The 2033 War - Small Wars Journal",
             "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
-            "China won\u2019t get lucky twice: Why Trump\u2019s Iran war may be Xi\u2019s worst nightmare - Washington Examiner"
+            "Why China\u2019s war on deflation is faltering in real time - Asia Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -803,7 +804,7 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "Outside Source | Ukraine war: Mood in Russia - bbc.com",
+            "Outside Source | Ukraine war: Mood in Russia - BBC",
             "SA unemployment rate rises to 33.6% as Iran war takes economic toll - Daily Maverick",
             "Citrus growers count cost of war and floods - theherald.co.za"
           ],
@@ -930,9 +931,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
+            "North Korea missile launch hints at upgraded weapons exports to Russia - South China Morning Post",
             "South Korea, U.S. vow to find every missing Korean War service member - upi.com",
-            "North Korea launches another missile toward sea ahead of US-South Korean military drills - New York Daily News",
-            "US, South Korea drills to test new North Korean battlefield threats - T\u00fcrkiye Today"
+            "North Korea launches another missile toward sea ahead of US-South Korean military drills - wandtv.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1074,8 +1075,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.29,
-        "current_price": 279.0,
+        "daily_change_pct": -0.73,
+        "current_price": 276.95,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1088,7 +1089,7 @@
           "headlines": [
             "\u2018India\u2019s Top Gun:\u2019 Netflix\u2019s new massive, six-part war series - We Are The Mighty",
             "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
-            "Opinion | 86 Votes, 1 Warning: Is India Turning Into Collateral Damage In US' War On Russia? - ndtv.com"
+            "As conflict in the Middle East intensifies, India\u2019s relationship with Israel deepens - The Guardian"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1126,9 +1127,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Pentagon races to buy 10X more missiles as Iran war dwindles arsenal, threatens readiness for China aggression - Fox News",
+            "Review of Bing West\u2019s Cat 5: The 2033 War - Small Wars Journal",
             "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
-            "China won\u2019t get lucky twice: Why Trump\u2019s Iran war may be Xi\u2019s worst nightmare - Washington Examiner"
+            "Why China\u2019s war on deflation is faltering in real time - Asia Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1195,9 +1196,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Pentagon races to buy 10X more missiles as Iran war dwindles arsenal, threatens readiness for China aggression - Fox News",
+            "Review of Bing West\u2019s Cat 5: The 2033 War - Small Wars Journal",
             "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
-            "China won\u2019t get lucky twice: Why Trump\u2019s Iran war may be Xi\u2019s worst nightmare - Washington Examiner"
+            "Why China\u2019s war on deflation is faltering in real time - Asia Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1223,24 +1224,24 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.22,
-        "current_price": 8.91,
-        "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
+        "daily_change_pct": -1.57,
+        "current_price": 8.77,
+        "risk_analysis": "Stock decline for critical-exposure supplier Smoore. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
-        "counts_toward_rag": false,
-        "price_move_only": false,
+        "last_signal": "\ud83d\udcc9 Stock down -1.6% (no confirmed cause) - Critical exposure supplier",
+        "counts_toward_rag": true,
+        "price_move_only": true,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Pentagon races to buy 10X more missiles as Iran war dwindles arsenal, threatens readiness for China aggression - Fox News",
+            "Review of Bing West\u2019s Cat 5: The 2033 War - Small Wars Journal",
             "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
-            "China won\u2019t get lucky twice: Why Trump\u2019s Iran war may be Xi\u2019s worst nightmare - Washington Examiner"
+            "Why China\u2019s war on deflation is faltering in real time - Asia Times"
           ],
-          "escalated": true,
-          "baseline_only": true
+          "escalated": false,
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "Critical",
@@ -1263,8 +1264,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.5,
-        "current_price": 56.05,
+        "daily_change_pct": 0.87,
+        "current_price": 56.54,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1275,9 +1276,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Pentagon races to buy 10X more missiles as Iran war dwindles arsenal, threatens readiness for China aggression - Fox News",
+            "Review of Bing West\u2019s Cat 5: The 2033 War - Small Wars Journal",
             "How Trump's next tariffs could drive companies back to China - Peterson Institute for International Economics",
-            "China won\u2019t get lucky twice: Why Trump\u2019s Iran war may be Xi\u2019s worst nightmare - Washington Examiner"
+            "Why China\u2019s war on deflation is faltering in real time - Asia Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1332,11 +1333,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.72,
+        "current_price": 62.53,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "last_signal": "\u2713 Normal operations. Stock: +0.7%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1436,7 +1437,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-12T00:55:17.027922"
+    "last_fetched": "2026-08-12T07:04:30.148303"
   },
   "macro_economy": {
     "us": {
@@ -1449,13 +1450,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: -0.03% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: -0.05% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.04% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.03% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1497,15 +1498,15 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Neutral",
+      "sentiment": "Negative",
       "latest_headline": "Imperial Brands cutting thousands of jobs in U.S. and Europe",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "-4.55%",
+      "current_price": 2664.0,
+      "daily_change_pct": -4.55,
       "risk_level": "MEDIUM",
       "last_signal": "\u26a0\ufe0f News Alert: Imperial Brands cutting thousands of jobs in U.S. and Europe",
       "news_risk": true,
-      "stock_risk": false,
+      "stock_risk": true,
       "sec_red_signals": 0,
       "sec_amber_signals": 0,
       "summary": "Neutral: Company not US-listed. Monitoring international filings and news sources."
@@ -1516,9 +1517,9 @@
       "region": "Japan",
       "sentiment": "Neutral",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "-0.44%",
-      "current_price": 7064.0,
-      "daily_change_pct": -0.44,
+      "stock_move": "-0.97%",
+      "current_price": 7026.0,
+      "daily_change_pct": -0.97,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1534,7 +1535,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 78.670156
+    "duration_seconds": 79.145753
   },
   "health": {
     "pillars": {

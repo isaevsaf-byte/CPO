@@ -2382,7 +2382,7 @@ def save_with_backup(data: dict, output_file: Path) -> bool:
 
 def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
                                  suppliers_data: dict, peers_data: dict,
-                                 macro_data: dict) -> str | None:
+                                 macro_data: dict) -> dict | None:
     """
     Narrate the already-computed RAG rollup into a CPO-facing executive
     summary via a single Claude API call. This never influences the RAG
@@ -2390,6 +2390,12 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
     signals across suppliers/pillars that the per-supplier f-string
     templates report individually (e.g. five China-exposure suppliers
     flagged separately vs. recognized as one concentrated risk).
+
+    Returns a structured {headline, next_step, context} dict rather than
+    one free-text paragraph — a single dense wall of text doesn't scan
+    well inside the status card, so the model is constrained to a fixed
+    shape the frontend can give real visual hierarchy to (bold takeaway,
+    a distinct action line, smaller supporting detail).
 
     Best-effort: returns None (no summary rendered) if no API key is
     configured or the call fails for any reason, so the harvest never
@@ -2442,13 +2448,39 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
                 "or second-guess the color, only explain what it means and what's actionable. "
                 "Prioritize: connect signals that share a root cause (same country, same "
                 "sector, same time window) instead of listing suppliers one by one. Call out "
-                "what's genuinely urgent vs. what can wait. 3-5 sentences, plain prose, no "
-                "markdown headers, no bullet lists, no restating the RAG color as a first line."
+                "what's genuinely urgent vs. what can wait."
             ),
+            output_config={
+                "format": {
+                    "type": "json_schema",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "headline": {
+                                "type": "string",
+                                "description": "One short sentence, the core takeaway — what kind of risk this is and why, not a restatement of the RAG color.",
+                            },
+                            "next_step": {
+                                "type": "string",
+                                "description": "One concrete, time-boxed action for the CPO to take next. Empty string if genuinely nothing is actionable right now.",
+                            },
+                            "context": {
+                                "type": "string",
+                                "description": "1-2 short supporting sentences: which specific suppliers/signals drive this and why they're linked. Plain prose, no bullet points.",
+                            },
+                        },
+                        "required": ["headline", "next_step", "context"],
+                        "additionalProperties": False,
+                    },
+                }
+            },
             messages=[{"role": "user", "content": json.dumps(payload)}],
         )
         text = "".join(block.text for block in response.content if block.type == "text").strip()
-        return text or None
+        summary = json.loads(text)
+        if not summary.get("headline"):
+            return None
+        return summary
     except Exception as e:
         logger.warning(f"Executive summary generation failed (non-blocking): {e}")
         return None

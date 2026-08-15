@@ -259,8 +259,25 @@ export default function MorningCoffeeDashboard() {
               </div>
             )}
             {typedIntel.executive_summary && (
-              <div className="w-full text-sm text-gray-700 pt-3 mt-1 border-t border-black/10">
-                {typedIntel.executive_summary}
+              <div className="w-full pt-4 mt-1 border-t border-black/10 space-y-3">
+                <p className="text-base font-semibold text-gray-900 leading-snug max-w-3xl">
+                  {typedIntel.executive_summary.headline}
+                </p>
+                {typedIntel.executive_summary.context && (
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-3xl">
+                    {typedIntel.executive_summary.context}
+                  </p>
+                )}
+                {typedIntel.executive_summary.next_step && (
+                  <div className="flex items-start gap-2.5 max-w-3xl rounded-lg border border-black/5 bg-white/60 px-3.5 py-2.5">
+                    <span className="shrink-0 pt-0.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      Next step
+                    </span>
+                    <span className="text-sm font-medium text-gray-800">
+                      {typedIntel.executive_summary.next_step}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
             {typedIntel.rag_history && typedIntel.rag_history.length > 1 && currentStreakDuration(typedIntel.rag_history) && (

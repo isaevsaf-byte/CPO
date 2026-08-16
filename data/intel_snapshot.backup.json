@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-15T12:14:35.393460",
-  "version": "7eee21358d52",
+  "last_updated": "2026-08-15T18:11:57.044419",
+  "version": "cb399b5139ef",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -13,15 +13,12 @@
       "suppliers": "GREEN"
     }
   },
-  "executive_summary": "Your AMBER rating is driven entirely by peer-level geopolitical stress, not supplier or macro weakness\u2014which means the risk is broad exposure rather than localized failure. Four of your nine flagged suppliers sit in China (Huizhou BYD, Smoore, Porton, IP Sun, EVE Energy) and face identical US-China trade and Taiwan escalation headwinds; these account for critical battery and EMS capacity, so a sudden tariff or export control spike could compress availability fast. Separately, Stora Enso (Finland) and Sappi (South Africa) face distinct regional destabilization\u2014energy/infrastructure in South Africa, NATO border exposure in Finland\u2014but neither threatens immediate disruption given their medium bat exposure. The nicotine tier (ITC, Porton) and filters (Tae Young) carry medium risk on geopolitical proximity (India-China-Pakistan, Korea-North Korea) but are lower-urgency substitutes if needed. Action now: stress-test your China-dependent EMS and battery sourcing for Taiwan contingencies and tariff scenarios within the next 30 days; review single-source dependencies and dual-source costs. Defer detailed mitigation for South Africa and Finland unless those regions show labor or actual energy shutdowns\u2014today they're yellow flags, not showstoppers.",
+  "executive_summary": {
+    "headline": "Geopolitical fragmentation across all critical categories\u2014China concentration (EMS, batteries, nicotine) and NATO/periphery exposure (substrates, filters) create compounding disruption risk.",
+    "next_step": "Within 5 days, map dual-source roadmap for the three China-heavy categories (EMS, batteries, nicotine): identify viable non-China or onshore alternatives and quantify lead time/cost delta to enable decision by week-end.",
+    "context": "Nine of nine actionable suppliers are flagged for geopolitical risk, not operational failure\u2014driven by three geographic clusters: (1) China supply (Huizhou BYD, Smoore, EVE, Porton, IP Sun at critical/high exposure) facing US-China trade/Taiwan escalation; (2) Russia-adjacent (Stora Enso) and South Korea (Tae Young) under direct military/proximity threat; (3) South Africa (Sappi) and India (ITC) exposed to regional instability. Peers pillar is driving the AMBER, indicating sector-wide vulnerability rather than company-specific execution failure."
+  },
   "rag_history": [
-    {
-      "timestamp": "2026-07-26T18:53:13.405419",
-      "macro": "GREEN",
-      "peers": "AMBER",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-07-27T01:46:39.662492",
       "macro": "GREEN",
@@ -574,6 +571,13 @@
       "peers": "AMBER",
       "suppliers": "GREEN",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-15T18:11:49.732358",
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "GREEN",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -589,7 +593,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-15T12:13:17.835506"
+        "last_fetched": "2026-08-15T18:10:35.467997"
       },
       "eu": {
         "status": "success",
@@ -600,7 +604,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1567",
-        "last_fetched": "2026-08-15T12:13:18.597930"
+        "last_fetched": "2026-08-15T18:10:36.350487"
       },
       "china": {
         "status": "placeholder",
@@ -611,11 +615,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-15T12:13:18.598791"
+        "last_fetched": "2026-08-15T18:10:36.351534"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-15T12:13:18.598804"
+    "last_fetched": "2026-08-15T18:10:36.351548"
   },
   "peers": {
     "status": "success",
@@ -623,7 +627,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-15T12:13:24.477593"
+    "last_fetched": "2026-08-15T18:10:43.938005"
   },
   "suppliers": {
     "status": "success",
@@ -763,9 +767,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
             "Japanese minister visits shrine to war dead, angering China, South Korea - Al Jazeera",
-            "Taiwan military drills clear streets, slow internet in Taipei - Reuters"
+            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
+            "Iran war a boon for China's e-trucks, fuelling export surge - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -805,7 +809,7 @@
           "headlines": [
             "Iran looks to ramp up economic alliance with BRICS nations as war with U.S. drags on - CNBC",
             "South Africa\u2019s next broadband war may be won by a bank - TechCentral",
-            "Mourinho raises the banner of defiance: Real Madrid begin the war to bring down Barcelona - Goal.com"
+            "Historic Anglo-Boer War blockhouse could return to Middelburg - LNN - Network News - The Citizen"
           ],
           "escalated": true,
           "baseline_only": true
@@ -931,8 +935,8 @@
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
             "South Korea\u2019s Lee urges talks with North Korea about finally ending Korean war - The Guardian",
-            "South Korea\u2019s president wants talks with North to end Korean War - Al Jazeera",
-            "South Korea\u2019s president proposes formal end to Korean war talks with North - South China Morning Post"
+            "South Korea president proposes talks with Pyongyang to formally end Korean War - France 24",
+            "Japanese minister visits shrine to war dead, angering China, South Korea - Al Jazeera"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1086,9 +1090,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "Pakistan PM\u2019s \u2018red line\u2019 warning to India over water treaty - Al Jazeera",
             "India's goods trade deficit hits 6-month high as imports rise amid Middle East conflict - Reuters",
-            "When Karoline Leavitt Became Trump's Voice On India-US Trade, War With Pak - NDTV"
+            "Japan PM Takaichi Skips Visit To Disputed Shrine On World War II Anniversary - NDTV",
+            "India Urea Offers Decline 12% as War Supply Squeeze Eases - Bloomberg.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1126,9 +1130,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
             "Japanese minister visits shrine to war dead, angering China, South Korea - Al Jazeera",
-            "Taiwan military drills clear streets, slow internet in Taipei - Reuters"
+            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
+            "Iran war a boon for China's e-trucks, fuelling export surge - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1195,9 +1199,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
             "Japanese minister visits shrine to war dead, angering China, South Korea - Al Jazeera",
-            "Taiwan military drills clear streets, slow internet in Taipei - Reuters"
+            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
+            "Iran war a boon for China's e-trucks, fuelling export surge - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1235,9 +1239,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
             "Japanese minister visits shrine to war dead, angering China, South Korea - Al Jazeera",
-            "Taiwan military drills clear streets, slow internet in Taipei - Reuters"
+            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
+            "Iran war a boon for China's e-trucks, fuelling export surge - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1275,9 +1279,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
             "Japanese minister visits shrine to war dead, angering China, South Korea - Al Jazeera",
-            "Taiwan military drills clear streets, slow internet in Taipei - Reuters"
+            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
+            "Iran war a boon for China's e-trucks, fuelling export surge - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1436,7 +1440,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-15T12:14:29.229800"
+    "last_fetched": "2026-08-15T18:11:48.973975"
   },
   "macro_economy": {
     "us": {
@@ -1455,7 +1459,7 @@
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.02% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.16% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1534,7 +1538,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 79.855266
+    "duration_seconds": 84.269252
   },
   "health": {
     "pillars": {

@@ -2381,7 +2381,7 @@ def save_with_backup(data: dict, output_file: Path) -> bool:
 
 
 def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
-                                 suppliers_data: dict, peers_data: dict,
+                                 suppliers_data: dict, peer_group: list,
                                  macro_data: dict) -> dict | None:
     """
     Narrate the already-computed RAG rollup into a CPO-facing executive
@@ -2408,6 +2408,14 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
     try:
         import anthropic
 
+        # Only suppliers whose risk_level reflects an actual signal this
+        # cycle (counts_toward_rag) — the same filter the deterministic
+        # rollup uses. A permanent structural geopolitical floor (every
+        # China-based supplier is always at least MEDIUM) is real context
+        # but isn't new information, and handing it to the model without
+        # this filter drowns out whichever pillar (often peers/macro) is
+        # actually driving the current RAG score — see the mislabeled
+        # "peers"-driven AMBER this filter was added to fix.
         suppliers = suppliers_data.get("suppliers", [])
         actionable_suppliers = [
             {
@@ -2420,17 +2428,30 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
                 "geopolitical": s.get("geopolitical_risk") is not None,
             }
             for s in suppliers
-            if s.get("risk_level") != "LOW"
+            if s.get("risk_level") != "LOW" and s.get("counts_toward_rag", True)
+        ]
+
+        # peer_group (not the peers pillar summary dict, which has no
+        # per-company detail) is what actually explains a peers-driven
+        # RAG score — without risk_level/last_signal here the model has
+        # nothing to reason about when "driven_by" is peers.
+        actionable_peers = [
+            {
+                "name": p.get("name"),
+                "region": p.get("region"),
+                "sentiment": p.get("sentiment"),
+                "risk_level": p.get("risk_level"),
+                "last_signal": p.get("last_signal"),
+            }
+            for p in (peer_group or [])
+            if p.get("risk_level") not in (None, "LOW")
         ]
 
         payload = {
             "overall_rag": overall_rag,
             "pillar_rag_scores": pillar_rag_scores,
             "actionable_suppliers": actionable_suppliers,
-            "peers": [
-                {"name": p.get("name"), "sentiment": p.get("sentiment"), "rag_score": p.get("rag_score")}
-                for p in peers_data.get("peers", [])
-            ],
+            "actionable_peers": actionable_peers,
             "macro": {
                 region: {"status": data.get("status"), "summary": data.get("summary")}
                 for region, data in (macro_data.get("regions") or {}).items()
@@ -2446,9 +2467,14 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
                 "reviewing a supply chain risk dashboard. You are given an already-decided "
                 "RAG status (RED/AMBER/GREEN) and its underlying signals — do not restate "
                 "or second-guess the color, only explain what it means and what's actionable. "
-                "Prioritize: connect signals that share a root cause (same country, same "
-                "sector, same time window) instead of listing suppliers one by one. Call out "
-                "what's genuinely urgent vs. what can wait."
+                "overall_rag.driven_by names which pillar(s) — macro, peers, and/or suppliers — "
+                "actually produced the current score; your headline and next_step MUST be about "
+                "that pillar's data specifically, even if another pillar's payload is larger or "
+                "more detailed. Do not default to writing about suppliers just because that "
+                "section has more entries — if driven_by is ['peers'], the story is in "
+                "actionable_peers, not actionable_suppliers. Prioritize: connect signals that "
+                "share a root cause (same country, same sector, same time window) instead of "
+                "listing entities one by one. Call out what's genuinely urgent vs. what can wait."
             ),
             output_config={
                 "format": {
@@ -2608,7 +2634,7 @@ def main():
     rag_history = rag_history[-MAX_RAG_HISTORY:]
 
     executive_summary = generate_executive_summary(
-        overall_rag, pillar_rag_scores, suppliers_data, peers_data, macro_data
+        overall_rag, pillar_rag_scores, suppliers_data, peer_group, macro_data
     )
 
     # Build dashboard state with three core pillars + additional intelligence

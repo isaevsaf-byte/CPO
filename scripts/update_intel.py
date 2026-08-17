@@ -2425,6 +2425,13 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
                 "location": s.get("location"),
                 "risk_level": s.get("risk_level"),
                 "last_signal": s.get("last_signal"),
+                "risk_analysis": s.get("risk_analysis"),
+                # price_move_only=True means this is an unexplained stock
+                # move with no corroborating news/event — the model must
+                # not invent a specific cause (e.g. "liquidity stress",
+                # "margin pressure") for these; see confirmed=False rule
+                # in the system prompt.
+                "confirmed": not s.get("price_move_only", False),
                 "geopolitical": s.get("geopolitical_risk") is not None,
             }
             for s in suppliers
@@ -2474,7 +2481,16 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
                 "section has more entries — if driven_by is ['peers'], the story is in "
                 "actionable_peers, not actionable_suppliers. Prioritize: connect signals that "
                 "share a root cause (same country, same sector, same time window) instead of "
-                "listing entities one by one. Call out what's genuinely urgent vs. what can wait."
+                "listing entities one by one. Call out what's genuinely urgent vs. what can wait. "
+                "Every supplier entry has confirmed: true/false. confirmed=false means an "
+                "unexplained stock move with no corroborating news — for those, describe only "
+                "the observable fact (direction, size, exposure) and say the cause is unconfirmed. "
+                "NEVER invent a specific mechanism (liquidity stress, margin pressure, demand "
+                "collapse, etc.) to explain a confirmed=false move — that fabricates certainty "
+                "the data doesn't have. If you connect a confirmed=false supplier signal to "
+                "another pillar's real news into one narrative, state it as a hypothesis to "
+                "verify ('worth checking whether X and Y share a cause'), not as an established "
+                "fact — match your confidence in each sentence to the evidence behind it."
             ),
             output_config={
                 "format": {

@@ -1,31 +1,25 @@
 {
-  "last_updated": "2026-08-17T00:32:24.106337",
-  "version": "1e9684c24336",
+  "last_updated": "2026-08-17T06:29:47.320091",
+  "version": "e811e5d278d5",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
     "driven_by": [
-      "peers"
+      "peers",
+      "suppliers"
     ],
     "pillar_scores": {
       "macro": "GREEN",
       "peers": "AMBER",
-      "suppliers": "GREEN"
+      "suppliers": "AMBER"
     }
   },
   "executive_summary": {
-    "headline": "Two major tobacco peers are under pressure from sector volatility and cost restructuring, elevating execution risk in your supply relationships.",
-    "next_step": "Contact Philip Morris and Imperial Brands counterparts within 5 business days to confirm supply continuity plans and any near-term cost pass-throughs tied to their restructuring.",
-    "context": "Universal Corp's stock decline is signaling broader tobacco sector instability, while Imperial's job cuts across US and Europe suggest cost pressures that could affect procurement terms or production capacity. Both peers operate in your key regions and rely on overlapping supply ecosystems."
+    "headline": "Peers in tobacco are signaling sector headwinds (job cuts at Imperial, UVV stock pressure) that may cascade to your supplier base; ITC in India shows unexplained volatility.",
+    "next_step": "Within 48 hours, confirm whether Imperial's job cuts or UVV's stock drop reflect category-wide margin compression or localized restructuring\u2014call your Philip Morris and Imperial contacts for color.",
+    "context": "Imperial Brands is actively cutting jobs in US and Europe while UVV (a key leaf supplier to the industry) is experiencing unexplained stock pressure; these signals suggest demand or cost pressures rippling through the sector. ITC's -1.6% stock move in India lacks a clear cause, making it difficult to distinguish between company-specific and sector-wide stress; clarifying peer intent will help you determine if this is a buying opportunity or a warning sign for your supply agreements."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-07-28T08:11:46.304623",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "AMBER",
-      "overall": "AMBER"
-    },
     {
       "timestamp": "2026-07-28T13:26:26.081316",
       "macro": "GREEN",
@@ -578,6 +572,13 @@
       "peers": "AMBER",
       "suppliers": "GREEN",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-17T06:29:43.176586",
+      "macro": "GREEN",
+      "peers": "AMBER",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -593,7 +594,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-17T00:31:10.023218"
+        "last_fetched": "2026-08-17T06:28:14.005401"
       },
       "eu": {
         "status": "success",
@@ -604,7 +605,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1567",
-        "last_fetched": "2026-08-17T00:31:10.664545"
+        "last_fetched": "2026-08-17T06:28:14.998973"
       },
       "china": {
         "status": "placeholder",
@@ -615,11 +616,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-17T00:31:10.665593"
+        "last_fetched": "2026-08-17T06:28:14.999889"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-17T00:31:10.665611"
+    "last_fetched": "2026-08-17T06:28:14.999902"
   },
   "peers": {
     "status": "success",
@@ -627,11 +628,11 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-17T00:31:14.463273"
+    "last_fetched": "2026-08-17T06:28:38.495137"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "GREEN",
+    "rag_score": "AMBER",
     "total_suppliers": 24,
     "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 0,
@@ -644,7 +645,7 @@
     "total_medium": 9,
     "actionable_critical": 0,
     "actionable_high": 0,
-    "actionable_medium": 0,
+    "actionable_medium": 1,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -765,9 +766,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "China\u2019s energy strategy vindicated by Iran war - Financial Times",
             "As China Pushes to Expand in Asia, Trump Focuses on Iran - The New York Times",
-            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
-            "China\u2019s energy strategy vindicated by Iran war - Financial Times"
+            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business"
           ],
           "escalated": true,
           "baseline_only": true
@@ -805,8 +806,7 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "Africa\u2019s strongest military and a NATO drone power confront 3 explosive crises from gold-fueled Sudan war to the Golan Heights and one more - Business Insider Africa",
-            "South Africa\u2019s next broadband war may be won by a bank - TechCentral"
+            "Africa\u2019s strongest military and a NATO drone power confront 3 explosive crises from gold-fueled Sudan war to the Golan Heights and one more - africa.businessinsider.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -931,9 +931,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "Trump orders Pentagon to scale back joint exercises with South Korea - PBS",
+            "Trump says US to scale back South Korea military drills after it stayed out of Iran war - BBC",
             "Trump orders military to \u2018substantially reduce\u2019 joint exercises with South Korea - NBC News",
-            "Trump says US to scale back military drills with South Korea after it stayed out of Iran war - BBC"
+            "Trump orders Pentagon to scale back joint exercises with South Korea - NPR"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1075,24 +1075,24 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.11,
-        "current_price": 278.2,
-        "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "daily_change_pct": -1.62,
+        "current_price": 273.7,
+        "risk_analysis": "Stock decline for high-exposure supplier ITC. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
-        "counts_toward_rag": false,
-        "price_move_only": false,
+        "last_signal": "\ud83d\udcc9 Stock down -1.6% (no confirmed cause) - High exposure supplier",
+        "counts_toward_rag": true,
+        "price_move_only": true,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "India sets targets for oil companies to boost cooking gas output amid Middle East war - Reuters",
+            "India sets targets for oil companies to boost cooking gas output amid Middle East war - reuters.com",
             "India\u2019s RBI Turns Upbeat as Worst of Iran War Shock Recedes - Bloomberg.com",
-            "When Karoline Leavitt Became Trump's Voice On India-US Trade, War With Pak - NDTV"
+            "Reconstruction starts on quake-damaged Japanese war memorials in Myanmar - The Japan Times"
           ],
-          "escalated": true,
-          "baseline_only": true
+          "escalated": false,
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1127,9 +1127,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "China\u2019s energy strategy vindicated by Iran war - Financial Times",
             "As China Pushes to Expand in Asia, Trump Focuses on Iran - The New York Times",
-            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
-            "China\u2019s energy strategy vindicated by Iran war - Financial Times"
+            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1196,9 +1196,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "China\u2019s energy strategy vindicated by Iran war - Financial Times",
             "As China Pushes to Expand in Asia, Trump Focuses on Iran - The New York Times",
-            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
-            "China\u2019s energy strategy vindicated by Iran war - Financial Times"
+            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1224,8 +1224,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.12,
-        "current_price": 8.57,
+        "daily_change_pct": 8.75,
+        "current_price": 9.32,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1236,9 +1236,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "China\u2019s energy strategy vindicated by Iran war - Financial Times",
             "As China Pushes to Expand in Asia, Trump Focuses on Iran - The New York Times",
-            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
-            "China\u2019s energy strategy vindicated by Iran war - Financial Times"
+            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1264,8 +1264,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.0,
-        "current_price": 56.44,
+        "daily_change_pct": 0.73,
+        "current_price": 56.85,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1276,9 +1276,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "China\u2019s energy strategy vindicated by Iran war - Financial Times",
             "As China Pushes to Expand in Asia, Trump Focuses on Iran - The New York Times",
-            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business",
-            "China\u2019s energy strategy vindicated by Iran war - Financial Times"
+            "Gordon Chang warns Beijing\u2019s provocations could spark a war \u2018no one can control\u2019 - Fox Business"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1437,7 +1437,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-17T00:32:19.534185"
+    "last_fetched": "2026-08-17T06:29:42.554320"
   },
   "macro_economy": {
     "us": {
@@ -1449,14 +1449,14 @@
     "eu": {
       "cpi": "2.2%",
       "rate": "2.65%",
-      "trend": "Stable",
-      "summary": "EUR/USD stable: +0.42% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "trend": "Strengthening",
+      "summary": "EUR/USD strengthening: +0.51% change. Euro gaining against USD. ECB policy decisions supporting currency stability. Manufacturing PMI showing signs of recovery in key markets. Inflation moderating toward target, economic activity picking up. Strong euro reflects improved economic fundamentals."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.16% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.06% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1515,11 +1515,11 @@
       "name": "Japan Tobacco",
       "ticker": "2914.T",
       "region": "Japan",
-      "sentiment": "Negative",
+      "sentiment": "Neutral",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "-1.14%",
-      "current_price": 7051.0,
-      "daily_change_pct": -1.14,
+      "stock_move": "-0.70%",
+      "current_price": 7082.0,
+      "daily_change_pct": -0.7,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1535,7 +1535,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 76.446946
+    "duration_seconds": 95.845659
   },
   "health": {
     "pillars": {

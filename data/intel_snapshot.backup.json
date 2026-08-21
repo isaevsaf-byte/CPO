@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-21T06:24:05.857824",
-  "version": "f47d384e1644",
+  "last_updated": "2026-08-21T12:21:57.576483",
+  "version": "cb58afc39fbd",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -14,18 +14,11 @@
     }
   },
   "executive_summary": {
-    "headline": "EU currency strength is moderating import costs now, but macro data gaps across US and China limit full visibility into demand and input price risks.",
-    "next_step": "Confirm by end of week whether Imperial Brands' job cuts signal demand weakness in your UK/EU customer base or a structural cost move; flag any overlapping exposure to their supply chain.",
-    "context": "EU macro shows stable FX (EUR/USD 1.1681), which currently eases cost pressure on dollar-denominated inputs. However, US and China economic indicators remain unavailable, leaving blind spots on major cost drivers and end-market demand that could shift this picture. Imperial's peer-level restructuring warrants a quick check against your own order books."
+    "headline": "EU macro conditions stable but US visibility absent; macro pillar driving amber status despite green supplier and peer signals.",
+    "next_step": "Confirm US economic data integration timeline with analytics team \u2014 placeholder status prevents full macro risk assessment needed for cross-border supply chain decisions.",
+    "context": "EU forex and economic indicators are live (EUR/USD 1.1681), but US macro data remains unintegrated, leaving a blind spot in your largest sourcing region. China data is also placeholder. Until US indicators feed the model, the amber score reflects incomplete information rather than confirmed deterioration."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-01T12:51:23.780281",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "AMBER",
-      "overall": "AMBER"
-    },
     {
       "timestamp": "2026-08-01T18:50:38.959159",
       "macro": "GREEN",
@@ -578,6 +571,13 @@
       "peers": "GREEN",
       "suppliers": "GREEN",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-21T12:21:54.307242",
+      "macro": "AMBER",
+      "peers": "GREEN",
+      "suppliers": "GREEN",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -593,7 +593,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-21T06:22:52.225464"
+        "last_fetched": "2026-08-21T12:20:45.919829"
       },
       "eu": {
         "status": "success",
@@ -604,7 +604,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1681",
-        "last_fetched": "2026-08-21T06:22:53.179761"
+        "last_fetched": "2026-08-21T12:20:46.465714"
       },
       "china": {
         "status": "placeholder",
@@ -615,11 +615,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-21T06:22:53.180627"
+        "last_fetched": "2026-08-21T12:20:46.466733"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-21T06:22:53.180640"
+    "last_fetched": "2026-08-21T12:20:46.466747"
   },
   "peers": {
     "status": "success",
@@ -627,7 +627,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-21T06:22:55.663793"
+    "last_fetched": "2026-08-21T12:20:49.154389"
   },
   "suppliers": {
     "status": "success",
@@ -717,8 +717,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.27,
+        "current_price": 9.75,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -768,9 +768,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Eight Years of Escalating United States-China Trade War - Legis1",
-            "China\u2019s Military Says AI Can\u2019t Replace Commanders. Xi Is Testing That - War on the Rocks",
-            "US says it will impose 'toughest sanctions in history' on Iran - Reuters"
+            "Beyond winning and losing: What Beijing wants from the Iran war - Brookings",
+            "A Rock and China\u2019s Three-Sea Problem - War on the Rocks",
+            "China\u2019s drone production capacity can only meet 60% of war demand: study - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -936,8 +936,8 @@
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
             "Trump\u2019s South Korea Social Post Poses Risks for the United States - Council on Foreign Relations",
-            "Alarm in South Korea as Iran dispute with Trump rattles a 72-year alliance - Al Jazeera",
-            "Trump wants South Korea to defend itself. His overtures to Kim Jong Un could delay that. - CNN"
+            "Trump wants South Korea to defend itself. His overtures to Kim Jong Un could delay that. - CNN",
+            "Alarm in South Korea as Iran dispute with Trump rattles a 72-year alliance - Al Jazeera"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1079,8 +1079,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.59,
-        "current_price": 270.05,
+        "daily_change_pct": -0.83,
+        "current_price": 269.4,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1092,8 +1092,8 @@
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
             "The Cost of India\u2019s Calibrated Neutrality in the Iran War - Small Wars Journal",
-            "China boosts imports of Russian crude, stymieing India's refiners - Reuters",
-            "US-Iran war brings Air India Group's international carriage down 35%, IndiGo's 15.4% - The Times of India"
+            "India's Paras Defence sees exports doubling in FY27 on war-linked demand - Reuters",
+            "\u2018Tremendous costs\u2019: Can Trump stop other countries from trading with Iran? - Al Jazeera"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1131,9 +1131,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Eight Years of Escalating United States-China Trade War - Legis1",
-            "China\u2019s Military Says AI Can\u2019t Replace Commanders. Xi Is Testing That - War on the Rocks",
-            "US says it will impose 'toughest sanctions in history' on Iran - Reuters"
+            "Beyond winning and losing: What Beijing wants from the Iran war - Brookings",
+            "A Rock and China\u2019s Three-Sea Problem - War on the Rocks",
+            "China\u2019s drone production capacity can only meet 60% of war demand: study - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1200,9 +1200,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Eight Years of Escalating United States-China Trade War - Legis1",
-            "China\u2019s Military Says AI Can\u2019t Replace Commanders. Xi Is Testing That - War on the Rocks",
-            "US says it will impose 'toughest sanctions in history' on Iran - Reuters"
+            "Beyond winning and losing: What Beijing wants from the Iran war - Brookings",
+            "A Rock and China\u2019s Three-Sea Problem - War on the Rocks",
+            "China\u2019s drone production capacity can only meet 60% of war demand: study - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1228,8 +1228,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.61,
-        "current_price": 9.92,
+        "daily_change_pct": 0.81,
+        "current_price": 9.94,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1240,9 +1240,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Eight Years of Escalating United States-China Trade War - Legis1",
-            "China\u2019s Military Says AI Can\u2019t Replace Commanders. Xi Is Testing That - War on the Rocks",
-            "US says it will impose 'toughest sanctions in history' on Iran - Reuters"
+            "Beyond winning and losing: What Beijing wants from the Iran war - Brookings",
+            "A Rock and China\u2019s Three-Sea Problem - War on the Rocks",
+            "China\u2019s drone production capacity can only meet 60% of war demand: study - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1268,8 +1268,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.16,
-        "current_price": 55.7,
+        "daily_change_pct": 1.33,
+        "current_price": 55.79,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1280,9 +1280,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Eight Years of Escalating United States-China Trade War - Legis1",
-            "China\u2019s Military Says AI Can\u2019t Replace Commanders. Xi Is Testing That - War on the Rocks",
-            "US says it will impose 'toughest sanctions in history' on Iran - Reuters"
+            "Beyond winning and losing: What Beijing wants from the Iran war - Brookings",
+            "A Rock and China\u2019s Three-Sea Problem - War on the Rocks",
+            "China\u2019s drone production capacity can only meet 60% of war demand: study - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1337,11 +1337,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.74,
+        "current_price": 55.82,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "last_signal": "\u2713 Normal operations. Stock: +0.7%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1441,7 +1441,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-21T06:23:59.838996"
+    "last_fetched": "2026-08-21T12:21:53.521140"
   },
   "macro_economy": {
     "us": {
@@ -1454,13 +1454,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: +0.18% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: +0.22% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.13% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.30% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1504,9 +1504,9 @@
       "region": "UK",
       "sentiment": "Neutral",
       "latest_headline": "Imperial Brands cutting thousands of jobs in U.S. and Europe",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "-0.40%",
+      "current_price": 2505.0,
+      "daily_change_pct": -0.4,
       "risk_level": "MEDIUM",
       "last_signal": "\u26a0\ufe0f News Alert: Imperial Brands cutting thousands of jobs in U.S. and Europe",
       "news_risk": true,
@@ -1521,9 +1521,9 @@
       "region": "Japan",
       "sentiment": "Positive",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "+1.34%",
-      "current_price": 6962.0,
-      "daily_change_pct": 1.34,
+      "stock_move": "+1.60%",
+      "current_price": 6980.0,
+      "daily_change_pct": 1.6,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1539,7 +1539,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 75.675763
+    "duration_seconds": 73.937553
   },
   "health": {
     "pillars": {

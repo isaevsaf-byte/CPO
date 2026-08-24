@@ -2706,10 +2706,17 @@ def main():
 
     # Experimental GDELT geopolitical signal — feeds only the standalone
     # /geopolitical page (see fetch_gdelt_intel), not the RAG pipeline above.
-    gdelt_countries = sorted({
+    all_gdelt_countries = {
         s.get("location") for s in suppliers_data.get("suppliers", [])
         if s.get("location") and s.get("location") != "Unknown"
-    })
+    }
+    # China and USA go first: highest-priority countries for BAT's supply
+    # chain (semiconductor/trade-war exposure), so they get fetched while
+    # GDELT's rate-limit budget is freshest — a straight alphabetical/set
+    # order left them exposed to being among the ones dropped when a run
+    # hits 429s partway through.
+    priority = [c for c in ("China", "USA") if c in all_gdelt_countries]
+    gdelt_countries = priority + sorted(all_gdelt_countries - set(priority))
     geopolitical_intel = fetch_gdelt_intel(gdelt_countries)
 
     # Generate additional intelligence data (LIVE DATA)

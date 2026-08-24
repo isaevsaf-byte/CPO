@@ -82,6 +82,43 @@ export default function GeopoliticalIntelPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
+        {/* Plain-language explainer — what this is and how to read it,
+            for anyone landing here without the backstory. */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <h2 className="text-sm font-bold text-slate-200 mb-2">What is this?</h2>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              A smoke detector for the countries your suppliers are based in. It reads global
+              news coverage (thousands of outlets, 65+ languages) and scores how negative or
+              positive the coverage of each country has been over the last 3 days. It doesn&apos;t
+              know anything about supply chains — it just measures the mood of the news. A
+              sudden dip is worth a look; it says nothing on its own about whether a specific
+              supplier is actually affected.
+            </p>
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-slate-200 mb-2">How to read the numbers</h2>
+            <ul className="text-sm text-slate-400 leading-relaxed space-y-1.5">
+              <li className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold border bg-green-100 text-green-800 border-green-300">0+</span>
+                Neutral to positive coverage — nothing to flag.
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold border bg-amber-100 text-amber-800 border-amber-300">-5..0</span>
+                Mildly negative — normal background noise for most countries.
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold border bg-red-100 text-red-800 border-red-300">&lt;-5</span>
+                Clearly negative — worth reading the headlines below.
+              </li>
+              <li className="pt-1 text-slate-500">
+                &quot;Articles&quot; is how much the world is talking about that country right
+                now — a busy news cycle, not a risk level by itself.
+              </li>
+            </ul>
+          </div>
+        </div>
+
         {countries.length === 0 ? (
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-400">
             No GDELT data in the latest snapshot yet — either the harvester hasn&apos;t run

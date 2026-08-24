@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import intel from '../data/intel_snapshot.json';
 import { useDataFreshness } from '../hooks/useDataFreshness';
-import RagTrendChart from '../components/RagTrendChart';
 import type {
   IntelSnapshot,
   RAGScore as RAGScoreType,
@@ -296,8 +295,6 @@ export default function MorningCoffeeDashboard() {
             )}
           </div>
         )}
-
-        <RagTrendChart history={typedIntel.rag_history} />
 
         {/* Three Core Pillars Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

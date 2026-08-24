@@ -29,6 +29,10 @@ USER_AGENT = {'User-Agent': 'SupplyChainIntelligence contact@mycompany.com'}
 TIMEOUT = int(os.getenv("FETCH_TIMEOUT", 15))
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 STALE_THRESHOLD_HOURS = int(os.getenv("STALE_THRESHOLD", 24))
+# Free key from https://fred.stlouisfed.org/docs/api/api_key.html — US CPI/Fed
+# funds rate were previously hardcoded static strings; optional, falls back
+# to those static values when unset so nothing breaks without it.
+FRED_API_KEY = os.getenv("FRED_API_KEY")
 
 # Configure logging
 logging.basicConfig(
@@ -189,6 +193,38 @@ def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None) ->
             time.sleep(delay)
 
     raise last_exception
+
+
+def fetch_fred_latest(series_id: str, units: str = "lin") -> float | None:
+    """
+    Latest observation for a FRED (Federal Reserve Economic Data) series —
+    free public API, no cost, one API key. units='pc1' returns year-over-year
+    percent change (for CPI, since the raw index isn't directly meaningful);
+    'lin' returns the raw series value (for FEDFUNDS, which is already a rate).
+
+    Best-effort: returns None if FRED_API_KEY isn't set or the fetch/parse
+    fails, so callers fall back to their existing static value rather than
+    the harvest failing.
+    """
+    if not FRED_API_KEY:
+        return None
+    try:
+        url = (
+            "https://api.stlouisfed.org/fred/series/observations"
+            f"?series_id={series_id}&api_key={FRED_API_KEY}&file_type=json"
+            f"&sort_order=desc&limit=1&units={units}"
+        )
+        response = fetch_with_retry(url, max_retries=1)
+        observations = response.json().get("observations", [])
+        if not observations:
+            return None
+        value = observations[0].get("value")
+        if value in (None, ".", ""):
+            return None
+        return float(value)
+    except (requests.RequestException, ValueError, KeyError) as e:
+        logger.warning(f"FRED fetch failed for {series_id}: {e}")
+        return None
 
 def calculate_data_hash(data: dict) -> str:
     """Generate a short hash of the data for version checking"""
@@ -1938,9 +1974,12 @@ def fetch_macro_economy():
             else:
                 summary = f"S&P 500 stable: {change_pct:+.2f}% change. Market reflects balanced economic conditions. Fed monitoring inflation and employment data closely. Industrial output steady, consumer spending patterns normal. Economic outlook remains cautiously optimistic."
             
+            fred_cpi = fetch_fred_latest("CPIAUCSL", units="pc1")  # YoY % change
+            fred_rate = fetch_fred_latest("FEDFUNDS", units="lin")  # effective fed funds rate
+
             return {
-                "cpi": "2.8%",  # Static for now - would need separate API
-                "rate": "4.25%",  # Static for now - would need separate API
+                "cpi": f"{fred_cpi:.1f}%" if fred_cpi is not None else "2.8%",  # FRED CPIAUCSL if FRED_API_KEY set, else static fallback
+                "rate": f"{fred_rate:.2f}%" if fred_rate is not None else "4.25%",  # FRED FEDFUNDS if FRED_API_KEY set, else static fallback
                 "trend": trend,
                 "summary": summary
             }

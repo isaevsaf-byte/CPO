@@ -248,6 +248,10 @@ def calculate_data_hash(data: dict) -> str:
     # "new data available" staleness check (see useDataFreshness).
     if 'executive_summary' in data_copy:
         del data_copy['executive_summary']
+    # geopolitical_intel (GDELT) article counts/tone drift slightly between
+    # runs even with nothing meaningfully new — same reasoning as above.
+    if 'geopolitical_intel' in data_copy:
+        del data_copy['geopolitical_intel']
 
     json_str = json.dumps(data_copy, sort_keys=True)
     return hashlib.md5(json_str.encode()).hexdigest()[:12]
@@ -487,6 +491,81 @@ def scan_country_geopolitical_news(country):
 
     risk_detected = max_level != "LOW"
     return risk_detected, max_level, headlines, reason
+
+
+def fetch_gdelt_country_intel(country: str) -> dict | None:
+    """
+    Independent geopolitical signal from GDELT (free, no key, globally
+    aggregated news monitoring across 65+ languages, updated every 15 min —
+    structurally separate from the Google News RSS feed
+    scan_country_geopolitical_news() uses above). Experimental: feeds only
+    the standalone /geopolitical page for now, not the RAG pipeline.
+
+    Returns {article_count, avg_tone, articles: [...]} or None on any
+    failure — best-effort, never blocks the harvest.
+
+    Uses mode=tonechart rather than mode=artlist: GDELT's artlist output
+    carries no per-article tone field at all (verified against a live
+    response — only url/title/seendate/domain/sourcecountry). tonechart
+    returns a histogram of {bin, count, toparts: [{url, title}, ...]} —
+    each bucket's example articles inherit that bucket's tone score, which
+    is the only way this API actually exposes a tone-attributed article.
+    """
+    try:
+        query = requests.utils.quote(f'"{country}" sourcelang:english')
+        url = (
+            "https://api.gdeltproject.org/api/v2/doc/doc"
+            f"?query={query}&mode=tonechart&timespan=3d&format=json"
+        )
+        response = fetch_with_retry(url, max_retries=1)
+        bins = response.json().get("tonechart", [])
+        if not bins:
+            return None
+
+        total_count = sum(b.get("count", 0) for b in bins)
+        weighted_tone_sum = sum(b.get("bin", 0) * b.get("count", 0) for b in bins)
+
+        # Most negative bins first — these are the articles worth surfacing.
+        articles_out = []
+        for b in sorted(bins, key=lambda b: b.get("bin", 0)):
+            for a in b.get("toparts", []):
+                articles_out.append({
+                    "title": a.get("title", ""),
+                    "url": a.get("url", ""),
+                    "tone": b.get("bin"),
+                })
+                if len(articles_out) >= 5:
+                    break
+            if len(articles_out) >= 5:
+                break
+
+        return {
+            "article_count": total_count,
+            "avg_tone": round(weighted_tone_sum / total_count, 1) if total_count else None,
+            "articles": articles_out,
+        }
+    except Exception as e:
+        logger.warning(f"GDELT fetch failed for {country}: {e}")
+        return None
+
+
+def fetch_gdelt_intel(countries: list) -> dict:
+    """
+    Best-effort GDELT scan across watchlist countries — see
+    fetch_gdelt_country_intel. GDELT enforces its own strict rate limit
+    (verified live: "Please limit requests to one every 5 seconds") that
+    the shared yfinance rate_limiter isn't tuned for, so this loop paces
+    itself independently rather than reusing that limiter.
+    """
+    result = {}
+    for i, country in enumerate(countries):
+        if i > 0:
+            time.sleep(5)
+        intel = fetch_gdelt_country_intel(country)
+        if intel:
+            result[country] = intel
+    logger.info(f"GDELT scan complete. {len(result)}/{len(countries)} countries returned data.")
+    return result
 
 
 def scan_supplier_news_google(supplier_name, country):
@@ -2609,6 +2688,14 @@ def main():
     # PILLAR 3: Supplier Watchlist
     suppliers_data = process_suppliers(cyber_data, recalls_data, sanctions_data)
 
+    # Experimental GDELT geopolitical signal — feeds only the standalone
+    # /geopolitical page (see fetch_gdelt_intel), not the RAG pipeline above.
+    gdelt_countries = sorted({
+        s.get("location") for s in suppliers_data.get("suppliers", [])
+        if s.get("location") and s.get("location") != "Unknown"
+    })
+    geopolitical_intel = fetch_gdelt_intel(gdelt_countries)
+
     # Generate additional intelligence data (LIVE DATA)
     macro_economy = fetch_macro_economy()
 
@@ -2705,6 +2792,7 @@ def main():
         "suppliers": suppliers_data,
         "macro_economy": macro_economy,
         "peer_group": peer_group,
+        "geopolitical_intel": geopolitical_intel,
         "harvest_stats": harvest_stats.summary(),
         "health": {
             "pillars": {

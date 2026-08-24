@@ -244,6 +244,15 @@ export interface IntelSnapshot {
   suppliers: SuppliersData;
   macro_economy: MacroEconomy;
   peer_group: PeerGroupItem[];
+  // Experimental — independent GDELT signal, not wired into RAG scoring.
+  // See app/geopolitical/page.tsx.
+  geopolitical_intel?: {
+    [country: string]: {
+      article_count: number;
+      avg_tone: number | null;
+      articles: { title: string; url: string; tone: number | null }[];
+    };
+  };
   harvest_stats?: HarvestStats;
   health?: HealthStatus;
 }

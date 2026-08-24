@@ -146,6 +146,14 @@ export default function MorningCoffeeDashboard() {
                   <HealthIndicator status={suppliers?.status || 'unknown'} />
                 </div>
 
+                <Link
+                  href="/geopolitical"
+                  className="text-xs text-blue-200 hover:text-white underline decoration-dotted underline-offset-2"
+                  title="Experimental GDELT-based geopolitical signal, not part of the main risk score"
+                >
+                  🌍 Geopolitical Intel (beta)
+                </Link>
+
                 <button
                   onClick={() => setIsModalOpen(true)}
                   className="p-2 rounded-full hover:bg-blue-800 transition-colors"

@@ -517,7 +517,20 @@ def fetch_gdelt_country_intel(country: str) -> dict | None:
             "https://api.gdeltproject.org/api/v2/doc/doc"
             f"?query={query}&mode=tonechart&timespan=3d&format=json"
         )
-        response = fetch_with_retry(url, max_retries=1)
+        try:
+            response = fetch_with_retry(url, max_retries=1)
+        except requests.HTTPError as e:
+            # GDELT's rate limit is tighter in practice than the fixed
+            # inter-request pacing below reliably satisfies — a live prod
+            # run against real supplier countries still saw ~1/3 of
+            # requests 429 at 5s spacing. One extra wait-and-retry here
+            # catches the countries that just missed the window, without
+            # slowing every single request by the same margin.
+            if e.response is not None and e.response.status_code == 429:
+                time.sleep(10)
+                response = fetch_with_retry(url, max_retries=1)
+            else:
+                raise
         bins = response.json().get("tonechart", [])
         if not bins:
             return None
@@ -553,14 +566,17 @@ def fetch_gdelt_intel(countries: list) -> dict:
     """
     Best-effort GDELT scan across watchlist countries — see
     fetch_gdelt_country_intel. GDELT enforces its own strict rate limit
-    (verified live: "Please limit requests to one every 5 seconds") that
-    the shared yfinance rate_limiter isn't tuned for, so this loop paces
-    itself independently rather than reusing that limiter.
+    (documented minimum: "one every 5 seconds") that the shared yfinance
+    rate_limiter isn't tuned for, so this loop paces itself independently.
+    A straight 5s gap still 429'd on ~2/3 of countries in a live prod run
+    (fresh GitHub Actions IP, not just leftover local-testing cooldown),
+    so this runs slower than the documented minimum, plus the 429 retry
+    in fetch_gdelt_country_intel for the countries that still miss it.
     """
     result = {}
     for i, country in enumerate(countries):
         if i > 0:
-            time.sleep(5)
+            time.sleep(10)
         intel = fetch_gdelt_country_intel(country)
         if intel:
             result[country] = intel

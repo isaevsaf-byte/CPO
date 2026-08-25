@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import sys
 import time
+import random
 import hashlib
 import logging
 import os
@@ -493,7 +494,7 @@ def scan_country_geopolitical_news(country):
     return risk_detected, max_level, headlines, reason
 
 
-def fetch_gdelt_country_intel(country: str) -> dict | None:
+def fetch_gdelt_country_intel(country: str, max_attempts: int = 2) -> dict | None:
     """
     Independent geopolitical signal from GDELT (free, no key, globally
     aggregated news monitoring across 65+ languages, updated every 15 min —
@@ -510,6 +511,10 @@ def fetch_gdelt_country_intel(country: str) -> dict | None:
     returns a histogram of {bin, count, toparts: [{url, title}, ...]} —
     each bucket's example articles inherit that bucket's tone score, which
     is the only way this API actually exposes a tone-attributed article.
+
+    max_attempts controls how many times a 429 is retried (with growing
+    backoff) before giving up — see fetch_gdelt_intel for why this is
+    higher for the countries that matter most.
     """
     try:
         query = requests.utils.quote(f'"{country}" sourcelang:english')
@@ -517,19 +522,16 @@ def fetch_gdelt_country_intel(country: str) -> dict | None:
             "https://api.gdeltproject.org/api/v2/doc/doc"
             f"?query={query}&mode=tonechart&timespan=3d&format=json"
         )
-        try:
-            response = fetch_with_retry(url, max_retries=1)
-        except requests.HTTPError as e:
-            # GDELT's rate limit is tighter in practice than the fixed
-            # inter-request pacing below reliably satisfies — a live prod
-            # run against real supplier countries still saw ~1/3 of
-            # requests 429 at 5s spacing. One extra wait-and-retry here
-            # catches the countries that just missed the window, without
-            # slowing every single request by the same margin.
-            if e.response is not None and e.response.status_code == 429:
-                time.sleep(10)
+        response = None
+        for attempt in range(max_attempts):
+            try:
                 response = fetch_with_retry(url, max_retries=1)
-            else:
+                break
+            except requests.HTTPError as e:
+                is_last = attempt == max_attempts - 1
+                if e.response is not None and e.response.status_code == 429 and not is_last:
+                    time.sleep(12 * (attempt + 1))
+                    continue
                 raise
         bins = response.json().get("tonechart", [])
         if not bins:
@@ -562,22 +564,29 @@ def fetch_gdelt_country_intel(country: str) -> dict | None:
         return None
 
 
-def fetch_gdelt_intel(countries: list) -> dict:
+def fetch_gdelt_intel(countries: list, priority_countries: tuple = ()) -> dict:
     """
     Best-effort GDELT scan across watchlist countries — see
-    fetch_gdelt_country_intel. GDELT enforces its own strict rate limit
-    (documented minimum: "one every 5 seconds") that the shared yfinance
-    rate_limiter isn't tuned for, so this loop paces itself independently.
-    A straight 5s gap still 429'd on ~2/3 of countries in a live prod run
-    (fresh GitHub Actions IP, not just leftover local-testing cooldown),
-    so this runs slower than the documented minimum, plus the 429 retry
-    in fetch_gdelt_country_intel for the countries that still miss it.
+    fetch_gdelt_country_intel. GDELT's rate limit is stricter and less
+    predictable in practice than its documented "one every 5 seconds":
+    a live prod run at a flat 5s gap 429'd ~2/3 of countries; a later run
+    at a flat 10s gap covered *fewer* countries, not more (3/12 vs 4/12),
+    and still dropped USA even fetched 2nd — so the limit isn't simply
+    "wait longer between every request." Two changes instead of a third
+    blind global slowdown:
+      - Small random jitter on the base gap, in case evenly-spaced
+        requests are themselves part of what gets flagged.
+      - priority_countries get 3 attempts (growing backoff) instead of 1
+        extra retry — a dedicated reliability budget for the countries
+        that must not silently drop, rather than slowing every country
+        by the same margin for marginal overall gain.
     """
     result = {}
     for i, country in enumerate(countries):
         if i > 0:
-            time.sleep(10)
-        intel = fetch_gdelt_country_intel(country)
+            time.sleep(random.uniform(7, 10))
+        max_attempts = 3 if country in priority_countries else 2
+        intel = fetch_gdelt_country_intel(country, max_attempts=max_attempts)
         if intel:
             result[country] = intel
     logger.info(f"GDELT scan complete. {len(result)}/{len(countries)} countries returned data.")
@@ -2715,9 +2724,9 @@ def main():
     # GDELT's rate-limit budget is freshest — a straight alphabetical/set
     # order left them exposed to being among the ones dropped when a run
     # hits 429s partway through.
-    priority = [c for c in ("China", "USA") if c in all_gdelt_countries]
-    gdelt_countries = priority + sorted(all_gdelt_countries - set(priority))
-    geopolitical_intel = fetch_gdelt_intel(gdelt_countries)
+    priority = tuple(c for c in ("China", "USA") if c in all_gdelt_countries)
+    gdelt_countries = list(priority) + sorted(all_gdelt_countries - set(priority))
+    geopolitical_intel = fetch_gdelt_intel(gdelt_countries, priority_countries=priority)
 
     # Generate additional intelligence data (LIVE DATA)
     macro_economy = fetch_macro_economy()

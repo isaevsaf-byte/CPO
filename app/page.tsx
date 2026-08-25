@@ -128,12 +128,12 @@ export default function MorningCoffeeDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* BAT Header */}
+      {/* Header */}
       <header className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white shadow-lg overflow-hidden">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 py-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">BAT Global Supply Watchtower</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">Global Supply Chain Watchtower</h1>
               <p className="text-blue-100 mt-2 text-sm sm:text-base">Intelligence Dashboard • Three Core Pillars</p>
             </div>
             <div className="flex flex-col sm:items-end gap-3">
@@ -877,7 +877,7 @@ export default function MorningCoffeeDashboard() {
 
       <footer className="mt-12 bg-gray-900 text-gray-300 py-6">
         <div className="max-w-[100rem] mx-auto px-6 text-center text-sm">
-          <p>BAT Global Supply Watchtower • Built with the "Flat Data" pattern</p>
+          <p>Global Supply Chain Watchtower • Built with the "Flat Data" pattern</p>
           <p className="mt-2">Zero infrastructure cost • Unbreakable stability • Official data sources only</p>
         </div>
       </footer>

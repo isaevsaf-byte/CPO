@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-24T20:29:45.128645",
-  "version": "a806e1ae8ef8",
+  "last_updated": "2026-08-25T00:41:20.127544",
+  "version": "7f437621097e",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -14,18 +14,11 @@
     }
   },
   "executive_summary": {
-    "headline": "South African geopolitical event is raising risk at Sappi, while two high-exposure semiconductor suppliers show unexplained stock moves that may or may not be company-specific.",
-    "next_step": "Confirm Sappi's operational status and any disruption to printing-substrate shipments within 48 hours; flag Texas Instruments and Infineon moves as sector-wide volatility to monitor but defer escalation unless accompanied by supply-chain chatter.",
-    "context": "Sappi (Medium BAT exposure) in South Africa faces a documented geopolitical event and has moved from LOW to HIGH risk. Texas Instruments and Infineon (both High BAT exposure) are down -2.1% and -3.2% respectively with no corroborating news\u2014worth checking whether this is concurrent semiconductor sector pressure or isolated margin stress, but the lack of confirmed cause means these remain watch items rather than immediate action triggers."
+    "headline": "High-exposure electronics supplier shows unexplained stock decline; confirm whether this is sector-wide pressure or company-specific weakness.",
+    "next_step": "Within 2 business days, check TI earnings guidance, capacity announcements, and sector commentary (earnings calls, analyst notes) to rule out demand or margin signals specific to semiconductors vs. broad market correction.",
+    "context": "Texas Instruments (high BAT exposure) declined 2.1% with no corroborating negative news on the company itself. This is worth validating because a move of that size in a core component supplier warrants either confidence it's a market-wide EE sector dip or investigation into supply/demand fundamentals before it widens."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-05T08:13:27.338815",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "AMBER",
-      "overall": "AMBER"
-    },
     {
       "timestamp": "2026-08-05T13:30:56.542216",
       "macro": "GREEN",
@@ -578,6 +571,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-25T00:41:16.171821",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -593,7 +593,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-24T20:25:09.552682"
+        "last_fetched": "2026-08-25T00:32:03.055245"
       },
       "eu": {
         "status": "success",
@@ -604,7 +604,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1664",
-        "last_fetched": "2026-08-24T20:25:10.046641"
+        "last_fetched": "2026-08-25T00:32:03.628865"
       },
       "china": {
         "status": "placeholder",
@@ -615,11 +615,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-24T20:25:10.047615"
+        "last_fetched": "2026-08-25T00:32:03.629727"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-24T20:25:10.047641"
+    "last_fetched": "2026-08-25T00:32:03.629739"
   },
   "peers": {
     "status": "success",
@@ -627,7 +627,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-24T20:25:12.948305"
+    "last_fetched": "2026-08-25T00:32:06.101025"
   },
   "suppliers": {
     "status": "success",
@@ -640,10 +640,10 @@
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 0,
-    "total_high": 2,
-    "total_medium": 9,
+    "total_high": 0,
+    "total_medium": 10,
     "actionable_critical": 0,
-    "actionable_high": 2,
+    "actionable_high": 0,
     "actionable_medium": 1,
     "suppliers": [
       {
@@ -717,8 +717,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.49,
-        "current_price": 9.87,
+        "daily_change_pct": null,
+        "current_price": null,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -731,7 +731,7 @@
           "headlines": [
             "Russia Ukraine War Finland - Springfield News-Sun",
             "Russia Ukraine War Finland - The Herald Journal",
-            "Russia Ukraine War Finland - Goshen News"
+            "Finland says it suspects Russian plane of violating its airspace - Euronews.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -770,8 +770,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "The Risks of Downplaying China\u2019s Military - War on the Rocks",
-            "US threat of \u2018economic D-Day\u2019 for Iran tests Trump\u2019s China detente - Al Jazeera",
-            "China \u2018Actively Committed\u2019 to Iran Talks With Tensions Rising - Bloomberg.com"
+            "US threatens severe sanctions against countries with economic ties to Iran - The Guardian",
+            "Trump admin unveils anti-Iran global sanctions plan, signals China not exempt - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -799,22 +799,22 @@
         "operational_risk": false,
         "daily_change_pct": -0.01,
         "current_price": 218.66,
-        "risk_analysis": "Geopolitical risk in South Africa: Geopolitical event (single-source, downgraded pending corroboration): 'under siege' in recent news. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
-        "risk_level": "HIGH",
-        "last_signal": "\ud83c\udf0d Geopolitical: Geopolitical event (single-source, downgraded pending corroboration): 'under siege' in recent news",
-        "counts_toward_rag": true,
+        "risk_analysis": "Geopolitical risk in South Africa: Economic instability, infrastructure challenges, energy crisis. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83c\udf0d Geopolitical: Economic instability, infrastructure challenges, energy crisis",
+        "counts_toward_rag": false,
         "price_move_only": false,
         "geopolitical_risk": {
           "detected": true,
-          "level": "HIGH",
-          "reason": "Geopolitical event (single-source, downgraded pending corroboration): 'under siege' in recent news",
+          "level": "MEDIUM",
+          "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
             "Southern African mothers plead for sons lured to Russia's war - RFI",
             "Botswana stops citizens from being recruited into the Russian Military at airports in the country, South Africa, and Ethiopia - Business Insider Africa",
-            "Rand holds near multi-month high as Iran sanctions loom - SABC News"
+            "Canada risks falling behind with tepid approach to African trade: South Africa envoy - Toronto Star"
           ],
           "escalated": true,
-          "baseline_only": false
+          "baseline_only": true
         },
         "google_news_headlines": [],
         "bat_exposure": "Medium",
@@ -936,8 +936,8 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "U.S. Marines Cancel Drill With South Korea, Citing Iran War Demands - The New York Times",
             "South Korea says US cancelled upcoming joint marine exercises over Iran war - Al Jazeera",
+            "U.S. Marines Cancel Drill With South Korea, Citing Iran War Demands - The New York Times",
             "US cancels joint marine drills with South Korea over Iran war-related force constraints - Reuters"
           ],
           "escalated": true,
@@ -1080,8 +1080,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.11,
+        "current_price": 269.7,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1092,9 +1092,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
+            "The Cost of India\u2019s Calibrated Neutrality in the Iran War - Small Wars Journal",
             "Iran vows to retaliate against countries that cooperate with fresh US sanctions - The Guardian",
-            "India Lifts Wheat Export Ban in Boost to War-Hit World Trade - Bloomberg.com",
-            "Indian shares fall as investors await details on Iran sanctions - Reuters"
+            "India Lifts Wheat Export Ban in Boost to War Hit Global Supply - Bloomberg"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1133,8 +1133,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "The Risks of Downplaying China\u2019s Military - War on the Rocks",
-            "US threat of \u2018economic D-Day\u2019 for Iran tests Trump\u2019s China detente - Al Jazeera",
-            "China \u2018Actively Committed\u2019 to Iran Talks With Tensions Rising - Bloomberg.com"
+            "US threatens severe sanctions against countries with economic ties to Iran - The Guardian",
+            "Trump admin unveils anti-Iran global sanctions plan, signals China not exempt - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1202,8 +1202,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "The Risks of Downplaying China\u2019s Military - War on the Rocks",
-            "US threat of \u2018economic D-Day\u2019 for Iran tests Trump\u2019s China detente - Al Jazeera",
-            "China \u2018Actively Committed\u2019 to Iran Talks With Tensions Rising - Bloomberg.com"
+            "US threatens severe sanctions against countries with economic ties to Iran - The Guardian",
+            "Trump admin unveils anti-Iran global sanctions plan, signals China not exempt - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1229,8 +1229,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 2.41,
+        "current_price": 10.18,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1242,8 +1242,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "The Risks of Downplaying China\u2019s Military - War on the Rocks",
-            "US threat of \u2018economic D-Day\u2019 for Iran tests Trump\u2019s China detente - Al Jazeera",
-            "China \u2018Actively Committed\u2019 to Iran Talks With Tensions Rising - Bloomberg.com"
+            "US threatens severe sanctions against countries with economic ties to Iran - The Guardian",
+            "Trump admin unveils anti-Iran global sanctions plan, signals China not exempt - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1269,8 +1269,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.05,
+        "current_price": 55.82,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1282,8 +1282,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "The Risks of Downplaying China\u2019s Military - War on the Rocks",
-            "US threat of \u2018economic D-Day\u2019 for Iran tests Trump\u2019s China detente - Al Jazeera",
-            "China \u2018Actively Committed\u2019 to Iran Talks With Tensions Rising - Bloomberg.com"
+            "US threatens severe sanctions against countries with economic ties to Iran - The Guardian",
+            "Trump admin unveils anti-Iran global sanctions plan, signals China not exempt - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1338,13 +1338,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -3.23,
-        "current_price": 54.16,
-        "risk_analysis": "Stock decline for high-exposure supplier Infineon. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance. BAT exposure: High.",
-        "risk_level": "HIGH",
-        "last_signal": "\ud83d\udcc9 Stock down -3.2% (no confirmed cause) - High exposure supplier",
+        "daily_change_pct": null,
+        "current_price": null,
+        "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
+        "risk_level": "LOW",
+        "last_signal": "\u2713 Normal operations. No risk signals.",
         "counts_toward_rag": true,
-        "price_move_only": true,
+        "price_move_only": false,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1442,7 +1442,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-24T20:26:17.439424"
+    "last_fetched": "2026-08-25T00:33:10.632041"
   },
   "macro_economy": {
     "us": {
@@ -1455,13 +1455,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: -0.18% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: -0.08% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
-      "cpi": "0.5%",
-      "rate": "3.10%",
-      "trend": "Stable",
-      "summary": "CNY/USD stable: -0.02% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "cpi": "N/A",
+      "rate": "N/A",
+      "trend": "N/A",
+      "summary": "Unable to fetch CNY/USD data. Market may be closed."
     }
   },
   "peer_group": [
@@ -1503,11 +1503,11 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Positive",
+      "sentiment": "Neutral",
       "latest_headline": "Imperial Brands cutting thousands of jobs in U.S. and Europe",
-      "stock_move": "+1.28%",
-      "current_price": 2535.0,
-      "daily_change_pct": 1.28,
+      "stock_move": "N/A",
+      "current_price": null,
+      "daily_change_pct": null,
       "risk_level": "MEDIUM",
       "last_signal": "\u26a0\ufe0f News Alert: Imperial Brands cutting thousands of jobs in U.S. and Europe",
       "news_risk": true,
@@ -1520,11 +1520,11 @@
       "name": "Japan Tobacco",
       "ticker": "2914.T",
       "region": "Japan",
-      "sentiment": "Neutral",
+      "sentiment": "Positive",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "+1.34%",
+      "current_price": 6982.0,
+      "daily_change_pct": 1.34,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1535,71 +1535,71 @@
     }
   ],
   "geopolitical_intel": {
-    "Austria": {
-      "article_count": 146,
-      "avg_tone": -1.2,
+    "China": {
+      "article_count": 4468,
+      "avg_tone": -1.6,
       "articles": [
         {
-          "title": "EU Commission chief , 15 allies call Israel E1 settlement plan",
-          "url": "http://www.batonrougepost.com/news/279257325/eu-commission-chief-15-allies-call-israel-e1-settlement-plan-unacceptable-warn-it-undermines-two-state-solution",
-          "tone": -7
+          "title": "China Property Crisis Intensifies as Evergrande Founder Receives Life Sentence \u2013 China Money Network",
+          "url": "https://www.chinamoneynetwork.com/2026/08/24/chinas-property-crisis-intensifies-as-evergrande-founder-receives-life-sentence",
+          "tone": -22
         },
         {
-          "title": "EU Commission chief , 15 allies call Israel E1 settlement plan",
-          "url": "http://www.kenyastar.com/news/279257325/eu-commission-chief-15-allies-call-israel-e1-settlement-plan-unacceptable-warn-it-undermines-two-state-solution",
-          "tone": -7
-        },
-        {
-          "title": "EU Commission chief , 15 allies call Israel E1 settlement plan  unacceptable , warn it undermines two - state solution",
-          "url": "https://news.webindia123.com/news/Articles/World/20260822/4489556.html",
-          "tone": -7
-        },
-        {
-          "title": "EU Commission chief , 15 allies call Israel E1 settlement plan",
-          "url": "http://www.greekherald.com/news/279257325/eu-commission-chief-15-allies-call-israel-e1-settlement-plan-unacceptable-warn-it-undermines-two-state-solution",
-          "tone": -7
-        },
-        {
-          "title": "EU Commission chief , 15 allies call Israel E1 settlement plan",
-          "url": "http://www.heraldglobe.com/news/279257325/eu-commission-chief-15-allies-call-israel-e1-settlement-plan-unacceptable-warn-it-undermines-two-state-solution",
-          "tone": -7
-        }
-      ]
-    },
-    "India": {
-      "article_count": 5511,
-      "avg_tone": -0.1,
-      "articles": [
-        {
-          "title": "H1N1 cases rise in Delhi , North India ; experts say virus not more virulent | Rediff - TV",
-          "url": "https://tv.rediff.com/news/h1n1-cases-rise-in-delhi-north-india-experts-say-virus-not-more-virulent/401055",
-          "tone": -16
-        },
-        {
-          "title": "India health ministry lists symptoms to watch for H1N1 as infections rise in Delhi",
-          "url": "http://thepeninsulaqatar.com/article/22/08/2026/indias-health-ministry-lists-symptoms-to-watch-for-h1n1-as-infections-rise-in-delhi",
+          "title": "Lahav 433 , police bust drone importing , smuggling operation",
+          "url": "http://www.jpost.com/israel-news/crime-in-israel/article-906238",
           "tone": -15
         },
         {
-          "title": "3 fugitives linked to Bambiha Gang deported from Malaysia : Shah",
-          "url": "https://www.tribuneindia.com/news/india/3-fugitives-linked-to-bambiha-gang-deported-from-malaysia-shah/",
+          "title": "Lahav 433 , police bust drone importing , smuggling operation",
+          "url": "https://www.jpost.com/israel-news/crime-in-israel/article-906238",
+          "tone": -15
+        },
+        {
+          "title": "Couple Coping Skills Help Reduce Depression in GI Cancer Survivors",
+          "url": "https://www.oncologynurseadvisor.com/news/couples-coping-skills-help-reduce-depression-in-gi-cancer-survivors/",
           "tone": -14
         },
         {
-          "title": "Three Fugitives Linked To Bambiha Gang Deported From Malaysia",
-          "url": "https://www.dailyexcelsior.com/three-fugitives-linked-to-bambiha-gang-deported-from-malaysia/",
-          "tone": -14
+          "title": "History markers , future predictions and the poetry of the present : 23 August , 2026",
+          "url": "https://www.abc.net.au/listen/programs/sundayextra/sunday-extra-23-august-2026/106993010",
+          "tone": -12
+        }
+      ]
+    },
+    "Germany": {
+      "article_count": 1361,
+      "avg_tone": -1.8,
+      "articles": [
+        {
+          "title": "European wildfires expose hidden threat of buried WWI , WWII bombs and mines",
+          "url": "https://timesofindia.indiatimes.com/home/environment/european-wildfires-expose-hidden-threat-of-buried-wwi-wwii-bombs-and-mines/articleshow/133424388.cms",
+          "tone": -11
         },
         {
-          "title": "Delhi HC refuses bail to husband accused of murdering , dismembering wife",
-          "url": "http://www.bignewsnetwork.com/news/279258746/delhi-hc-refuses-bail-to-husband-accused-of-murdering-dismembering-wife",
-          "tone": -14
+          "title": "Ukraine - Russia war latest : Zelensky vows response to Russia  terrorist attack  as strike on mall kills 16",
+          "url": "https://www.independent.co.uk/news/world/europe/ukraine-russia-war-live-putin-zelensky-shopping-centre-attack-b3037438.html",
+          "tone": -10
+        },
+        {
+          "title": "Chicken being investigated as part of the salmonella outbreak which has left 340 people ill",
+          "url": "https://www.mirror.co.uk/news/uk-news/salmonella-outbreak-latest-chicken-recalled-37588599",
+          "tone": -10
+        },
+        {
+          "title": "Iran News in Brief \u2013 August 24 , 2026",
+          "url": "https://www.ncr-iran.org/en/news/iran-news-in-brief-august-24-2026/",
+          "tone": -10
+        },
+        {
+          "title": "Ukraine backers gather as war escalates , air defence runs low",
+          "url": "https://www.newindianexpress.com/world/2026/Aug/24/ukraine-backers-gather-as-war-escalates-air-defence-runs-low",
+          "tone": -9
         }
       ]
     },
     "South Korea": {
-      "article_count": 726,
-      "avg_tone": -1.0,
+      "article_count": 682,
+      "avg_tone": -1.1,
       "articles": [
         {
           "title": "Teen kills father , injures mother ; says he was trying to break up fight",
@@ -1627,46 +1627,15 @@
           "tone": -8
         }
       ]
-    },
-    "Switzerland": {
-      "article_count": 376,
-      "avg_tone": -0.9,
-      "articles": [
-        {
-          "title": "80 , 5 % of illegal alien  asylum seekers  from Muslim N . Africa in Switzerland commit crimes",
-          "url": "https://www.beaufortcountynow.com/post/97951/80-5-of-illegal-alien-asylum-seekers-from-muslim-n-africa-in-switzerland-commit-crimes.html",
-          "tone": -12
-        },
-        {
-          "title": "Africa : All of Africa Today - August 24 , 2026",
-          "url": "https://allafrica.com/stories/202608240164.html",
-          "tone": -10
-        },
-        {
-          "title": "Two die , others missing after Swiss apartment block fire : police",
-          "url": "https://www.bssnews.net/international/417067",
-          "tone": -8
-        },
-        {
-          "title": "Malaga - based network that promised lottery prizes of up to 600 , 000 euros dismantled",
-          "url": "https://www.surinenglish.com/malaga/network-operating-malaga-20260824110308-nt.html",
-          "tone": -8
-        },
-        {
-          "title": "Pakistan army chief Asim Munir to visit Iran , FM spokesperson Baghaei announces",
-          "url": "http://www.jpost.com/middle-east/iran-news/article-906297",
-          "tone": -7
-        }
-      ]
     }
   },
   "harvest_stats": {
     "total_errors": 0,
     "total_warnings": 0,
-    "total_successes": 12,
+    "total_successes": 11,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 277.929851
+    "duration_seconds": 559.513341
   },
   "health": {
     "pillars": {

@@ -251,6 +251,12 @@ export interface IntelSnapshot {
       article_count: number;
       avg_tone: number | null;
       articles: { title: string; url: string; tone: number | null }[];
+      // Per-country, not per-snapshot: GDELT rate-limits hard enough that
+      // only some countries refresh on any given harvest, so this can lag
+      // last_updated by several cycles for a given country. See
+      // scripts/update_intel.py fetch_gdelt_intel for why it's merged
+      // across runs instead of replaced wholesale.
+      fetched_at?: string;
     };
   };
   harvest_stats?: HarvestStats;

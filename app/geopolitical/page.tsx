@@ -33,6 +33,17 @@ function toneColor(tone: number | null): string {
   return 'bg-green-100 text-green-800 border-green-300';
 }
 
+// Countries refresh opportunistically (GDELT rate-limits hard enough that
+// only some succeed per harvest), so a card can be showing data from
+// several cycles ago — say so plainly rather than implying it's live.
+function freshnessLabel(fetchedAt: string | undefined): string {
+  if (!fetchedAt) return '';
+  const hours = (Date.now() - new Date(fetchedAt).getTime()) / 3_600_000;
+  if (hours < 1) return 'just now';
+  if (hours < 24) return `${Math.round(hours)}h ago`;
+  return `${Math.round(hours / 24)}d ago`;
+}
+
 export default function GeopoliticalIntelPage() {
   // Light by default — matches the main dashboard. Toggle is local to
   // this page (not persisted), since the rest of the site has no dark
@@ -184,6 +195,7 @@ export default function GeopoliticalIntelPage() {
 
                         <div className="text-xs text-gray-500 dark:text-slate-400">
                           {data.article_count.toLocaleString()} articles · last 3 days
+                          {data.fetched_at && ` · updated ${freshnessLabel(data.fetched_at)}`}
                         </div>
                         <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-slate-800">
                           {data.articles.length === 0 ? (

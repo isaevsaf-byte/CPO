@@ -563,6 +563,7 @@ def fetch_gdelt_country_intel(country: str, max_attempts: int = 2) -> dict | Non
             "article_count": total_count,
             "avg_tone": round(weighted_tone_sum / total_count, 1) if total_count else None,
             "articles": articles_out,
+            "fetched_at": datetime.utcnow().isoformat(),
         }
     except Exception as e:
         logger.warning(f"GDELT fetch failed for {country}: {e}")
@@ -2762,7 +2763,21 @@ def main():
     # hits 429s partway through.
     priority = tuple(c for c in ("China", "USA") if c in all_gdelt_countries)
     gdelt_countries = list(priority) + sorted(all_gdelt_countries - set(priority))
-    geopolitical_intel = fetch_gdelt_intel(gdelt_countries, priority_countries=priority)
+    fresh_geo = fetch_gdelt_intel(gdelt_countries, priority_countries=priority)
+    # Merge onto last run's results instead of replacing wholesale — GDELT's
+    # rate limiting means only a handful of countries succeed on any given
+    # run, and which ones is essentially random (whichever get through
+    # before the circuit breaker trips). Discarding yesterday's Austria
+    # just because today's run didn't reach Austria made the page flicker
+    # between arbitrary subsets each cycle instead of steadily filling in.
+    # A country only disappears here if it's no longer a supplier location
+    # at all, not because this one run happened to miss it.
+    previous_geo = {
+        country: entry
+        for country, entry in (previous_state or {}).get("geopolitical_intel", {}).items()
+        if country in all_gdelt_countries
+    }
+    geopolitical_intel = {**previous_geo, **fresh_geo}
 
     # Generate additional intelligence data (LIVE DATA)
     macro_economy = fetch_macro_economy()

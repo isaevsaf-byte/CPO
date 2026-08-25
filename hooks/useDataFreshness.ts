@@ -26,6 +26,15 @@ interface UseDataFreshnessOptions {
   autoCheck?: boolean;
 }
 
+// Older snapshots carry bare UTC date-times with no offset, and JavaScript
+// resolves those as LOCAL time — which skewed staleness by the reader's UTC
+// offset in both directions. The harvester now emits +00:00 (see utc_now_iso
+// in update_intel.py); this keeps the pre-existing entries honest too.
+function parseSnapshotTime(isoString: string): Date {
+  const hasZone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(isoString);
+  return new Date(hasZone ? isoString : `${isoString}Z`);
+}
+
 /**
  * Hook to track data freshness and check for updates
  *
@@ -45,7 +54,7 @@ export function useDataFreshness(options: UseDataFreshnessOptions = {}) {
   } = options;
 
   const [state, setState] = useState<DataFreshnessState>(() => {
-    const lastUpdate = lastUpdated ? new Date(lastUpdated) : null;
+    const lastUpdate = lastUpdated ? parseSnapshotTime(lastUpdated) : null;
     const now = new Date();
     const hoursSinceUpdate = lastUpdate
       ? (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60)
@@ -151,7 +160,7 @@ export function useDataFreshness(options: UseDataFreshnessOptions = {}) {
   // Update staleness calculation when lastUpdated changes
   useEffect(() => {
     const updateStaleness = () => {
-      const lastUpdate = lastUpdated ? new Date(lastUpdated) : null;
+      const lastUpdate = lastUpdated ? parseSnapshotTime(lastUpdated) : null;
       const now = new Date();
       const hoursSinceUpdate = lastUpdate
         ? (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60)

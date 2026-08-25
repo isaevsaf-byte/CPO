@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import intel from '../data/intel_snapshot.json';
@@ -10,6 +10,7 @@ import type {
   RAGScore as RAGScoreType,
   Supplier,
   PeerGroupItem,
+  ChangeLogEntry,
 } from '../types/intel';
 import {
   getRAGColor,
@@ -22,10 +23,20 @@ import {
 // Cast intel to proper type
 const typedIntel = intel as unknown as IntelSnapshot;
 
+// Snapshots written before timestamps carried an offset are bare UTC
+// date-times, and JavaScript resolves those as LOCAL time — which showed an
+// 18:22 UTC harvest as "6:22 PM GMT+1" and skewed every age calculation by
+// the reader's offset. The harvester now emits +00:00 (see utc_now_iso), and
+// this pins the older entries still sitting in rag_history to UTC as well.
+function parseSnapshotTime(isoString: string): Date {
+  const hasZone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(isoString);
+  return new Date(hasZone ? isoString : `${isoString}Z`);
+}
+
 function formatTimestamp(isoString: string | undefined): string {
   if (!isoString) return 'Unknown';
   try {
-    const date = new Date(isoString);
+    const date = parseSnapshotTime(isoString);
     return date.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -58,10 +69,162 @@ function currentStreakDuration(history: { overall: string; timestamp: string }[]
     if (history[i].overall !== current) break;
     streakStart = history[i].timestamp;
   }
-  const hours = (Date.now() - new Date(streakStart).getTime()) / (1000 * 60 * 60);
+  const hours = (Date.now() - parseSnapshotTime(streakStart).getTime()) / (1000 * 60 * 60);
   if (hours < 1) return null;
   if (hours < 48) return `${Math.round(hours)}h`;
   return `${Math.round(hours / 24)}d`;
+}
+
+// Keys for the reader's own visit clock. The snapshot is shared and static;
+// "since I last looked" is per-person, so it lives in the browser.
+const VISIT_ANCHOR_KEY = 'watchtower:visit-anchor';
+const LAST_SEEN_KEY = 'watchtower:last-seen';
+// Reloading the page mid-session should not wipe the feed the reader is
+// still working through, so the anchor only advances after a real gap away.
+const SESSION_GAP_MS = 30 * 60 * 1000;
+const FIRST_VISIT_WINDOW_DAYS = 7;
+const COLLAPSED_ENTRY_COUNT = 6;
+
+function relativeAge(date: Date): string {
+  const minutes = (Date.now() - date.getTime()) / (1000 * 60);
+  if (minutes < 60) return `${Math.max(1, Math.round(minutes))}m ago`;
+  const hours = minutes / 60;
+  if (hours < 36) return `${Math.round(hours)}h ago`;
+  return `${Math.round(hours / 24)}d ago`;
+}
+
+function ChangeEntryRow({ entry }: { entry: ChangeLogEntry }) {
+  const marker =
+    entry.direction === 'up' ? { glyph: '▲', tone: 'text-red-600' } :
+    entry.direction === 'down' ? { glyph: '▼', tone: 'text-green-600' } :
+    { glyph: '•', tone: 'text-gray-400' };
+
+  const body = (
+    <>
+      <div className="text-sm font-medium text-gray-900">{entry.headline}</div>
+      {entry.detail && (
+        <div className="text-xs text-gray-600 mt-0.5 leading-relaxed">{entry.detail}</div>
+      )}
+    </>
+  );
+
+  return (
+    <li className="flex items-start gap-3 py-2.5">
+      <span className={`shrink-0 pt-0.5 text-sm ${marker.tone}`} aria-hidden="true">
+        {marker.glyph}
+      </span>
+      <div className="min-w-0 flex-1">
+        {entry.href ? (
+          <Link href={entry.href} className="block hover:underline">{body}</Link>
+        ) : (
+          body
+        )}
+      </div>
+      <span className="shrink-0 text-xs text-gray-400 whitespace-nowrap pt-0.5">
+        {relativeAge(parseSnapshotTime(entry.at))}
+      </span>
+    </li>
+  );
+}
+
+// "What moved since you last looked" — the question a status board cannot
+// answer. An all-clear board is identical every morning, which is a poor
+// reason to open it again; this section has content on quiet days too.
+function ChangeFeed({ entries }: { entries: ChangeLogEntry[] }) {
+  const [anchor, setAnchor] = useState<Date | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const now = Date.now();
+    let resolvedAnchor: string | null = null;
+    try {
+      const lastSeenRaw = window.localStorage.getItem(LAST_SEEN_KEY);
+      const lastSeen = lastSeenRaw ? new Date(lastSeenRaw).getTime() : null;
+
+      if (lastSeen && now - lastSeen > SESSION_GAP_MS) {
+        // Returning after a break: diff from the end of the previous visit.
+        resolvedAnchor = lastSeenRaw;
+      } else if (lastSeen) {
+        // Same working session — keep whatever window is already on screen.
+        resolvedAnchor = window.localStorage.getItem(VISIT_ANCHOR_KEY);
+      }
+
+      if (resolvedAnchor) {
+        window.localStorage.setItem(VISIT_ANCHOR_KEY, resolvedAnchor);
+      }
+      window.localStorage.setItem(LAST_SEEN_KEY, new Date(now).toISOString());
+    } catch {
+      // Private mode / blocked storage: fall back to the first-visit window.
+      resolvedAnchor = null;
+    }
+
+    setAnchor(resolvedAnchor ? new Date(resolvedAnchor) : null);
+    setMounted(true);
+  }, []);
+
+  const sorted = useMemo(
+    () => [...entries].sort(
+      (a, b) => parseSnapshotTime(b.at).getTime() - parseSnapshotTime(a.at).getTime()
+    ),
+    [entries]
+  );
+
+  const cutoff = anchor
+    ? anchor.getTime()
+    : Date.now() - FIRST_VISIT_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  const sinceVisit = sorted.filter((entry) => parseSnapshotTime(entry.at).getTime() > cutoff);
+
+  if (entries.length === 0) return null;
+
+  // Rendered only after the visit clock is read, so the server and the first
+  // client pass agree on markup.
+  if (!mounted) {
+    return <div className="mb-8 h-32 rounded-xl border border-gray-200 bg-white" aria-hidden="true" />;
+  }
+
+  const hasNew = sinceVisit.length > 0;
+  const shown = hasNew ? sinceVisit : sorted.slice(0, 3);
+  const visible = expanded ? shown : shown.slice(0, COLLAPSED_ENTRY_COUNT);
+
+  return (
+    <div className="mb-8 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-gray-200 bg-gray-50 px-6 py-4">
+        <h2 className="text-lg font-bold text-gray-900">
+          {hasNew
+            ? `${sinceVisit.length} change${sinceVisit.length > 1 ? 's' : ''}${anchor ? ' since your last visit' : ' recently'}`
+            : anchor
+              ? 'Nothing new since your last visit'
+              : 'No changes recorded yet'}
+        </h2>
+        <span className="text-xs text-gray-500">
+          {anchor
+            ? `Last visit ${relativeAge(anchor)}`
+            : `Showing the last ${FIRST_VISIT_WINDOW_DAYS} days`}
+        </span>
+      </div>
+      <div className="px-6 py-2">
+        {!hasNew && (
+          <p className="pt-2 text-sm text-gray-500">
+            Most recent activity{anchor ? ', from before your last visit' : ''}:
+          </p>
+        )}
+        <ul className="divide-y divide-gray-100">
+          {visible.map((entry, idx) => (
+            <ChangeEntryRow key={`${entry.at}-${entry.entity}-${idx}`} entry={entry} />
+          ))}
+        </ul>
+        {shown.length > COLLAPSED_ENTRY_COUNT && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="mb-3 mt-1 text-sm font-medium text-blue-800 hover:underline"
+          >
+            {expanded ? 'Show less' : `Show all ${shown.length}`}
+          </button>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function MorningCoffeeDashboard() {
@@ -216,6 +379,8 @@ export default function MorningCoffeeDashboard() {
       )}
 
       <div className="max-w-[100rem] mx-auto px-6 py-8">
+        <ChangeFeed entries={typedIntel?.change_log ?? []} />
+
         {/* Overall Status Rollup — single "should I worry today" answer,
             derived from the worst of the three pillar RAG scores below */}
         {typedIntel?.overall_rag && (

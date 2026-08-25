@@ -136,7 +136,6 @@ export interface Supplier {
   segment: string;
   location: string;
   stock_ticker: string;
-  latest_news_summary: string;
   // Geopolitical risk (null when no risk detected)
   geopolitical_risk: {
     detected: boolean;
@@ -216,6 +215,33 @@ export interface OverallRag {
   };
 }
 
+export type ChangeDirection = 'up' | 'down' | 'info';
+
+export type ChangeKind =
+  | 'overall_rag'
+  | 'pillar_rag'
+  | 'supplier_risk'
+  | 'supplier_signal'
+  | 'supplier_added'
+  | 'supplier_removed'
+  | 'peer_risk'
+  | 'macro_trend'
+  | 'price_move';
+
+// One thing that moved between two harvests. Produced by compute_changes()
+// in update_intel.py and appended to a rolling log inside the snapshot, so
+// the dashboard can answer "what changed since I last looked" — a question
+// that still has an answer on a day when nothing is on fire.
+export interface ChangeLogEntry {
+  at: string;
+  kind: ChangeKind;
+  direction: ChangeDirection;
+  entity: string;
+  headline: string;
+  detail?: string;
+  href?: string | null;
+}
+
 export interface RagHistoryEntry {
   timestamp: string;
   macro: RAGScore;
@@ -239,6 +265,7 @@ export interface IntelSnapshot {
     context: string;
   };
   rag_history?: RagHistoryEntry[];
+  change_log?: ChangeLogEntry[];
   macro: MacroData;
   peers: PeersData;
   suppliers: SuppliersData;

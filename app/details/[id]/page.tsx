@@ -29,8 +29,9 @@ interface SupplierItem {
   segment: string;
   location: string;
   stock_ticker: string;
-  latest_news_summary: string;
   risk_analysis: string;
+  news_items?: { headline: string; risk?: string; keyword?: string; source?: string }[];
+  google_news_headlines?: string[];
 }
 
 type CompanyData = (PeerGroupItem | SupplierItem) & { [key: string]: unknown };
@@ -131,6 +132,18 @@ export default function CompanyDetailPage() {
     if (!company) return defaultValue;
     return (company as Record<string, unknown>)[key] as T | undefined ?? defaultValue;
   };
+
+  // Real, sourced headlines only — risk-matched items first (those carry a
+  // keyword hit), then any other recent headline the harvester kept. Both
+  // arrays are often empty, and that is rendered as empty below.
+  const supplierHeadlines: string[] = (() => {
+    if (!isSupplier) return [];
+    const fromNewsItems = (getCompanyProp<{ headline?: string }[]>('news_items') ?? [])
+      .map((item) => item?.headline)
+      .filter((headline): headline is string => !!headline);
+    const fromGoogle = getCompanyProp<string[]>('google_news_headlines') ?? [];
+    return Array.from(new Set([...fromNewsItems, ...fromGoogle])).slice(0, 5);
+  })();
 
   if (!company) {
     return (
@@ -328,14 +341,34 @@ export default function CompanyDetailPage() {
                     </p>
                   </div>
                 )}
-                {isSupplier && getCompanyProp<string>('latest_news_summary') && (
+                {isSupplier && (
                   <div className="mb-4">
                     <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                      Latest News Summary
+                      Recent Headlines
                     </div>
-                    <p className="text-base text-gray-700 leading-relaxed bg-gray-50 p-4 rounded border border-gray-200">
-                      {getCompanyProp<string>('latest_news_summary')}
-                    </p>
+                    {supplierHeadlines.length > 0 ? (
+                      <ul className="space-y-2">
+                        {supplierHeadlines.map((headline, idx) => (
+                          <li
+                            key={idx}
+                            className="text-base text-gray-700 leading-relaxed bg-gray-50 p-4 rounded border border-gray-200"
+                          >
+                            {headline}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      /* An empty feed is stated as empty. This block used to be
+                         filled by templated prose ("on-time delivery metrics
+                         above 98%") generated from the exposure tier, which
+                         read as sourced reporting on a supplier nobody had
+                         reported on. */
+                      <p className="text-base text-gray-500 leading-relaxed bg-gray-50 p-4 rounded border border-dashed border-gray-300">
+                        No news matched this supplier in the last 5 days. Silence here means
+                        nothing was picked up &mdash; not that operations were verified. Use
+                        the search below to check directly.
+                      </p>
+                    )}
                   </div>
                 )}
                 {isSupplier && getCompanyProp<string>('risk_analysis') && (

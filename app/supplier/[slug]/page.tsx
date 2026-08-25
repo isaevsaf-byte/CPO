@@ -11,7 +11,8 @@ interface Supplier {
   segment: string;
   location: string;
   stock_ticker: string;
-  latest_news_summary: string;
+  news_items?: { headline?: string }[];
+  google_news_headlines?: string[];
   risk_analysis: string;
   cyber_risk: boolean;
   matching_vulnerabilities: any[];
@@ -83,6 +84,10 @@ export default function SupplierDetailPage() {
   }
 
   const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(supplier.name)}+news+supply+chain`;
+  const supplierHeadlines: string[] = Array.from(new Set([
+    ...(supplier.news_items ?? []).map((item) => item?.headline).filter((h): h is string => !!h),
+    ...(supplier.google_news_headlines ?? []),
+  ])).slice(0, 5);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -176,11 +181,25 @@ export default function SupplierDetailPage() {
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Latest News Summary
+                    Recent Headlines
                   </div>
-                  <div className="text-base text-gray-700 leading-relaxed bg-gray-50 p-4 rounded border border-gray-200">
-                    {supplier.latest_news_summary}
-                  </div>
+                  {supplierHeadlines.length > 0 ? (
+                    <ul className="space-y-2">
+                      {supplierHeadlines.map((headline, idx) => (
+                        <li
+                          key={idx}
+                          className="text-base text-gray-700 leading-relaxed bg-gray-50 p-4 rounded border border-gray-200"
+                        >
+                          {headline}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="text-base text-gray-500 leading-relaxed bg-gray-50 p-4 rounded border border-dashed border-gray-300">
+                      No news matched this supplier in the last 5 days. Silence here means
+                      nothing was picked up &mdash; not that operations were verified.
+                    </div>
+                  )}
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">

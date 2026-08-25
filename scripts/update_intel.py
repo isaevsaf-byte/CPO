@@ -12,7 +12,7 @@ import re
 import csv
 import io
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import sys
 import time
@@ -27,6 +27,19 @@ import yfinance as yf
 # CONFIGURATION
 # ============================================================================
 USER_AGENT = {'User-Agent': 'SupplyChainIntelligence contact@mycompany.com'}
+
+def utc_now_iso() -> str:
+    """Current UTC time as ISO-8601 *with* an explicit +00:00 offset.
+
+    Every timestamp in the snapshot is read by the browser via `new Date(...)`,
+    and JavaScript resolves an offset-less date-time string as LOCAL time. A
+    bare `utc_now_iso()` therefore rendered as "6:22 PM GMT+1"
+    for an 18:22 UTC harvest, and shifted every age calculation built on it
+    (staleness badge, "changed since your last visit") by the reader's UTC
+    offset. Carrying the offset removes the ambiguity at the source.
+    """
+    return datetime.now(timezone.utc).isoformat()
+
 TIMEOUT = int(os.getenv("FETCH_TIMEOUT", 15))
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 3))
 STALE_THRESHOLD_HOURS = int(os.getenv("STALE_THRESHOLD", 24))
@@ -59,7 +72,7 @@ class HarvestStats:
         self.errors.append({
             "source": source,
             "error": str(error)[:200],
-            "time": datetime.utcnow().isoformat()
+            "time": utc_now_iso()
         })
         logger.error(f"[{source}] {error}")
 
@@ -67,14 +80,14 @@ class HarvestStats:
         self.warnings.append({
             "source": source,
             "warning": str(warning)[:200],
-            "time": datetime.utcnow().isoformat()
+            "time": utc_now_iso()
         })
         logger.warning(f"[{source}] {warning}")
 
     def record_success(self, source: str):
         self.successes.append({
             "source": source,
-            "time": datetime.utcnow().isoformat()
+            "time": utc_now_iso()
         })
         logger.info(f"[{source}] Success")
 
@@ -243,6 +256,12 @@ def calculate_data_hash(data: dict) -> str:
     # version to detect real changes worth refreshing for).
     if 'rag_history' in data_copy:
         del data_copy['rag_history']
+    # change_log is append-only and timestamped — same reasoning as
+    # rag_history. Anything that appends to it also changed the underlying
+    # data that this hash is computed over, so nothing is missed by
+    # excluding it.
+    if 'change_log' in data_copy:
+        del data_copy['change_log']
     # executive_summary is LLM-generated prose that varies slightly between
     # runs even when the underlying data is identical — including it here
     # would flip `version` on every harvest and defeat the frontend's
@@ -613,7 +632,7 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
             "avg_tone": round(weighted_tone_sum / total_count, 1) if total_count else None,
             "articles": articles_out,
             "has_relevant": has_relevant,
-            "fetched_at": datetime.utcnow().isoformat(),
+            "fetched_at": utc_now_iso(),
         }
     except Exception as e:
         logger.warning(f"GDELT fetch failed for {country}: {e}")
@@ -784,29 +803,40 @@ WATCHLIST_DATA = [
 ]
 
 # PEERS & COMPETITORS - Pillar 2 (Hardcoded Source of Truth)
+# match_terms gate which fetched headlines may be attributed to a peer.
+# yfinance's ticker.news returns sector-adjacent coverage, not only articles
+# about the ticker, so `news[0]` is frequently about someone else entirely —
+# an Altria story surfaced under Japan Tobacco, and one shared "AIR Global"
+# piece printed as both BAT's and Imperial's latest headline. Whole-word
+# matched (see _mentions_subject), so short/ambiguous forms are deliberately
+# left out: bare "PM" matches a clock time, bare "BAT" matches the animal.
 PEERS_CONFIG = [
     {
         "name": "British American Tobacco",
         "ticker": "BTI",  # Tracking the NYSE ADR for US News visibility
         "region": "Global/US ADR",
+        "match_terms": ["british american tobacco", "bat plc", "bti"],
         "default_text": "Primary listing LSE; traded as BTI (NYSE). Monitoring filings."
     },
     {
         "name": "Philip Morris Int.",
         "ticker": "PM",
         "region": "US",
+        "match_terms": ["philip morris", "pmi"],
         "default_text": "US-listed (NYSE). Monitoring SEC filings (8-K)."
     },
     {
         "name": "Imperial Brands",
         "ticker": "IMB.L",
         "region": "UK",
+        "match_terms": ["imperial brands", "imperial tobacco"],
         "default_text": "UK-listed (LSE). Monitoring regulatory news."
     },
     {
         "name": "Japan Tobacco",
         "ticker": "2914.T",
         "region": "Japan",
+        "match_terms": ["japan tobacco", "jt group", "jti"],
         "default_text": "Tokyo listed. Monitoring global press releases."
     }
 ]
@@ -918,7 +948,7 @@ def fetch_cisa_kev():
             "recent_count": len(recent_vulns),
             "critical_count": len(critical_vulns),
             "recent_vulnerabilities": recent_vulns[:10],  # Limit for size
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
@@ -926,7 +956,7 @@ def fetch_cisa_kev():
             "status": "error",
             "error": str(e),
             "recent_vulnerabilities": [],
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
 
 
@@ -953,7 +983,7 @@ def fetch_cpsc_recalls():
             "status": "success",
             "total_recalls": len(recalls),
             "recalls": recalls,
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
@@ -962,7 +992,7 @@ def fetch_cpsc_recalls():
             "error": str(e),
             "total_recalls": 0,
             "recalls": [],
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
 
 
@@ -1021,7 +1051,7 @@ def fetch_ofac_sdn():
                 "status": "success",
                 "total_entries": len(names),
                 "names": names,
-                "last_fetched": datetime.utcnow().isoformat()
+                "last_fetched": utc_now_iso()
             }
         except Exception as e:
             last_error = e
@@ -1033,7 +1063,7 @@ def fetch_ofac_sdn():
         "error": str(last_error),
         "total_entries": 0,
         "names": [],
-        "last_fetched": datetime.utcnow().isoformat()
+        "last_fetched": utc_now_iso()
     }
 
 
@@ -1076,7 +1106,7 @@ def fetch_macro_us():
                 "policy": "Placeholder - Fed policy updates"
             },
             "summary": "US economic indicators not yet integrated (placeholder data)",
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
     except Exception as e:
         print(f"US Macro Error: {e}", file=sys.stderr)
@@ -1084,7 +1114,7 @@ def fetch_macro_us():
             "status": "error",
             "region": "US",
             "error": str(e),
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
 
 def fetch_macro_eu():
@@ -1115,7 +1145,7 @@ def fetch_macro_eu():
                 "policy": "Placeholder - ECB policy updates"
             },
             "summary": f"EU economic indicators - EUR/USD: {usd_rate if usd_rate else 'N/A'}",
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
@@ -1123,7 +1153,7 @@ def fetch_macro_eu():
             "status": "error",
             "region": "EU",
             "error": str(e),
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
 
 def fetch_macro_china():
@@ -1142,7 +1172,7 @@ def fetch_macro_china():
                 "policy": "Placeholder - PBOC policy updates"
             },
             "summary": "China economic indicators not yet integrated (placeholder data)",
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
     except Exception as e:
         print(f"China Macro Error: {e}", file=sys.stderr)
@@ -1150,7 +1180,7 @@ def fetch_macro_china():
             "status": "error",
             "region": "China",
             "error": str(e),
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
 
 def fetch_macro_overview(previous_eur_usd=None):
@@ -1196,7 +1226,7 @@ def fetch_macro_overview(previous_eur_usd=None):
             "china": china_data
         },
         "volatility_pct": volatility_pct,
-        "last_fetched": datetime.utcnow().isoformat()
+        "last_fetched": utc_now_iso()
     }
 
 # ============================================================================
@@ -1224,7 +1254,7 @@ def fetch_sec_filings_for_peer(peer_name):
             "filings": [],
             "red_signals": 0,
             "amber_signals": 0,
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
 
     try:
@@ -1294,7 +1324,7 @@ def fetch_sec_filings_for_peer(peer_name):
             "filings": filings,
             "red_signals": len(red_signals),
             "amber_signals": len(amber_signals),
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
@@ -1304,7 +1334,7 @@ def fetch_sec_filings_for_peer(peer_name):
             "filings": [],
             "red_signals": 0,
             "amber_signals": 0,
-            "last_fetched": datetime.utcnow().isoformat()
+            "last_fetched": utc_now_iso()
         }
 
 def generate_peer_summary(peer_name, filings_data):
@@ -1403,7 +1433,7 @@ def fetch_peers_overview(peer_group):
         "total_peers": len(peer_group),
         "total_red_signals": total_red_signals,
         "total_amber_signals": total_amber_signals,
-        "last_fetched": datetime.utcnow().isoformat()
+        "last_fetched": utc_now_iso()
     }
 
 # ============================================================================
@@ -1411,7 +1441,18 @@ def fetch_peers_overview(peer_group):
 # ============================================================================
 
 def get_supplier_deep_dive_data(supplier_name, category):
-    """Generate deep dive mock data for supplier intelligence cards"""
+    """Static reference attributes for a watchlist supplier.
+
+    Deliberately carries only facts we actually know and maintain by hand
+    (tier/exposure, site country, listing, segment). It used to also emit a
+    `latest_news_summary` assembled from f-string templates keyed purely off
+    the exposure tier — prose like "on-time delivery metrics above 98%" and
+    "regular quality audits completed successfully". None of that was ever
+    measured, yet it rendered on the supplier page under a "Live Intelligence"
+    heading, so invented text read as sourced intelligence. Real headlines come
+    from news_items / google_news_headlines; an empty news feed now shows as
+    empty rather than being papered over.
+    """
     # BAT Exposure mapping (Critical = Tier 1, High = Tier 2, Medium = Tier 3)
     exposure_map = {
         "AMCOR": "Critical",
@@ -1486,22 +1527,6 @@ def get_supplier_deep_dive_data(supplier_name, category):
         "Jabil": "JBL"
     }
     
-    # Generate news summary based on category and exposure
-    news_templates = {
-        "Critical": [
-            f"{supplier_name} continues to be a strategic partner for BAT's new category expansion. Recent capacity investments align with Vuse production ramp-up.",
-            f"Supply chain monitoring shows stable operations. {supplier_name} maintains quality certifications and on-time delivery metrics above 98%."
-        ],
-        "High": [
-            f"{supplier_name} reported strong quarterly results with increased demand from tobacco industry clients.",
-            f"Operational status normal. No supply disruptions reported. Category: {category} remains stable."
-        ],
-        "Medium": [
-            f"{supplier_name} maintains standard operations. Regular quality audits completed successfully.",
-            f"Supply chain intelligence indicates no material risks. Standard monitoring protocols active."
-        ]
-    }
-    
     # URL mapping
     url_map = {
         "CNT": "https://nicotineusp.com"
@@ -1512,14 +1537,12 @@ def get_supplier_deep_dive_data(supplier_name, category):
     location = location_map.get(supplier_name, "Unknown")
     ticker = ticker_map.get(supplier_name, "N/A")
     url = url_map.get(supplier_name, None)
-    news_summary = " ".join(news_templates.get(exposure, news_templates["Medium"]))
     
     return {
         "bat_exposure": exposure,
         "segment": segment,
         "location": location,
         "stock_ticker": ticker,
-        "latest_news_summary": news_summary,
         "url": url
     }
 
@@ -2123,7 +2146,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
         "actionable_high": actionable_high,
         "actionable_medium": actionable_medium,
         "suppliers": suppliers,
-        "last_fetched": datetime.utcnow().isoformat()
+        "last_fetched": utc_now_iso()
     }
 
 # ============================================================================
@@ -2400,24 +2423,39 @@ def fetch_peer_group():
                 current_price = info['currentPrice']
                 stock_move = "N/A (no historical data)"
 
-            # Get up to 5 news headlines for broader scanning
+            # Get up to 5 news headlines for broader scanning. Only headlines
+            # that actually name this peer survive: an unrelated article is
+            # both a wrong headline to print and — because the keyword scan
+            # below runs over this same list — a false CRITICAL/WARNING
+            # signal for a company it isn't about.
             latest_headline = None
             all_headlines = []
             real_headline_found = False
+            match_terms = peer_config.get("match_terms") or [peer_config["name"]]
             try:
                 news = ticker.news
                 if news:
-                    for item in news[:5]:
+                    fetched = 0
+                    for item in news[:10]:
                         # yfinance >= 0.2.46 wraps title under item['content']['title']
                         title = (
                             item.get('content', {}).get('title')
                             or item.get('title')
                         )
-                        if title:
+                        if not title:
+                            continue
+                        fetched += 1
+                        title_lower = title.lower()
+                        if any(_mentions_subject(title_lower, term) for term in match_terms):
                             all_headlines.append(title)
                     if all_headlines:
                         latest_headline = all_headlines[0]
                         real_headline_found = True
+                    elif fetched:
+                        logger.info(
+                            f"  {peer_config['name']}: {fetched} headline(s) fetched, "
+                            f"none named the company — falling back to default text"
+                        )
             except Exception as e:
                 logger.warning(f"News fetch error for {peer_config['name']}: {e}")
 
@@ -2626,6 +2664,209 @@ def save_with_backup(data: dict, output_file: Path) -> bool:
     except Exception as e:
         logger.error(f"Failed to save data: {e}")
         return False
+
+
+# ============================================================================
+# CHANGE LOG — what moved since last time
+# ============================================================================
+# A status board answers "is anything on fire right now", and on most days the
+# answer is no. That leaves nothing new to look at, which is a poor reason to
+# open the thing tomorrow. The change log answers the other question — "what
+# moved since I last looked" — which has an answer on quiet days too.
+#
+# The snapshot is the database here, so the log lives inside it: each harvest
+# diffs itself against the previous snapshot and appends whatever actually
+# changed, trimmed to a rolling window. The frontend then slices it by the
+# reader's own last-visit time.
+# ============================================================================
+
+CHANGE_LOG_MAX_ENTRIES = 200
+CHANGE_LOG_MAX_AGE_DAYS = 21
+# Report an unexplained price move only when it is large enough to be worth a
+# CPO's attention on its own. Anything smaller is ordinary market noise and
+# would bury the real signals under a daily wall of ±1% entries.
+PRICE_MOVE_REPORT_PCT = 4.0
+
+# Per-supplier boolean signals, in the order they should be named.
+SUPPLIER_SIGNAL_LABELS = [
+    ("sanctions_hit", "OFAC sanctions match"),
+    ("cyber_risk", "CISA cyber vulnerability"),
+    ("recall_risk", "CPSC safety recall"),
+    ("news_risk", "adverse news"),
+]
+
+
+def _supplier_signals(supplier: dict) -> dict:
+    """Active boolean risk signals for one supplier, as {label: True}.
+
+    The standing geopolitical floor is deliberately excluded unless live news
+    escalated it this cycle: "China has trade tensions" is true every single
+    day, so logging it as a change would put the same nine entries in the feed
+    forever and train the reader to skip it.
+    """
+    signals = {
+        label: bool(supplier.get(key))
+        for key, label in SUPPLIER_SIGNAL_LABELS
+    }
+    geo = supplier.get("geopolitical_risk") or {}
+    signals["geopolitical escalation"] = bool(
+        geo.get("escalated") and not geo.get("baseline_only", True)
+    )
+    return {label: active for label, active in signals.items() if active}
+
+
+def _rag_direction(before: str, after: str) -> str:
+    order = {"GREEN": 0, "AMBER": 1, "RED": 2}
+    return "up" if order.get(after, 0) > order.get(before, 0) else "down"
+
+
+def compute_changes(previous_state: dict | None, suppliers_data: dict,
+                    peer_group: list, macro_economy: dict,
+                    pillar_rag_scores: dict, overall_rag: dict,
+                    now_iso: str) -> list:
+    """Diff this harvest against the previous snapshot.
+
+    Returns a list of change entries, most significant kind first. Returns []
+    when there is no previous snapshot — a first run has nothing to compare
+    against, and reporting all 24 suppliers as "new" would be noise, not news.
+    """
+    if not previous_state:
+        return []
+
+    changes = []
+
+    def add(kind, direction, entity, headline, detail="", href=None):
+        changes.append({
+            "at": now_iso,
+            "kind": kind,
+            "direction": direction,
+            "entity": entity,
+            "headline": headline,
+            "detail": detail,
+            "href": href,
+        })
+
+    # --- Overall and per-pillar RAG -------------------------------------
+    prev_overall = (previous_state.get("overall_rag") or {}).get("score")
+    new_overall = overall_rag.get("score")
+    if prev_overall and new_overall and prev_overall != new_overall:
+        add("overall_rag", _rag_direction(prev_overall, new_overall),
+            "Overall status", f"Overall status {prev_overall} → {new_overall}",
+            "Driven by: " + ", ".join(overall_rag.get("driven_by", [])) or "")
+
+    prev_pillars = (previous_state.get("overall_rag") or {}).get("pillar_scores", {})
+    for pillar, score in pillar_rag_scores.items():
+        before = prev_pillars.get(pillar)
+        if before and before != score:
+            add("pillar_rag", _rag_direction(before, score),
+                pillar.capitalize(), f"{pillar.capitalize()} pillar {before} → {score}")
+
+    # --- Suppliers -------------------------------------------------------
+    prev_suppliers = {
+        s.get("name"): s
+        for s in (previous_state.get("suppliers", {}) or {}).get("suppliers", [])
+        if s.get("name")
+    }
+
+    for supplier in suppliers_data.get("suppliers", []):
+        name = supplier.get("name")
+        if not name:
+            continue
+        href = f"/details/{name}"
+        before = prev_suppliers.get(name)
+
+        if before is None:
+            add("supplier_added", "info", name, f"{name} added to the watchlist",
+                f"{supplier.get('category', '')} · {supplier.get('location', '')}", href)
+            continue
+
+        old_level = before.get("risk_level")
+        new_level = supplier.get("risk_level")
+        old_signals = _supplier_signals(before)
+        new_signals = _supplier_signals(supplier)
+        appeared = [label for label in new_signals if label not in old_signals]
+        cleared = [label for label in old_signals if label not in new_signals]
+
+        if old_level and new_level and old_level != new_level:
+            direction = "up" if RISK_PRIORITY.get(new_level, 0) > RISK_PRIORITY.get(old_level, 0) else "down"
+            detail = supplier.get("last_signal", "")
+            if appeared:
+                detail = f"New: {', '.join(appeared)}. {detail}".strip()
+            add("supplier_risk", direction, name,
+                f"{name}: {old_level} → {new_level}", detail, href)
+        elif appeared or cleared:
+            # Risk level held but the evidence behind it moved — still worth
+            # surfacing, e.g. a cyber CVE clearing while a news hit keeps the
+            # supplier at the same level.
+            if appeared:
+                add("supplier_signal", "up", name,
+                    f"{name}: {', '.join(appeared)}",
+                    supplier.get("last_signal", ""), href)
+            if cleared:
+                add("supplier_signal", "down", name,
+                    f"{name}: {', '.join(cleared)} cleared", "", href)
+        else:
+            # No risk change at all — report only an outsized, unexplained
+            # price move on a supplier that matters to BAT.
+            move = supplier.get("daily_change_pct")
+            if (
+                isinstance(move, (int, float))
+                and abs(move) >= PRICE_MOVE_REPORT_PCT
+                and supplier.get("bat_exposure") in ("Critical", "High")
+            ):
+                add("price_move", "info", name,
+                    f"{name} {move:+.1f}% with no corroborating signal",
+                    f"BAT exposure: {supplier.get('bat_exposure')}. Cause unconfirmed.", href)
+
+    for name in prev_suppliers:
+        if not any(s.get("name") == name for s in suppliers_data.get("suppliers", [])):
+            add("supplier_removed", "info", name, f"{name} removed from the watchlist")
+
+    # --- Peers -----------------------------------------------------------
+    prev_peers = {p.get("name"): p for p in (previous_state.get("peer_group") or []) if p.get("name")}
+    for peer in peer_group or []:
+        name = peer.get("name")
+        before = prev_peers.get(name)
+        if not before:
+            continue
+        old_level, new_level = before.get("risk_level"), peer.get("risk_level")
+        if old_level and new_level and old_level != new_level:
+            direction = "up" if RISK_PRIORITY.get(new_level, 0) > RISK_PRIORITY.get(old_level, 0) else "down"
+            add("peer_risk", direction, name, f"{name}: {old_level} → {new_level}",
+                peer.get("last_signal", ""), f"/details/{name}")
+
+    # --- Macro trends ----------------------------------------------------
+    prev_macro = previous_state.get("macro_economy") or {}
+    region_labels = {"us": "US", "eu": "EU", "china": "China"}
+    for key, label in region_labels.items():
+        before = (prev_macro.get(key) or {}).get("trend")
+        after = (macro_economy.get(key) or {}).get("trend")
+        if before and after and before != after and "N/A" not in (before, after):
+            worsening = after in ("Declining", "Weakening", "Volatile")
+            add("macro_trend", "up" if worsening else "down", label,
+                f"{label} outlook {before} → {after}", "", f"/macro/{key}")
+
+    return changes
+
+
+def trim_change_log(entries: list) -> list:
+    """Keep the log bounded by both age and count, newest last."""
+    cutoff = datetime.now(timezone.utc) - timedelta(days=CHANGE_LOG_MAX_AGE_DAYS)
+    kept = []
+    for entry in entries:
+        raw = entry.get("at")
+        if not raw:
+            continue
+        try:
+            stamp = datetime.fromisoformat(raw)
+        except ValueError:
+            continue
+        # Entries written before timestamps carried an offset are UTC too.
+        if stamp.tzinfo is None:
+            stamp = stamp.replace(tzinfo=timezone.utc)
+        if stamp >= cutoff:
+            kept.append(entry)
+    return kept[-CHANGE_LOG_MAX_ENTRIES:]
 
 
 def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
@@ -2922,7 +3163,7 @@ def main():
     MAX_RAG_HISTORY = 80  # ~20 days at the 6-hour harvest cadence
     rag_history = list((previous_state or {}).get("rag_history", []))
     rag_history.append({
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": utc_now_iso(),
         "macro": pillar_rag_scores["macro"],
         "peers": pillar_rag_scores["peers"],
         "suppliers": pillar_rag_scores["suppliers"],
@@ -2930,18 +3171,41 @@ def main():
     })
     rag_history = rag_history[-MAX_RAG_HISTORY:]
 
+    # ================================================================
+    # CHANGE LOG — diff this harvest against the previous snapshot and
+    # append whatever moved. Carried forward inside the snapshot itself
+    # (same "the JSON file is the database" pattern as rag_history), so
+    # the dashboard can open on "what changed since you last looked"
+    # rather than only "what is on fire right now".
+    # ================================================================
+    harvest_timestamp = utc_now_iso()
+    new_changes = compute_changes(
+        previous_state, suppliers_data, peer_group, macro_economy,
+        pillar_rag_scores, overall_rag, harvest_timestamp,
+    )
+    change_log = trim_change_log(
+        list((previous_state or {}).get("change_log", [])) + new_changes
+    )
+    if new_changes:
+        logger.info(f"Change log: {len(new_changes)} change(s) this cycle")
+        for change in new_changes:
+            logger.info(f"  [{change['direction']}] {change['headline']}")
+    else:
+        logger.info("Change log: nothing changed since the previous snapshot")
+
     executive_summary = generate_executive_summary(
         overall_rag, pillar_rag_scores, suppliers_data, peer_group, macro_data
     )
 
     # Build dashboard state with three core pillars + additional intelligence
     dashboard_state = {
-        "last_updated": datetime.utcnow().isoformat(),
+        "last_updated": utc_now_iso(),
         "version": "",  # Will be set after hash calculation
         "status": overall_status,
         "overall_rag": overall_rag,
         "executive_summary": executive_summary,
         "rag_history": rag_history,
+        "change_log": change_log,
         "macro": macro_data,
         "peers": peers_data,
         "suppliers": suppliers_data,
@@ -2971,7 +3235,7 @@ def main():
         if previous_state:
             logger.warning("Using previous state as fallback")
             # Keep previous data but update timestamp and add error info
-            previous_state["last_updated"] = datetime.utcnow().isoformat()
+            previous_state["last_updated"] = utc_now_iso()
             previous_state["status"] = "fallback"
             previous_state["harvest_stats"] = harvest_stats.summary()
             dashboard_state = previous_state

@@ -83,20 +83,26 @@ export function useDataFreshness(options: UseDataFreshnessOptions = {}) {
     setState((prev) => ({ ...prev, isChecking: true, error: null }));
 
     try {
-      // Fetch the JSON file with cache-busting
-      const response = await fetch(
-        `/data/intel_snapshot.json?_t=${Date.now()}`,
-        {
-          cache: 'no-store',
-        }
-      );
+      // The snapshot is imported at build time, not served as a static asset:
+      // there is no /public directory, so the old /data/intel_snapshot.json
+      // fetch answered 404 on every poll, the catch below swallowed it, and
+      // the refresh prompt could never fire. /api/health reads the same
+      // snapshot through the running deployment, so a redeploy carrying new
+      // data reports a new version to tabs still holding the old bundle.
+      const response = await fetch(`/api/health?_t=${Date.now()}`, {
+        cache: 'no-store',
+      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      // Deliberately not gated on response.ok: /api/health answers 503 when a
+      // pillar is degraded, which is still a valid version reading — and
+      // exactly the moment a stale tab most needs to know to reload.
+      const payload = await response.json().catch(() => null);
+      const newVersion = payload?.data?.version;
+
+      if (!newVersion || newVersion === 'unknown') {
+        throw new Error(`No version in health response (HTTP ${response.status})`);
       }
 
-      const data = await response.json();
-      const newVersion = data.version;
       const hasNewVersion = newVersion !== currentVersion;
 
       setState((prev) => ({

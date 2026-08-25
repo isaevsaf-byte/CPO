@@ -289,6 +289,16 @@ export default function MorningCoffeeDashboard() {
   }
   const topActionItems = actionItems.slice(0, 3);
 
+  // Suppliers whose current risk level reflects something that actually
+  // happened this cycle, rather than the standing floor applied to every
+  // supplier in a flagged country. Same filter process_suppliers applies for
+  // the pillar RAG rollup, recomputed here from the list itself so a headline
+  // count can never disagree with the rows its filter reveals.
+  const isActionable = (supplier: Supplier) => (supplier as any).counts_toward_rag !== false;
+  const actionableCritical = suppliersList.filter((s) => isActionable(s) && s.risk_level === 'CRITICAL').length;
+  const actionableHigh = suppliersList.filter((s) => isActionable(s) && s.risk_level === 'HIGH').length;
+  const actionableMedium = suppliersList.filter((s) => isActionable(s) && s.risk_level === 'MEDIUM').length;
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -551,31 +561,43 @@ export default function MorningCoffeeDashboard() {
                     🚫 {(suppliers as any).suppliers_at_sanctions_risk} Sanctions Match — verify now
                   </button>
                 )}
-                {/* Show risk counts by severity */}
-                {(suppliers as any)?.total_critical > 0 && (
+                {/* Severity counts use the actionable_* figures — the same
+                    ones the pillar RAG score is computed from. total_* counts
+                    every supplier in the bucket including those sitting there
+                    purely on a standing geographic floor, which put "9 Medium
+                    Risk" next to an all-clear GREEN badge and made the reader
+                    choose which of the two to believe. The unchanged
+                    structural exposure is still shown, below and separately. */}
+                {actionableCritical > 0 && (
                   <button
                     onClick={() => setRiskFilter(riskFilter === 'critical' ? 'all' : 'critical')}
                     className={`block text-red-700 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'critical' ? 'bg-red-100 px-2 py-0.5 rounded' : ''}`}
                   >
-                    🚨 {(suppliers as any).total_critical} Critical
+                    🚨 {actionableCritical} Critical
                   </button>
                 )}
-                {(suppliers as any)?.total_high > 0 && (
+                {actionableHigh > 0 && (
                   <button
                     onClick={() => setRiskFilter(riskFilter === 'high' ? 'all' : 'high')}
                     className={`block text-red-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'high' ? 'bg-red-100 px-2 py-0.5 rounded' : ''}`}
                   >
-                    ⚠️ {(suppliers as any).total_high} High Risk
+                    ⚠️ {actionableHigh} High Risk
                   </button>
                 )}
-                {(suppliers as any)?.total_medium > 0 && (
+                {actionableMedium > 0 && (
                   <button
                     onClick={() => setRiskFilter(riskFilter === 'medium' ? 'all' : 'medium')}
                     className={`block text-amber-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'medium' ? 'bg-amber-100 px-2 py-0.5 rounded' : ''}`}
                   >
-                    📋 {(suppliers as any).total_medium} Medium Risk
+                    📋 {actionableMedium} Medium Risk
                   </button>
                 )}
+                {actionableCritical + actionableHigh + actionableMedium === 0 &&
+                  !(suppliers as any)?.suppliers_at_sanctions_risk && (
+                    <div className="text-xs text-green-700 font-semibold">
+                      ✓ No new signals this cycle
+                    </div>
+                  )}
                 {/* Show risk type counts */}
                 {suppliers?.suppliers_at_cyber_risk > 0 && (
                   <button
@@ -593,12 +615,18 @@ export default function MorningCoffeeDashboard() {
                     ⚠️ {(suppliers as any).suppliers_at_recall_risk} CPSC Recall
                   </button>
                 )}
+                {/* Standing country exposure, phrased so it does not read as
+                    something that happened today. These are the same
+                    suppliers the severity counts above used to double-count,
+                    and the set barely moves from one cycle to the next. */}
                 {(suppliers as any)?.suppliers_at_geopolitical_risk > 0 && (
                   <button
                     onClick={() => setRiskFilter(riskFilter === 'geopolitical' ? 'all' : 'geopolitical')}
-                    className={`block text-orange-700 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'geopolitical' ? 'bg-orange-100 px-2 py-0.5 rounded' : ''}`}
+                    className={`block text-left text-gray-500 text-xs hover:underline cursor-pointer pt-1 ${riskFilter === 'geopolitical' ? 'bg-orange-50 px-2 py-0.5 rounded' : ''}`}
+                    title="Standing exposure from the country a supplier operates in — not a signal that something changed"
                   >
-                    🌍 {(suppliers as any).suppliers_at_geopolitical_risk} Geopolitical
+                    🌍 {(suppliers as any).suppliers_at_geopolitical_risk} in flagged regions
+                    <span className="block text-gray-400">standing exposure, unchanged</span>
                   </button>
                 )}
               </div>
@@ -823,9 +851,12 @@ export default function MorningCoffeeDashboard() {
           {(() => {
             const filteredSuppliers = suppliersList.filter((supplier: Supplier) => {
               if (riskFilter === 'all') return true;
-              if (riskFilter === 'critical') return supplier.risk_level === 'CRITICAL';
-              if (riskFilter === 'high') return supplier.risk_level === 'HIGH';
-              if (riskFilter === 'medium') return supplier.risk_level === 'MEDIUM';
+              // Severity filters mirror the actionable counts on the card
+              // above; the geopolitical filter below is what surfaces the
+              // structural-floor suppliers those counts exclude.
+              if (riskFilter === 'critical') return isActionable(supplier) && supplier.risk_level === 'CRITICAL';
+              if (riskFilter === 'high') return isActionable(supplier) && supplier.risk_level === 'HIGH';
+              if (riskFilter === 'medium') return isActionable(supplier) && supplier.risk_level === 'MEDIUM';
               if (riskFilter === 'sanctions') return (supplier as any).sanctions_hit;
               if (riskFilter === 'cyber') return supplier.cyber_risk;
               if (riskFilter === 'recall') return (supplier as any).recall_risk;

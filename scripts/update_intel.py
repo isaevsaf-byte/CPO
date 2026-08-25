@@ -494,7 +494,7 @@ def scan_country_geopolitical_news(country):
     return risk_detected, max_level, headlines, reason
 
 
-def fetch_gdelt_country_intel(country: str, max_attempts: int = 2) -> dict | None:
+def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max_attempts: int = 2) -> dict | None:
     """
     Independent geopolitical signal from GDELT (free, no key, globally
     aggregated news monitoring across 65+ languages, updated every 15 min —
@@ -502,8 +502,22 @@ def fetch_gdelt_country_intel(country: str, max_attempts: int = 2) -> dict | Non
     scan_country_geopolitical_news() uses above). Experimental: feeds only
     the standalone /geopolitical page for now, not the RAG pipeline.
 
-    Returns {article_count, avg_tone, articles: [...]} or None on any
-    failure — best-effort, never blocks the harvest.
+    Returns {article_count, avg_tone, articles: [...], has_relevant: bool}
+    or None on any failure — best-effort, never blocks the harvest.
+
+    relevant_suppliers ({"name","category"} dicts, for suppliers located
+    in this country) ranks the headlines GDELT returns: a country-level
+    news search has no idea what a CPO actually cares about, so a plain
+    "most negative" list is dominated by generic country news (crime,
+    weather, unrelated wire stories) that happens to score negative —
+    verified against a live response for Germany/China/South Korea,
+    where none of the top-5-by-tone headlines mentioned the actual
+    suppliers or their industries. Ranking supplier-name or
+    category-keyword matches first (still tone-sorted within each tier)
+    surfaces the headlines a reader can actually act on. has_relevant
+    tells the frontend whether any match was found at all, so a country
+    with zero relevant hits can say so honestly instead of silently
+    passing off generic news as supplier-relevant.
 
     Uses mode=tonechart rather than mode=artlist: GDELT's artlist output
     carries no per-article tone field at all (verified against a live
@@ -545,24 +559,60 @@ def fetch_gdelt_country_intel(country: str, max_attempts: int = 2) -> dict | Non
         total_count = sum(b.get("count", 0) for b in bins)
         weighted_tone_sum = sum(b.get("bin", 0) * b.get("count", 0) for b in bins)
 
-        # Most negative bins first — these are the articles worth surfacing.
-        articles_out = []
+        # Relevance terms: supplier names (strongest signal — a headline
+        # naming "Infineon" is unambiguous) plus each supplier's category
+        # keywords (weaker — "semiconductor" doesn't name a company, but
+        # still beats an unrelated crime story). Both checked as substrings
+        # against the lowercased headline.
+        name_terms = [s["name"].lower() for s in (relevant_suppliers or []) if s.get("name")]
+        keyword_terms = [
+            kw for s in (relevant_suppliers or [])
+            for kw in CATEGORY_KEYWORDS.get(s.get("category"), [])
+        ]
+
+        def relevance(title: str) -> int:
+            t = title.lower()
+            if any(term in t for term in name_terms):
+                return 2
+            if any(term in t for term in keyword_terms):
+                return 1
+            return 0
+
+        # Pull a wider candidate pool than we'll show (every toparts
+        # example across every bin, most negative first) so there's
+        # something to rank by relevance instead of just taking whatever
+        # the first 5 tone-sorted slots happen to be.
+        # GDELT indexes the same wire story from multiple syndicating
+        # domains as separate toparts entries — dedupe by title (verified
+        # against a live response: the identical "Lahav 433..." headline
+        # from two outlets, back to back) or the list reads as padded.
+        candidates = []
+        seen_titles = set()
         for b in sorted(bins, key=lambda b: b.get("bin", 0)):
             for a in b.get("toparts", []):
-                articles_out.append({
-                    "title": a.get("title", ""),
+                title = a.get("title", "")
+                if title in seen_titles:
+                    continue
+                seen_titles.add(title)
+                candidates.append({
+                    "title": title,
                     "url": a.get("url", ""),
                     "tone": b.get("bin"),
+                    "_relevance": relevance(title),
                 })
-                if len(articles_out) >= 5:
-                    break
-            if len(articles_out) >= 5:
-                break
+
+        candidates.sort(key=lambda a: (-a["_relevance"], a["tone"]))
+        has_relevant = any(a["_relevance"] > 0 for a in candidates)
+        articles_out = [
+            {"title": a["title"], "url": a["url"], "tone": a["tone"]}
+            for a in candidates[:5]
+        ]
 
         return {
             "article_count": total_count,
             "avg_tone": round(weighted_tone_sum / total_count, 1) if total_count else None,
             "articles": articles_out,
+            "has_relevant": has_relevant,
             "fetched_at": datetime.utcnow().isoformat(),
         }
     except Exception as e:
@@ -574,7 +624,7 @@ GDELT_TIME_BUDGET_SEC = 150  # hard cap on the whole phase — see fetch_gdelt_i
 GDELT_CIRCUIT_BREAKER_FAILS = 3  # consecutive failures before bailing out early
 
 
-def fetch_gdelt_intel(countries: list, priority_countries: tuple = ()) -> dict:
+def fetch_gdelt_intel(countries: list, priority_countries: tuple = (), suppliers_by_country: dict = None) -> dict:
     """
     Best-effort GDELT scan across watchlist countries — see
     fetch_gdelt_country_intel.
@@ -620,7 +670,8 @@ def fetch_gdelt_intel(countries: list, priority_countries: tuple = ()) -> dict:
         if i > 0:
             time.sleep(random.uniform(5, 7))
         max_attempts = 2 if country in priority_countries else 1
-        intel = fetch_gdelt_country_intel(country, max_attempts=max_attempts)
+        relevant_suppliers = (suppliers_by_country or {}).get(country, [])
+        intel = fetch_gdelt_country_intel(country, relevant_suppliers=relevant_suppliers, max_attempts=max_attempts)
         if intel:
             result[country] = intel
             consecutive_fails = 0
@@ -686,6 +737,23 @@ def scan_supplier_news_google(supplier_name, country):
 
     return [h["title"] for h in headlines], max_level, reason
 
+
+# Category -> industry keywords, used only to rank GDELT headlines by
+# relevance in fetch_gdelt_country_intel (see GDELT_INDUSTRY_KEYWORDS
+# below) — has no bearing on the deterministic RAG scoring above.
+CATEGORY_KEYWORDS = {
+    "Printed Packaging": ["packaging", "printing"],
+    "Printing Substrates": ["paper", "pulp", "substrate"],
+    "Filter Materials": ["filter", "cellulose", "acetate"],
+    "Capsules": ["capsule"],
+    "Fine Papers": ["paper", "pulp"],
+    "Nicotine": ["nicotine", "tobacco"],
+    "Modern/Traditional Oral Fleece": ["fleece", "nonwoven"],
+    "EMS": ["electronics manufacturing", "contract manufactur"],
+    "Batteries": ["battery", "batteries", "lithium"],
+    "EE Component": ["semiconductor", "chip", "electronics"],
+    "Mechanical": ["component", "manufactur"],
+}
 
 # SUPPLIER WATCHLIST - Pillar 3
 WATCHLIST_DATA = [
@@ -2752,10 +2820,14 @@ def main():
 
     # Experimental GDELT geopolitical signal — feeds only the standalone
     # /geopolitical page (see fetch_gdelt_intel), not the RAG pipeline above.
-    all_gdelt_countries = {
-        s.get("location") for s in suppliers_data.get("suppliers", [])
-        if s.get("location") and s.get("location") != "Unknown"
-    }
+    suppliers_by_country = {}
+    for s in suppliers_data.get("suppliers", []):
+        loc = s.get("location")
+        if loc and loc != "Unknown":
+            suppliers_by_country.setdefault(loc, []).append(
+                {"name": s.get("name"), "category": s.get("category")}
+            )
+    all_gdelt_countries = set(suppliers_by_country.keys())
     # China and USA go first: highest-priority countries for BAT's supply
     # chain (semiconductor/trade-war exposure), so they get fetched while
     # GDELT's rate-limit budget is freshest — a straight alphabetical/set
@@ -2763,7 +2835,7 @@ def main():
     # hits 429s partway through.
     priority = tuple(c for c in ("China", "USA") if c in all_gdelt_countries)
     gdelt_countries = list(priority) + sorted(all_gdelt_countries - set(priority))
-    fresh_geo = fetch_gdelt_intel(gdelt_countries, priority_countries=priority)
+    fresh_geo = fetch_gdelt_intel(gdelt_countries, priority_countries=priority, suppliers_by_country=suppliers_by_country)
     # Merge onto last run's results instead of replacing wholesale — GDELT's
     # rate limiting means only a handful of countries succeed on any given
     # run, and which ones is essentially random (whichever get through

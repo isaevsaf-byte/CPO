@@ -200,7 +200,13 @@ export default function GeopoliticalIntelPage() {
                         <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-slate-800">
                           {data.articles.length === 0 ? (
                             <p className="text-xs text-gray-400 dark:text-slate-500">No article examples returned.</p>
-                          ) : (
+                          ) : data.has_relevant === false ? (
+                            <p className="text-xs text-gray-400 dark:text-slate-500 italic">
+                              None of these mention a watchlist supplier or its industry — showing
+                              the most negative country news available instead.
+                            </p>
+                          ) : null}
+                          {data.articles.length > 0 && (
                             data.articles.map((a, idx) => (
                               <a
                                 key={idx}

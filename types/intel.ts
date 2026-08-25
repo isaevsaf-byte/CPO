@@ -251,6 +251,11 @@ export interface IntelSnapshot {
       article_count: number;
       avg_tone: number | null;
       articles: { title: string; url: string; tone: number | null }[];
+      // False means none of the headlines below actually mention a
+      // watchlist supplier or its industry — they're shown as the most
+      // negative country-level news available, not evidence of anything
+      // supplier-specific. See fetch_gdelt_country_intel's has_relevant.
+      has_relevant?: boolean;
       // Per-country, not per-snapshot: GDELT rate-limits hard enough that
       // only some countries refresh on any given harvest, so this can lag
       // last_updated by several cycles for a given country. See

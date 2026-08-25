@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-25T00:41:20.127544",
-  "version": "7f437621097e",
+  "last_updated": "2026-08-25T12:24:19.861401",
+  "version": "43cdfe3dbdcd",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -14,18 +14,11 @@
     }
   },
   "executive_summary": {
-    "headline": "High-exposure electronics supplier shows unexplained stock decline; confirm whether this is sector-wide pressure or company-specific weakness.",
-    "next_step": "Within 2 business days, check TI earnings guidance, capacity announcements, and sector commentary (earnings calls, analyst notes) to rule out demand or margin signals specific to semiconductors vs. broad market correction.",
-    "context": "Texas Instruments (high BAT exposure) declined 2.1% with no corroborating negative news on the company itself. This is worth validating because a move of that size in a core component supplier warrants either confidence it's a market-wide EE sector dip or investigation into supply/demand fundamentals before it widens."
+    "headline": "Two high-exposure suppliers posted unexplained stock declines amid sector-wide pressure \u2014 visibility into root cause is needed before escalating.",
+    "next_step": "By EOD tomorrow, check whether EVE Energy and Texas Instruments issued guidance changes or disclosed supply/demand shifts; cross-reference with battery and EE component sector moves to confirm whether this is systemic or idiosyncratic.",
+    "context": "EVE Energy (China, batteries, -2.2%) and Texas Instruments (USA, EE components, -2.1%) both declined with no corroborating news, suggesting either market-wide sector weakness or unannounced developments. Worth establishing whether the moves are correlated to the same macro driver or isolated to each supplier's circumstances."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-05T13:30:56.542216",
-      "macro": "GREEN",
-      "peers": "RED",
-      "suppliers": "AMBER",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-08-05T19:10:59.282726",
       "macro": "GREEN",
@@ -578,6 +571,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-25T12:24:16.025889",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "macro": {
@@ -593,7 +593,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-25T00:32:03.055245"
+        "last_fetched": "2026-08-25T12:21:49.309996"
       },
       "eu": {
         "status": "success",
@@ -604,7 +604,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1664",
-        "last_fetched": "2026-08-25T00:32:03.628865"
+        "last_fetched": "2026-08-25T12:21:49.791071"
       },
       "china": {
         "status": "placeholder",
@@ -615,11 +615,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-25T00:32:03.629727"
+        "last_fetched": "2026-08-25T12:21:49.792134"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-25T00:32:03.629739"
+    "last_fetched": "2026-08-25T12:21:49.792147"
   },
   "peers": {
     "status": "success",
@@ -627,7 +627,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-25T00:32:06.101025"
+    "last_fetched": "2026-08-25T12:21:52.952277"
   },
   "suppliers": {
     "status": "success",
@@ -644,7 +644,7 @@
     "total_medium": 10,
     "actionable_critical": 0,
     "actionable_high": 0,
-    "actionable_medium": 1,
+    "actionable_medium": 2,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -717,8 +717,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 1.69,
+        "current_price": 9.99,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: NATO frontline state, border with Russia",
@@ -729,8 +729,7 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
-            "Russia Ukraine War Finland - Springfield News-Sun",
-            "Russia Ukraine War Finland - The Herald Journal",
+            "Russia Ukraine War Finland - springfieldnewssun.com",
             "Finland says it suspects Russian plane of violating its airspace - Euronews.com"
           ],
           "escalated": true,
@@ -769,9 +768,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "Opinion | The Iran War Shows China\u2019s Energy Strategy Is Working - The New York Times",
             "The Risks of Downplaying China\u2019s Military - War on the Rocks",
-            "US threatens severe sanctions against countries with economic ties to Iran - The Guardian",
-            "Trump admin unveils anti-Iran global sanctions plan, signals China not exempt - CNBC"
+            "China is the biggest buyer of Iran\u2019s oil. Could US sanctions threaten those ties? - The Guardian"
           ],
           "escalated": true,
           "baseline_only": true
@@ -809,9 +808,9 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "Southern African mothers plead for sons lured to Russia's war - RFI",
-            "Botswana stops citizens from being recruited into the Russian Military at airports in the country, South Africa, and Ethiopia - Business Insider Africa",
-            "Canada risks falling behind with tepid approach to African trade: South Africa envoy - Toronto Star"
+            "Canada risks falling behind with tepid approach to African trade: South Africa envoy - Toronto Star",
+            "Discovery CEO shares good news about South Africa, and state-owned company in trouble - businesstech.co.za",
+            "Rand holds near multi-month high as Iran sanctions loom - SABC News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -936,9 +935,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "South Korea says US cancelled upcoming joint marine exercises over Iran war - Al Jazeera",
-            "U.S. Marines Cancel Drill With South Korea, Citing Iran War Demands - The New York Times",
-            "US cancels joint marine drills with South Korea over Iran war-related force constraints - Reuters"
+            "US cancels joint marine drills with South Korea over Iran war-related force constraints - Reuters",
+            "What does a self-reliant South Korea look like? Some push for a nuclear option. - The Christian Science Monitor",
+            "South Korea says US cancelled upcoming joint marine exercises over Iran war - Al Jazeera"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1080,8 +1079,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.11,
-        "current_price": 269.7,
+        "daily_change_pct": 0.63,
+        "current_price": 271.4,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1092,9 +1091,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
+            "Trump targets Iran\u2019s trade lifelines \u2014 here are the countries most exposed - CNBC",
             "The Cost of India\u2019s Calibrated Neutrality in the Iran War - Small Wars Journal",
-            "Iran vows to retaliate against countries that cooperate with fresh US sanctions - The Guardian",
-            "India Lifts Wheat Export Ban in Boost to War Hit Global Supply - Bloomberg"
+            "US-Canada Trade War: How Trump\u2019s Tariffs Open a Bigger Battle With China - Open Magazine"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1132,9 +1131,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "Opinion | The Iran War Shows China\u2019s Energy Strategy Is Working - The New York Times",
             "The Risks of Downplaying China\u2019s Military - War on the Rocks",
-            "US threatens severe sanctions against countries with economic ties to Iran - The Guardian",
-            "Trump admin unveils anti-Iran global sanctions plan, signals China not exempt - CNBC"
+            "China is the biggest buyer of Iran\u2019s oil. Could US sanctions threaten those ties? - The Guardian"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1201,9 +1200,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "Opinion | The Iran War Shows China\u2019s Energy Strategy Is Working - The New York Times",
             "The Risks of Downplaying China\u2019s Military - War on the Rocks",
-            "US threatens severe sanctions against countries with economic ties to Iran - The Guardian",
-            "Trump admin unveils anti-Iran global sanctions plan, signals China not exempt - CNBC"
+            "China is the biggest buyer of Iran\u2019s oil. Could US sanctions threaten those ties? - The Guardian"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1229,8 +1228,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 2.41,
-        "current_price": 10.18,
+        "daily_change_pct": 0.79,
+        "current_price": 10.26,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1241,9 +1240,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "Opinion | The Iran War Shows China\u2019s Energy Strategy Is Working - The New York Times",
             "The Risks of Downplaying China\u2019s Military - War on the Rocks",
-            "US threatens severe sanctions against countries with economic ties to Iran - The Guardian",
-            "Trump admin unveils anti-Iran global sanctions plan, signals China not exempt - CNBC"
+            "China is the biggest buyer of Iran\u2019s oil. Could US sanctions threaten those ties? - The Guardian"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1269,24 +1268,24 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.05,
-        "current_price": 55.82,
-        "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "daily_change_pct": -2.24,
+        "current_price": 54.57,
+        "risk_analysis": "Stock decline for high-exposure supplier EVE Energy. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
-        "counts_toward_rag": false,
-        "price_move_only": false,
+        "last_signal": "\ud83d\udcc9 Stock down -2.2% (no confirmed cause) - High exposure supplier",
+        "counts_toward_rag": true,
+        "price_move_only": true,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
+            "Opinion | The Iran War Shows China\u2019s Energy Strategy Is Working - The New York Times",
             "The Risks of Downplaying China\u2019s Military - War on the Rocks",
-            "US threatens severe sanctions against countries with economic ties to Iran - The Guardian",
-            "Trump admin unveils anti-Iran global sanctions plan, signals China not exempt - CNBC"
+            "China is the biggest buyer of Iran\u2019s oil. Could US sanctions threaten those ties? - The Guardian"
           ],
-          "escalated": true,
-          "baseline_only": true
+          "escalated": false,
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1338,11 +1337,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": -0.54,
+        "current_price": 55.67,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "last_signal": "\u2713 Normal operations. Stock: -0.5%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1442,7 +1441,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-25T00:33:10.632041"
+    "last_fetched": "2026-08-25T12:22:57.216678"
   },
   "macro_economy": {
     "us": {
@@ -1455,13 +1454,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: -0.08% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: -0.12% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
-      "cpi": "N/A",
-      "rate": "N/A",
-      "trend": "N/A",
-      "summary": "Unable to fetch CNY/USD data. Market may be closed."
+      "cpi": "0.5%",
+      "rate": "3.10%",
+      "trend": "Stable",
+      "summary": "CNY/USD stable: -0.03% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1487,12 +1486,12 @@
       "ticker": "PM",
       "region": "US",
       "sentiment": "Positive",
-      "latest_headline": "Coca-Cola Just Won a Key Consumer Battle",
+      "latest_headline": "2 Unpopular Stocks That Deserve a Second Chance and 1 Facing Headwinds",
       "stock_move": "+1.72%",
       "current_price": 191.4600067138672,
       "daily_change_pct": 1.72,
       "risk_level": "LOW",
-      "last_signal": "\ud83d\udcf0 Coca-Cola Just Won a Key Consumer Battle",
+      "last_signal": "\ud83d\udcf0 2 Unpopular Stocks That Deserve a Second Chance and 1 Facing Headwinds",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1505,9 +1504,9 @@
       "region": "UK",
       "sentiment": "Neutral",
       "latest_headline": "Imperial Brands cutting thousands of jobs in U.S. and Europe",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "+0.62%",
+      "current_price": 2518.5,
+      "daily_change_pct": 0.62,
       "risk_level": "MEDIUM",
       "last_signal": "\u26a0\ufe0f News Alert: Imperial Brands cutting thousands of jobs in U.S. and Europe",
       "news_risk": true,
@@ -1522,9 +1521,9 @@
       "region": "Japan",
       "sentiment": "Positive",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "+1.34%",
-      "current_price": 6982.0,
-      "daily_change_pct": 1.34,
+      "stock_move": "+1.39%",
+      "current_price": 6986.0,
+      "daily_change_pct": 1.39,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1632,10 +1631,10 @@
   "harvest_stats": {
     "total_errors": 0,
     "total_warnings": 0,
-    "total_successes": 11,
+    "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 559.513341
+    "duration_seconds": 152.710752
   },
   "health": {
     "pillars": {

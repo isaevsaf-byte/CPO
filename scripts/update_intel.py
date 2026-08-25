@@ -512,9 +512,14 @@ def fetch_gdelt_country_intel(country: str, max_attempts: int = 2) -> dict | Non
     each bucket's example articles inherit that bucket's tone score, which
     is the only way this API actually exposes a tone-attributed article.
 
-    max_attempts controls how many times a 429 is retried (with growing
-    backoff) before giving up — see fetch_gdelt_intel for why this is
-    higher for the countries that matter most.
+    max_attempts controls how many times a 429 is retried before giving
+    up — see fetch_gdelt_intel for why this stays low (1-2) even for the
+    countries that matter most: a live prod run showed that once GDELT
+    starts 429ing a GitHub Actions runner IP, every subsequent request
+    fails too, including ones with a 12-24s backoff — this reads as an
+    IP-level block for the run's duration, not a short per-request
+    limit, so retrying doesn't recover it and only burns time (and once
+    cost the entire harvest job its timeout — see fetch_gdelt_intel).
     """
     try:
         query = requests.utils.quote(f'"{country}" sourcelang:english')
@@ -530,7 +535,7 @@ def fetch_gdelt_country_intel(country: str, max_attempts: int = 2) -> dict | Non
             except requests.HTTPError as e:
                 is_last = attempt == max_attempts - 1
                 if e.response is not None and e.response.status_code == 429 and not is_last:
-                    time.sleep(12 * (attempt + 1))
+                    time.sleep(5)
                     continue
                 raise
         bins = response.json().get("tonechart", [])
@@ -564,31 +569,62 @@ def fetch_gdelt_country_intel(country: str, max_attempts: int = 2) -> dict | Non
         return None
 
 
+GDELT_TIME_BUDGET_SEC = 150  # hard cap on the whole phase — see fetch_gdelt_intel
+GDELT_CIRCUIT_BREAKER_FAILS = 3  # consecutive failures before bailing out early
+
+
 def fetch_gdelt_intel(countries: list, priority_countries: tuple = ()) -> dict:
     """
     Best-effort GDELT scan across watchlist countries — see
-    fetch_gdelt_country_intel. GDELT's rate limit is stricter and less
-    predictable in practice than its documented "one every 5 seconds":
-    a live prod run at a flat 5s gap 429'd ~2/3 of countries; a later run
-    at a flat 10s gap covered *fewer* countries, not more (3/12 vs 4/12),
-    and still dropped USA even fetched 2nd — so the limit isn't simply
-    "wait longer between every request." Two changes instead of a third
-    blind global slowdown:
-      - Small random jitter on the base gap, in case evenly-spaced
-        requests are themselves part of what gets flagged.
-      - priority_countries get 3 attempts (growing backoff) instead of 1
-        extra retry — a dedicated reliability budget for the countries
-        that must not silently drop, rather than slowing every country
-        by the same margin for marginal overall gain.
+    fetch_gdelt_country_intel.
+
+    A live prod run proved retries are not a safe lever here: a flat 5s
+    gap 429'd ~2/3 of countries; a flat 10s gap covered *fewer* (3/12 vs
+    4/12); and a 3-attempt/growing-backoff retry for China/USA specifically
+    still failed both, then every single country after them also 429'd
+    with zero successes — consistent with GDELT blocking the runner IP
+    for the rest of the run, not a short per-request limit that patience
+    fixes. That attempt made things categorically worse: the phase ran
+    long enough to hit the workflow's 10-minute job timeout, and GitHub
+    cancelled the run — which lost the *entire* harvest for that cycle
+    (macro/peers/suppliers/executive_summary too), not just GDELT.
+
+    So this is now bounded by two hard safety nets instead of leaning on
+    retries: a wall-clock budget for the whole phase (GDELT_TIME_BUDGET_SEC)
+    that abandons any remaining countries once hit, and a circuit breaker
+    that stops after a run of consecutive failures (GDELT_CIRCUIT_BREAKER_FAILS)
+    without waiting out the rest of the budget — once the IP looks blocked,
+    burning the remaining budget on countries that will also fail wastes
+    time this experimental feature is not entitled to at the harvest's
+    expense. Whatever countries were reached before the cutoff is what
+    ships; the page already handles partial/empty data gracefully.
     """
+    start = time.monotonic()
     result = {}
+    consecutive_fails = 0
     for i, country in enumerate(countries):
+        elapsed = time.monotonic() - start
+        if elapsed > GDELT_TIME_BUDGET_SEC:
+            logger.warning(
+                f"GDELT time budget ({GDELT_TIME_BUDGET_SEC}s) exhausted after "
+                f"{i}/{len(countries)} countries — abandoning the rest this cycle."
+            )
+            break
+        if consecutive_fails >= GDELT_CIRCUIT_BREAKER_FAILS:
+            logger.warning(
+                f"GDELT circuit breaker tripped ({consecutive_fails} consecutive "
+                f"failures) — abandoning the remaining {len(countries) - i} countries."
+            )
+            break
         if i > 0:
-            time.sleep(random.uniform(7, 10))
-        max_attempts = 3 if country in priority_countries else 2
+            time.sleep(random.uniform(5, 7))
+        max_attempts = 2 if country in priority_countries else 1
         intel = fetch_gdelt_country_intel(country, max_attempts=max_attempts)
         if intel:
             result[country] = intel
+            consecutive_fails = 0
+        else:
+            consecutive_fails += 1
     logger.info(f"GDELT scan complete. {len(result)}/{len(countries)} countries returned data.")
     return result
 

@@ -278,38 +278,35 @@ def calculate_data_hash(data: dict) -> str:
 
 # ============================================================================
 # GEOPOLITICAL RISK MAP - Auto-applied based on supplier location
-# Captures wars, armed conflicts, sanctions regimes, and regional instability.
-# Severity levels act as a FLOOR for supplier risk — can only elevate, never reduce.
 # ============================================================================
-GEOPOLITICAL_RISK_MAP = {
-    # CRITICAL — Active war zones, comprehensive sanctions
-    "Ukraine": {"level": "CRITICAL", "reason": "Active armed conflict zone (Russia-Ukraine war)"},
-    "Russia": {"level": "CRITICAL", "reason": "Active conflict, comprehensive Western sanctions regime"},
-    "Yemen": {"level": "CRITICAL", "reason": "Active armed conflict, Houthi attacks disrupting Red Sea shipping"},
-    "Sudan": {"level": "CRITICAL", "reason": "Active civil war, humanitarian crisis"},
-    "Myanmar": {"level": "CRITICAL", "reason": "Civil war, military junta, Western sanctions"},
-    "Syria": {"level": "HIGH", "reason": "Post-conflict instability, sanctions regime"},
+# Lives in data/country_risk.json, not here: which countries carry a standing
+# risk floor is a judgement that gets revisited as the world changes, and it
+# should not require touching this file. Severity acts as a FLOOR for supplier
+# risk — it can only elevate, never reduce — and a floor on its own never
+# moves the pillar RAG score (see counts_toward_rag), so a country sitting
+# here permanently does not permanently redden the board.
+COUNTRY_RISK_FILE = Path(__file__).parent.parent / "data" / "country_risk.json"
 
-    # HIGH — Active military operations, severe tensions, partial sanctions
-    "Israel": {"level": "HIGH", "reason": "Active military operations, regional escalation risk"},
-    "Palestine": {"level": "HIGH", "reason": "Active conflict zone"},
-    "Iran": {"level": "HIGH", "reason": "Comprehensive sanctions regime, regional proxy conflicts"},
-    "North Korea": {"level": "HIGH", "reason": "Nuclear program, comprehensive UN/US sanctions"},
-    "Lebanon": {"level": "HIGH", "reason": "Regional conflict spillover, economic collapse"},
-    "Taiwan": {"level": "HIGH", "reason": "Cross-strait military tensions, invasion risk"},
 
-    # MEDIUM — Elevated tensions, trade restrictions, or instability
-    "China": {"level": "MEDIUM", "reason": "US-China trade war, Taiwan risk, export controls on tech"},
-    "South Korea": {"level": "MEDIUM", "reason": "North Korea proximity, regional military tensions"},
-    "India": {"level": "MEDIUM", "reason": "Border tensions with China and Pakistan"},
-    "South Africa": {"level": "MEDIUM", "reason": "Economic instability, infrastructure challenges, energy crisis"},
-    "Finland": {"level": "MEDIUM", "reason": "NATO frontline state, border with Russia"},
-
-    # LOW — Monitoring only (not added here; absence = no geopolitical flag)
-}
+def _load_country_risk(path: Path) -> dict:
+    with open(path) as f:
+        countries = json.load(f).get("countries", {})
+    for country, entry in countries.items():
+        level = entry.get("level")
+        if level not in RISK_PRIORITY:
+            raise ValueError(
+                f"{path}: {country!r} has level {level!r}; expected one of "
+                f"{sorted(RISK_PRIORITY)}"
+            )
+        if not entry.get("reason"):
+            raise ValueError(f"{path}: {country!r} has no reason text")
+    return countries
 
 # Risk level numeric priority for comparisons
 RISK_PRIORITY = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
+
+# Bound after RISK_PRIORITY, which the loader validates each level against.
+GEOPOLITICAL_RISK_MAP = _load_country_risk(COUNTRY_RISK_FILE)
 
 # ============================================================================
 # NEWS RISK CLASSIFICATION HELPERS
@@ -810,22 +807,11 @@ def scan_supplier_news_google(supplier_name, country):
     return [h["title"] for h in headlines], max_level, reason
 
 
-# Category -> industry keywords, used only to rank GDELT headlines by
-# relevance in fetch_gdelt_country_intel (see GDELT_INDUSTRY_KEYWORDS
-# below) — has no bearing on the deterministic RAG scoring above.
-CATEGORY_KEYWORDS = {
-    "Printed Packaging": ["packaging", "printing"],
-    "Printing Substrates": ["paper", "pulp", "substrate"],
-    "Filter Materials": ["filter", "cellulose", "acetate"],
-    "Capsules": ["capsule"],
-    "Fine Papers": ["paper", "pulp"],
-    "Nicotine": ["nicotine", "tobacco"],
-    "Modern/Traditional Oral Fleece": ["fleece", "nonwoven"],
-    "EMS": ["electronics manufacturing", "contract manufactur"],
-    "Batteries": ["battery", "batteries", "lithium"],
-    "EE Component": ["semiconductor", "chip", "electronics"],
-    "Mechanical": ["component", "manufactur"],
-}
+# Category -> industry keywords, used only to rank news and GDELT headlines
+# by relevance — never in the deterministic RAG scoring. Loaded from
+# data/suppliers.json alongside category_segments (see _load_watchlist): both
+# are per-category facts maintained by hand, and splitting them across a JSON
+# file and this module meant adding a category needed edits in two places.
 
 # SUPPLIER WATCHLIST - Pillar 3
 # The watchlist itself lives in data/suppliers.json, not here: adding,
@@ -847,6 +833,7 @@ def _load_watchlist(path: Path) -> tuple:
         raise ValueError(f"{path} contains no suppliers")
 
     segments = raw.get("category_segments", {})
+    keywords = raw.get("category_keywords", {})
     watchlist, profiles = [], {}
     for entry in entries:
         name, category = entry.get("name"), entry.get("category")
@@ -864,9 +851,9 @@ def _load_watchlist(path: Path) -> tuple:
                 f"{path.name}: {name!r} has category {category!r}, which has no "
                 f"category_segments entry — segment defaults to Combustibles"
             )
-        if category not in CATEGORY_KEYWORDS:
+        if category not in keywords:
             logger.warning(
-                f"{path.name}: category {category!r} has no CATEGORY_KEYWORDS entry — "
+                f"{path.name}: category {category!r} has no category_keywords entry — "
                 f"{name!r} gets no industry keywords for news relevance ranking"
             )
         watchlist.append({"name": name, "category": category})
@@ -880,10 +867,10 @@ def _load_watchlist(path: Path) -> tuple:
             "stock_ticker": entry.get("stock_ticker", "N/A"),
             "url": entry.get("url"),
         }
-    return watchlist, profiles
+    return watchlist, profiles, keywords
 
 
-WATCHLIST_DATA, SUPPLIER_PROFILES = _load_watchlist(WATCHLIST_FILE)
+WATCHLIST_DATA, SUPPLIER_PROFILES, CATEGORY_KEYWORDS = _load_watchlist(WATCHLIST_FILE)
 
 # PEERS & COMPETITORS - Pillar 2 (Hardcoded Source of Truth)
 # match_terms gate which fetched headlines may be attributed to a peer.
@@ -2890,7 +2877,8 @@ def trim_change_log(entries: list) -> list:
 
 def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
                                  suppliers_data: dict, peer_group: list,
-                                 macro_data: dict) -> dict | None:
+                                 macro_data: dict, changes_this_cycle: list = None,
+                                 change_log: list = None) -> dict | None:
     """
     Narrate the already-computed RAG rollup into a CPO-facing executive
     summary via a single Claude API call. This never influences the RAG
@@ -2898,6 +2886,15 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
     signals across suppliers/pillars that the per-supplier f-string
     templates report individually (e.g. five China-exposure suppliers
     flagged separately vs. recognized as one concentrated risk).
+
+    changes_this_cycle and change_log are what moved (see compute_changes),
+    and they lead the payload. Without them the brief could only describe a
+    standing position, so on the many cycles where the position is unchanged
+    it reworded the same paragraph and read as new information — while the
+    one thing that genuinely was new that cycle sat unmentioned in the feed
+    directly above it. A large unexplained price move on a Critical-exposure
+    supplier is the clearest case: it deliberately does not move the RAG
+    score, so nothing else in this payload would have surfaced it.
 
     Returns a structured {headline, next_step, context} dict rather than
     one free-text paragraph — a single dense wall of text doesn't scan
@@ -2962,7 +2959,44 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
             if p.get("risk_level") not in (None, "LOW")
         ]
 
+        # Trimmed to what the model needs to name a change; hrefs and
+        # timestamps are frontend concerns.
+        def _compact(entries):
+            return [
+                {
+                    "kind": c.get("kind"),
+                    "direction": c.get("direction"),
+                    "entity": c.get("entity"),
+                    "headline": c.get("headline"),
+                    "detail": c.get("detail", ""),
+                }
+                for c in (entries or [])
+            ]
+
+        # A week of prior changes, so a third consecutive move on one supplier
+        # can be recognised as a trend rather than reported as an isolated
+        # event. Excludes this cycle's own entries, which are listed above.
+        week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        this_cycle_ids = {id(c) for c in (changes_this_cycle or [])}
+        recent = []
+        for entry in (change_log or []):
+            if id(entry) in this_cycle_ids:
+                continue
+            raw = entry.get("at")
+            if not raw:
+                continue
+            try:
+                stamp = datetime.fromisoformat(raw)
+            except ValueError:
+                continue
+            if stamp.tzinfo is None:
+                stamp = stamp.replace(tzinfo=timezone.utc)
+            if stamp >= week_ago:
+                recent.append(entry)
+
         payload = {
+            "changes_this_cycle": _compact(changes_this_cycle),
+            "changes_previous_7_days": _compact(recent[-25:]),
             "overall_rag": overall_rag,
             "pillar_rag_scores": pillar_rag_scores,
             "actionable_suppliers": actionable_suppliers,
@@ -2982,6 +3016,17 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
                 "reviewing a supply chain risk dashboard. You are given an already-decided "
                 "RAG status (RED/AMBER/GREEN) and its underlying signals — do not restate "
                 "or second-guess the color, only explain what it means and what's actionable. "
+                "changes_this_cycle is what actually moved since the previous check, and it "
+                "is the most important thing in this payload: the reader sees that same list "
+                "rendered directly above your brief. When it is non-empty, your headline must "
+                "be about what changed — a supplier's risk moving, a signal appearing or "
+                "clearing, an unexplained price move — not about the standing position. "
+                "changes_previous_7_days is there so you can tell a one-off from a pattern: "
+                "say so when the same entity has moved repeatedly. When changes_this_cycle is "
+                "empty, do not manufacture novelty; say plainly that nothing moved and use the "
+                "brief to explain what is still standing and worth watching. Note that a "
+                "kind of 'price_move' is by design NOT reflected in the RAG color — treat it "
+                "as real and worth naming even when everything reads GREEN. "
                 "overall_rag.driven_by names which pillar(s) — macro, peers, and/or suppliers — "
                 "actually produced the current score; your headline and next_step MUST be about "
                 "that pillar's data specifically, even if another pillar's payload is larger or "
@@ -3213,7 +3258,8 @@ def main():
         logger.info("Change log: nothing changed since the previous snapshot")
 
     executive_summary = generate_executive_summary(
-        overall_rag, pillar_rag_scores, suppliers_data, peer_group, macro_data
+        overall_rag, pillar_rag_scores, suppliers_data, peer_group, macro_data,
+        changes_this_cycle=new_changes, change_log=change_log,
     )
 
     # Build dashboard state with three core pillars + additional intelligence

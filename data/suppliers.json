@@ -1,5 +1,5 @@
 {
-  "_comment": "Hand-maintained BAT supplier watchlist. Adding, removing or re-tiering a supplier is an edit here \u2014 no Python change needed. bat_exposure: Critical (tier 1) | High (tier 2) | Medium (tier 3). stock_ticker 'N/A' means unlisted; those suppliers are scanned via Google News instead of yfinance. location must match a key in GEOPOLITICAL_RISK_MAP (update_intel.py) to pick up a country risk floor.",
+  "_comment": "Hand-maintained BAT supplier watchlist. Adding, removing or re-tiering a supplier is an edit here — no Python change needed. bat_exposure: Critical (tier 1) | High (tier 2) | Medium (tier 3). stock_ticker 'N/A' means unlisted; those suppliers are scanned via Google News instead of yfinance. location must match a country in country_risk.json to pick up a standing risk floor. category_keywords feeds news/GDELT relevance ranking only, never the RAG score.",
   "category_segments": {
     "Batteries": "New Categories (Vuse/Glo)",
     "Capsules": "Combustibles",
@@ -12,6 +12,55 @@
     "Nicotine": "Combustibles",
     "Printed Packaging": "Combustibles",
     "Printing Substrates": "Combustibles"
+  },
+  "category_keywords": {
+    "Printed Packaging": [
+      "packaging",
+      "printing"
+    ],
+    "Printing Substrates": [
+      "paper",
+      "pulp",
+      "substrate"
+    ],
+    "Filter Materials": [
+      "filter",
+      "cellulose",
+      "acetate"
+    ],
+    "Capsules": [
+      "capsule"
+    ],
+    "Fine Papers": [
+      "paper",
+      "pulp"
+    ],
+    "Nicotine": [
+      "nicotine",
+      "tobacco"
+    ],
+    "Modern/Traditional Oral Fleece": [
+      "fleece",
+      "nonwoven"
+    ],
+    "EMS": [
+      "electronics manufacturing",
+      "contract manufactur"
+    ],
+    "Batteries": [
+      "battery",
+      "batteries",
+      "lithium"
+    ],
+    "EE Component": [
+      "semiconductor",
+      "chip",
+      "electronics"
+    ],
+    "Mechanical": [
+      "component",
+      "manufactur"
+    ]
   },
   "suppliers": [
     {

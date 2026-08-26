@@ -92,9 +92,23 @@ re-tier a supplier, edit that file:
 - `bat_exposure` — `Critical` (tier 1), `High` (tier 2) or `Medium` (tier 3)
 - `stock_ticker` — `"N/A"` for unlisted suppliers; those are scanned via
   Google News instead of yfinance
-- `location` — must match a key in `GEOPOLITICAL_RISK_MAP` to pick up a
-  country risk floor
-- `category` — should have an entry in `category_segments` in the same file
+- `location` — must match a country in `data/country_risk.json` to pick up a
+  standing risk floor; a country absent from that file carries none, which is
+  the correct state for stable countries
+- `category` — should have an entry in both `category_segments` and
+  `category_keywords` in the same file; a missing entry logs a warning and
+  falls back rather than failing the harvest
+
+Country risk floors live in `data/country_risk.json`:
+
+```json
+{ "Finland": { "level": "MEDIUM", "reason": "NATO frontline state, border with Russia" } }
+```
+
+A floor can only raise a supplier's risk, never lower it, and on its own it
+never moves the pillar RAG score — only live news escalating above the floor
+counts as something that happened. An unknown `level` or a missing `reason`
+fails the harvest.
 
 A malformed or empty file fails the harvest rather than producing an empty
 watchlist, which would read as "nothing to worry about".

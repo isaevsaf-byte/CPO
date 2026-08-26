@@ -1113,11 +1113,34 @@ export default function MorningCoffeeDashboard() {
                 Risk assessment is based on <strong>threats to supply continuity</strong>, not stock price movements.
               </p>
 
-              {/* Overall Status & Trend — plain-language explainer for the new banner/dots */}
+              {/* What Changed — the feed is the first thing on the page now */}
               <div className="mb-6">
-                <h3 className="text-base font-bold text-gray-900 mb-3">The Traffic Light at the Top</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-3">What Changed Since You Last Looked</h3>
                 <p className="text-gray-700 leading-relaxed">
-                  The banner at the very top of the page gives you one answer to &quot;do I need to worry today?&quot;
+                  The list at the top of the page is everything that moved since your last visit —
+                  a supplier&apos;s risk level going up or down, a new signal appearing or clearing,
+                  a competitor&apos;s status shifting, an economic outlook turning. Your browser
+                  remembers when you were last here, so the list is yours: come back after two days
+                  and you see two days&apos; worth.
+                </p>
+                <p className="text-gray-700 leading-relaxed mt-2">
+                  This exists because a board that says &quot;all clear&quot; looks identical every
+                  morning, and identical is easy to stop reading. Even on a calm day something has
+                  usually moved &mdash; and a large, unexplained share-price move on a supplier that
+                  matters shows up here even when nothing has turned the board amber or red.
+                </p>
+                <p className="text-gray-700 leading-relaxed mt-2">
+                  One thing it deliberately leaves out: the standing exposure that comes simply from
+                  where a supplier operates. That is real, but it is the same every day, and
+                  repeating it would push the things that actually changed off the screen.
+                </p>
+              </div>
+
+              {/* Overall Status & Trend */}
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">The Traffic Light</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  The banner below that list gives you one answer to &quot;do I need to worry today?&quot;
                   🟢 <strong>green</strong> means everything looks normal, 🟡 <strong>amber</strong> means something
                   is worth keeping an eye on, and 🔴 <strong>red</strong> means something needs attention now.
                   It automatically takes the worst of the three sections below it (Global Economy, Peers &amp;
@@ -1126,9 +1149,9 @@ export default function MorningCoffeeDashboard() {
                   click any of them to jump straight to the details.
                 </p>
                 <p className="text-gray-700 leading-relaxed mt-2">
-                  Next to it, a row of small dots shows the last several checks (the system checks in every
-                  6 hours), so you can tell at a glance whether today&apos;s color is something brand new or
-                  has been sitting there for a while.
+                  Underneath, a line tells you how long the current colour has been in effect, so you
+                  can tell at a glance whether today&apos;s status is brand new or has been sitting
+                  there for days.
                 </p>
                 <p className="text-gray-700 leading-relaxed mt-2">
                   One thing worth knowing: some suppliers sit in countries with long-standing, ongoing
@@ -1225,6 +1248,7 @@ export default function MorningCoffeeDashboard() {
               <div className="mb-6">
                 <h3 className="text-base font-bold text-gray-900 mb-3">How to Use</h3>
                 <ul className="list-disc list-inside space-y-2 text-gray-700">
+                  <li><strong>Start with the change list</strong> at the top — it is the part that is different from yesterday</li>
                   <li><strong>Click risk counts</strong> in the Supplier Watchlist card to filter by severity</li>
                   <li><strong>Click any supplier</strong> row to view detailed intelligence dossier</li>
                   <li><strong>Hover over risk badges</strong> to see the specific trigger reason</li>

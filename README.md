@@ -11,11 +11,34 @@ A zero-cost, sovereign intelligence engine using the "Flat Data" pattern. This d
 
 ## Data Sources
 
-1. **Cyber Threats**: CISA Known Exploited Vulnerabilities (KEV) Catalog
-2. **Macro FX**: ECB EUR/USD Reference Rates
-3. **Competitor Intelligence**: SEC EDGAR 8-K Filings
-4. **Sanctions**: ITA Consolidated Screening List
-5. **Safety Recalls**: CPSC Product Recalls Database
+All free, no contracts. Keys where noted are optional — every source degrades
+to a fallback rather than failing the harvest.
+
+| Signal | Source | Key |
+|---|---|---|
+| Cyber threats | CISA Known Exploited Vulnerabilities (KEV) catalog | — |
+| Sanctions | OFAC SDN list (`sanctionslistservice.ofac.treas.gov`) | — |
+| Safety recalls | CPSC recall database, last 90 days | — |
+| Macro FX | ECB euro reference rates | — |
+| US CPI / Fed funds | FRED | `FRED_API_KEY` (falls back to static values) |
+| Prices, market news | yfinance | — |
+| Competitor filings | SEC EDGAR 8-K | — |
+| Supplier & country news | Google News RSS | — |
+| Country news tone | GDELT (experimental, `/geopolitical`) | — |
+| Executive summary | Claude (`claude-haiku-4-5`) | `ANTHROPIC_API_KEY` (skipped if unset) |
+
+## What Changed Since You Last Looked
+
+Each harvest diffs itself against the previous snapshot and appends whatever
+moved to a rolling `change_log` inside the snapshot — risk-level moves, signals
+appearing or clearing, competitor status shifts, macro trend reversals, and
+outsized unexplained price moves on Critical/High exposure suppliers. The
+dashboard leads with that feed, sliced by the reader's own last-visit time held
+in `localStorage`.
+
+Standing geographic exposure is deliberately excluded unless live news escalated
+it that cycle: it is true every day, so logging it as a change would pin the
+same entries at the top permanently.
 
 ## Setup
 
@@ -23,13 +46,18 @@ A zero-cost, sovereign intelligence engine using the "Flat Data" pattern. This d
 
 1. Install dependencies:
 ```bash
-npm install
+npm install && pip install -r requirements.txt
 ```
 
 2. Run the harvester script manually:
 ```bash
 python scripts/update_intel.py
 ```
+
+Without `FRED_API_KEY` and `ANTHROPIC_API_KEY` in the environment the harvest
+still completes, but US CPI/rate fall back to static values and no executive
+summary is generated — so a locally produced snapshot is poorer than the one
+the workflow commits, and is not usually worth committing.
 
 3. Start the development server:
 ```bash

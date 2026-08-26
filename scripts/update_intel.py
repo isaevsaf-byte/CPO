@@ -66,7 +66,7 @@ class HarvestStats:
         self.errors = []
         self.warnings = []
         self.successes = []
-        self.start_time = datetime.utcnow()
+        self.start_time = datetime.now(timezone.utc)
 
     def record_error(self, source: str, error: str):
         self.errors.append({
@@ -112,7 +112,7 @@ class HarvestStats:
             "total_successes": len(self.successes),
             "errors": self.errors[-10:],
             "warnings": self.warnings[-5:],
-            "duration_seconds": (datetime.utcnow() - self.start_time).total_seconds()
+            "duration_seconds": (datetime.now(timezone.utc) - self.start_time).total_seconds()
         }
 
 class RateLimiter:
@@ -358,19 +358,29 @@ def _mentions_subject(text_lower: str, subject: str) -> bool:
 
 
 def _parse_pub_date(pub_date_str: str):
+    """RSS pubDate as a timezone-aware UTC datetime, or None.
+
+    Previously this converted to the runner's local zone and then dropped the
+    tzinfo, while its only caller compared the result against a naive
+    utcnow(). Mixing the two skewed the freshness window by the runner's UTC
+    offset in whichever direction that offset ran — keeping headlines an hour
+    past the cutoff on a GMT+1 machine, discarding still-fresh ones on a
+    negative offset. A feed entry with no zone at all is read as UTC, which is
+    what RSS pubDate means by default.
+    """
     try:
         from email.utils import parsedate_to_datetime
         dt = parsedate_to_datetime(pub_date_str)
-        if dt.tzinfo is not None:
-            dt = dt.astimezone(tz=None).replace(tzinfo=None)
-        return dt
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
     except Exception:
         return None
 
 
 def _recent_headlines(headlines: list, max_age_days: int = 5) -> list:
     """Drop stale headlines Google News sometimes returns for broad queries."""
-    cutoff = datetime.utcnow() - timedelta(days=max_age_days)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
     recent = []
     for h in headlines:
         dt = _parse_pub_date(h.get("published", ""))
@@ -844,6 +854,21 @@ def _load_watchlist(path: Path) -> tuple:
             raise ValueError(f"{path}: every supplier needs a name and a category, got {entry!r}")
         if name in profiles:
             raise ValueError(f"{path}: duplicate supplier {name!r}")
+        # An unrecognised category silently defaults segment to "Combustibles"
+        # and contributes no keywords to news/GDELT relevance ranking — a
+        # supplier that looks fully configured while being scanned with the
+        # wrong vocabulary. Warn rather than raise: the harvest still works,
+        # and a typo should not take the whole board down.
+        if category not in segments:
+            logger.warning(
+                f"{path.name}: {name!r} has category {category!r}, which has no "
+                f"category_segments entry — segment defaults to Combustibles"
+            )
+        if category not in CATEGORY_KEYWORDS:
+            logger.warning(
+                f"{path.name}: category {category!r} has no CATEGORY_KEYWORDS entry — "
+                f"{name!r} gets no industry keywords for news relevance ranking"
+            )
         watchlist.append({"name": name, "category": category})
         profiles[name] = {
             "bat_exposure": entry.get("bat_exposure", "Medium"),
@@ -981,19 +1006,19 @@ def fetch_cisa_kev():
         data = response.json()
 
         # Filter for vulnerabilities added in last 7 days
-        seven_days_ago = datetime.utcnow() - timedelta(days=7)
+        seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
         recent_vulns = []
         critical_vulns = []
 
         for vuln in data.get('vulnerabilities', []):
             date_added_str = vuln.get('dateAdded', '')
             try:
-                date_added = datetime.strptime(date_added_str, '%Y-%m-%d')
+                date_added = datetime.strptime(date_added_str, '%Y-%m-%d').replace(tzinfo=timezone.utc)
                 if date_added >= seven_days_ago:
                     recent_vulns.append(vuln)
                     # Check for ransomware and recent (48h)
                     if vuln.get('knownRansomwareCampaignUse', '') == 'true':
-                        two_days_ago = datetime.utcnow() - timedelta(days=2)
+                        two_days_ago = datetime.now(timezone.utc) - timedelta(days=2)
                         if date_added >= two_days_ago:
                             critical_vulns.append(vuln)
             except ValueError:
@@ -1030,7 +1055,7 @@ def fetch_cpsc_recalls():
     """
     source_name = "cpsc_recalls"
     try:
-        cutoff = (datetime.utcnow() - timedelta(days=90)).strftime('%Y-%m-%d')
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=90)).strftime('%Y-%m-%d')
         url = f"https://www.saferproducts.gov/RestWebServices/Recall?RecallDateStart={cutoff}&format=json"
         response = fetch_with_retry(url)
         data = response.json()
@@ -1327,7 +1352,7 @@ def fetch_sec_filings_for_peer(peer_name):
         amber_signals = []
 
         # Only count signals from filings within the last 30 days
-        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
 
         for entry in root.findall('atom:entry', namespaces):
             title = entry.find('atom:title', namespaces)
@@ -1345,18 +1370,28 @@ def fetch_sec_filings_for_peer(peer_name):
             }
             filings.append(filing_data)
 
-            # Extract filing date from summary (format: "Filed: YYYY-MM-DD")
+            # Extract filing date from summary (format: "Filed: YYYY-MM-DD").
+            # Both parses yield timezone-aware UTC so they can be compared
+            # against thirty_days_ago; EDGAR publishes these in UTC, and a
+            # bare "Filed:" date carries no zone of its own.
             filing_date = None
             date_match = re.search(r'Filed:</b>\s*(\d{4}-\d{2}-\d{2})', summary_text)
             if date_match:
                 try:
-                    filing_date = datetime.strptime(date_match.group(1), '%Y-%m-%d')
+                    filing_date = datetime.strptime(
+                        date_match.group(1), '%Y-%m-%d'
+                    ).replace(tzinfo=timezone.utc)
                 except ValueError:
                     pass
             # Fallback: try published field
             if filing_date is None and published_text:
                 try:
-                    filing_date = datetime.fromisoformat(published_text.replace('Z', '+00:00').replace('+00:00', ''))
+                    parsed = datetime.fromisoformat(published_text.replace('Z', '+00:00'))
+                    filing_date = (
+                        parsed.replace(tzinfo=timezone.utc)
+                        if parsed.tzinfo is None
+                        else parsed.astimezone(timezone.utc)
+                    )
                 except (ValueError, TypeError):
                     pass
 

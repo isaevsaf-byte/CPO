@@ -59,13 +59,28 @@ export default function GeopoliticalIntelPage() {
     (suppliersByCountry[s.location] ||= []).push(s);
   });
 
-  const countries = Object.entries(geo).sort(
-    ([, a], [, b]) => (a.avg_tone ?? 0) - (b.avg_tone ?? 0)
-  );
+  // Driven by where the suppliers actually are, not by which countries GDELT
+  // happened to answer for. GDELT rate-limits hard enough that most countries
+  // return nothing on any given harvest, and listing only the ones that
+  // succeeded silently dropped the other nine — including the USA, the joint
+  // largest supplier country on the watchlist, which reads as "not monitored"
+  // rather than "no reading yet". Countries GDELT has never answered for now
+  // appear with their suppliers and an explicit awaiting-data state.
+  const countries = Array.from(
+    new Set([...Object.keys(suppliersByCountry), ...Object.keys(geo)])
+  )
+    .map((country) => ({ country, data: geo[country] ?? null }))
+    .sort((a, b) => {
+      // Most negative first; anything without a reading sorts to the end
+      // rather than sitting at 0.0 in the middle of the ranking.
+      const toneOf = (d: typeof a.data) =>
+        d && d.avg_tone !== null ? d.avg_tone : Number.POSITIVE_INFINITY;
+      return toneOf(a.data) - toneOf(b.data);
+    });
 
   const byRegion: { [region: string]: typeof countries } = {};
   countries.forEach((entry) => {
-    const region = REGION_MAP[entry[0]] || 'Other';
+    const region = REGION_MAP[entry.country] || 'Other';
     (byRegion[region] ||= []).push(entry);
   });
   const regionsInOrder = REGION_ORDER.filter((r) => byRegion[r]?.length);
@@ -166,7 +181,7 @@ export default function GeopoliticalIntelPage() {
                   {region}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {byRegion[region].map(([country, data]) => {
+                  {byRegion[region].map(({ country, data }) => {
                     const countrySuppliers = suppliersByCountry[country] || [];
                     return (
                       <div
@@ -176,9 +191,13 @@ export default function GeopoliticalIntelPage() {
                         <div className="flex items-start justify-between">
                           <h3 className="text-lg font-bold">{country}</h3>
                           <span
-                            className={`px-2 py-0.5 rounded-full text-xs font-bold border ${toneColor(data.avg_tone)}`}
+                            className={`px-2 py-0.5 rounded-full text-xs font-bold border ${
+                              data ? toneColor(data.avg_tone) : toneColor(null)
+                            }`}
                           >
-                            {data.avg_tone !== null ? data.avg_tone.toFixed(1) : 'N/A'} tone
+                            {data && data.avg_tone !== null
+                              ? `${data.avg_tone.toFixed(1)} tone`
+                              : 'no reading'}
                           </span>
                         </div>
 
@@ -197,8 +216,10 @@ export default function GeopoliticalIntelPage() {
                         )}
 
                         <div className="text-xs text-gray-500 dark:text-slate-400">
-                          {data.article_count.toLocaleString()} articles · last 3 days
-                          {data.fetched_at && ` · updated ${freshnessLabel(data.fetched_at)}`}
+                          {data
+                            ? `${data.article_count.toLocaleString()} articles · last 3 days`
+                            : 'Awaiting a GDELT reading'}
+                          {data?.fetched_at && ` · updated ${freshnessLabel(data.fetched_at)}`}
                         </div>
                         {/* Headlines render only when the harvester confirmed
                             they are supply-chain relevant. Gated on an explicit
@@ -207,7 +228,7 @@ export default function GeopoliticalIntelPage() {
                             fall through to the honest empty state rather than
                             putting a salmonella outbreak under Germany. */}
                         <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-slate-800">
-                          {data.has_relevant === true && data.articles.length > 0 ? (
+                          {data?.has_relevant === true && data.articles.length > 0 ? (
                             data.articles.map((a, idx) => (
                               <a
                                 key={idx}
@@ -228,10 +249,16 @@ export default function GeopoliticalIntelPage() {
                                 </div>
                               </a>
                             ))
-                          ) : (
+                          ) : data ? (
                             <p className="text-xs text-gray-400 dark:text-slate-500">
                               No supply-chain-relevant coverage surfaced. The tone reading above
                               still stands; there is just nothing here worth reading.
+                            </p>
+                          ) : (
+                            <p className="text-xs text-gray-400 dark:text-slate-500">
+                              GDELT has not returned data for this country yet. It is queried
+                              every harvest; the API rate-limits hard, so countries fill in
+                              gradually rather than all at once.
                             </p>
                           )}
                         </div>

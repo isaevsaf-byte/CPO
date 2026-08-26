@@ -1,31 +1,26 @@
 {
-  "last_updated": "2026-08-26T00:37:15.439379",
-  "version": "ef50b5046df5",
+  "last_updated": "2026-08-26T06:28:57.955880",
+  "version": "9d130324cfcb",
   "status": "healthy",
   "overall_rag": {
-    "score": "AMBER",
+    "score": "GREEN",
     "driven_by": [
+      "macro",
+      "peers",
       "suppliers"
     ],
     "pillar_scores": {
       "macro": "GREEN",
       "peers": "GREEN",
-      "suppliers": "AMBER"
+      "suppliers": "GREEN"
     }
   },
   "executive_summary": {
-    "headline": "EVE Energy stock down 2.2% with no identified cause\u2014worth investigating whether Chinese battery sector turbulence is broader or company-specific.",
-    "next_step": "Check EVE Energy's Q3 earnings call and recent supply agreements (24-hour search) to rule out operational issues; cross-reference with other China-based battery suppliers' stock moves to isolate sector vs. idiosyncratic risk.",
-    "context": "EVE Energy is high-exposure on batteries and geopolitically flagged (China location). The stock move is unconfirmed\u2014no news corroborates it\u2014so the decline may reflect sector-wide sentiment in batteries or China equities rather than EVE-specific stress. Macro and peer signals are clean, so this is an isolated supplier signal worth a quick verification before escalating."
+    "headline": "Imperial Brands' workforce reduction signals cost pressures in tobacco, a key peer exposure\u2014monitor for margin or demand headwinds that could cascade to suppliers.",
+    "next_step": "Within 2 weeks, check Imperial's next earnings call or trading statement for margin impact and geographic customer concentration; flag any overlap with your direct tobacco suppliers.",
+    "context": "Imperial Brands announced significant job cuts in U.S. and Europe, suggesting either demand contraction or margin compression in the sector. This is a peer-level signal worth tracking for downstream supplier risk, especially if cost-cutting spreads across the tobacco industry or reduces orders to shared vendors."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-06T08:12:05.343005",
-      "macro": "GREEN",
-      "peers": "RED",
-      "suppliers": "AMBER",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-08-06T13:30:44.069658",
       "macro": "GREEN",
@@ -578,6 +573,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-26T06:28:54.191475",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "GREEN",
+      "overall": "GREEN"
     }
   ],
   "macro": {
@@ -593,7 +595,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-26T00:34:02.604668"
+        "last_fetched": "2026-08-26T06:25:12.976907"
       },
       "eu": {
         "status": "success",
@@ -604,7 +606,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1662",
-        "last_fetched": "2026-08-26T00:34:03.485973"
+        "last_fetched": "2026-08-26T06:25:13.749456"
       },
       "china": {
         "status": "placeholder",
@@ -615,11 +617,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-26T00:34:03.486888"
+        "last_fetched": "2026-08-26T06:25:13.750458"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-26T00:34:03.486903"
+    "last_fetched": "2026-08-26T06:25:13.750472"
   },
   "peers": {
     "status": "success",
@@ -627,11 +629,11 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-26T00:34:14.386068"
+    "last_fetched": "2026-08-26T06:25:16.031886"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "AMBER",
+    "rag_score": "GREEN",
     "total_suppliers": 24,
     "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 0,
@@ -644,7 +646,7 @@
     "total_medium": 9,
     "actionable_critical": 0,
     "actionable_high": 0,
-    "actionable_medium": 1,
+    "actionable_medium": 0,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -729,9 +731,9 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
-            "'Party Of War...': Putin Snaps Back At Finland After It Backs Kyiv's 'Long-Range Strikes' In Russia - The Times of India",
+            "Kremlin rebukes Finland's Stubb over his support for long-range Ukrainian strikes on Russia - Reuters",
             "Ilmari Juutilainen: Finland\u2019s 94-Victory Ace Who Was Never Shot Down - MiGFlug",
-            "Russia Ukraine War Finland - Springfield News-Sun"
+            "'Party Of War...': Putin Snaps Back At Finland After It Backs Kyiv's 'Long-Range Strikes' In Russia - The Times of India"
           ],
           "escalated": true,
           "baseline_only": true
@@ -769,9 +771,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "If the U.S. wants to end the war with Iran by way of economic sanctions, China is key - CBS News",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "China says will safeguard its own interests as US expands Iran sanctions - Al Jazeera"
+            "Analysis: Trump will need China for his new economic war against Iran. Good luck getting Xi on side - CNN",
+            "If the U.S. wants to end the war with Iran by way of economic sanctions, China is key - CBS News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -936,9 +938,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "U.S. cancels South Korea marine drills over tied up forces in Iran war - NBC News",
             "South Korea says US cancelled upcoming joint marine exercises over Iran war - Al Jazeera",
-            "U.S. Marines Cancel Drill With South Korea, Citing Iran War Demands - The New York Times"
+            "U.S. Marines Cancel Drill With South Korea, Citing Iran War Demands - The New York Times",
+            "U.S. cancels South Korea marine drills over tied-up forces in Iran war - NBC News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1080,8 +1082,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.63,
-        "current_price": 271.4,
+        "daily_change_pct": 0.13,
+        "current_price": 271.75,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
@@ -1092,9 +1094,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
+            "Who are Iran\u2019s top trading partners US would need to target to isolate it? - Al Jazeera",
             "Trump targets Iran\u2019s trade lifelines \u2014 here are the countries most exposed - CNBC",
-            "The Cost of India\u2019s Calibrated Neutrality in the Iran War - Small Wars Journal",
-            "Who are Iran\u2019s top trading partners US would need to target to isolate it? - Al Jazeera"
+            "India Lifts Wheat Export Ban in Boost to War Hit Global Supply - Bloomberg.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1132,9 +1134,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "If the U.S. wants to end the war with Iran by way of economic sanctions, China is key - CBS News",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "China says will safeguard its own interests as US expands Iran sanctions - Al Jazeera"
+            "Analysis: Trump will need China for his new economic war against Iran. Good luck getting Xi on side - CNN",
+            "If the U.S. wants to end the war with Iran by way of economic sanctions, China is key - CBS News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1201,9 +1203,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "If the U.S. wants to end the war with Iran by way of economic sanctions, China is key - CBS News",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "China says will safeguard its own interests as US expands Iran sanctions - Al Jazeera"
+            "Analysis: Trump will need China for his new economic war against Iran. Good luck getting Xi on side - CNN",
+            "If the U.S. wants to end the war with Iran by way of economic sanctions, China is key - CBS News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1229,8 +1231,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.79,
-        "current_price": 10.26,
+        "daily_change_pct": 11.21,
+        "current_price": 11.41,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
@@ -1241,9 +1243,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "If the U.S. wants to end the war with Iran by way of economic sanctions, China is key - CBS News",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "China says will safeguard its own interests as US expands Iran sanctions - Al Jazeera"
+            "Analysis: Trump will need China for his new economic war against Iran. Good luck getting Xi on side - CNN",
+            "If the U.S. wants to end the war with Iran by way of economic sanctions, China is key - CBS News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1269,24 +1271,24 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.24,
-        "current_price": 54.57,
-        "risk_analysis": "Stock decline for high-exposure supplier EVE Energy. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
+        "daily_change_pct": 2.22,
+        "current_price": 55.78,
+        "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83d\udcc9 Stock down -2.2% (no confirmed cause) - High exposure supplier",
-        "counts_toward_rag": true,
-        "price_move_only": true,
+        "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
+        "counts_toward_rag": false,
+        "price_move_only": false,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "If the U.S. wants to end the war with Iran by way of economic sanctions, China is key - CBS News",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "China says will safeguard its own interests as US expands Iran sanctions - Al Jazeera"
+            "Analysis: Trump will need China for his new economic war against Iran. Good luck getting Xi on side - CNN",
+            "If the U.S. wants to end the war with Iran by way of economic sanctions, China is key - CBS News"
           ],
-          "escalated": false,
-          "baseline_only": false
+          "escalated": true,
+          "baseline_only": true
         },
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1442,7 +1444,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-26T00:35:19.877130"
+    "last_fetched": "2026-08-26T06:26:19.967736"
   },
   "macro_economy": {
     "us": {
@@ -1455,13 +1457,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Stable",
-      "summary": "EUR/USD stable: +0.06% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
+      "summary": "EUR/USD stable: -0.02% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
     },
     "china": {
-      "cpi": "N/A",
-      "rate": "N/A",
-      "trend": "N/A",
-      "summary": "Unable to fetch CNY/USD data. Market may be closed."
+      "cpi": "0.5%",
+      "rate": "3.10%",
+      "trend": "Stable",
+      "summary": "CNY/USD stable: -0.19% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1497,7 +1499,7 @@
       "stock_risk": false,
       "sec_red_signals": 0,
       "sec_amber_signals": 0,
-      "summary": "Neutral: Q3 earnings results reported. No material risks identified in last 30 days."
+      "summary": "Neutral: Regulation FD disclosure filed. Routine operational update."
     },
     {
       "name": "Imperial Brands",
@@ -1522,9 +1524,9 @@
       "region": "Japan",
       "sentiment": "Neutral",
       "latest_headline": "Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
-      "stock_move": "-0.11%",
-      "current_price": 6978.0,
-      "daily_change_pct": -0.11,
+      "stock_move": "+0.01%",
+      "current_price": 6987.0,
+      "daily_change_pct": 0.01,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria Group (MO): A Winner in President Trump\u2019s Stock Portfolio?",
       "news_risk": false,
@@ -1627,21 +1629,81 @@
           "tone": -8
         }
       ]
+    },
+    "Austria": {
+      "article_count": 160,
+      "avg_tone": -1.2,
+      "articles": [
+        {
+          "title": "School attacks are no longer just an American problem",
+          "url": "https://www.omanobserver.om/article/1195067/opinion/international/school-attacks-are-no-longer-just-an-american-problem",
+          "tone": -11
+        },
+        {
+          "title": "Chicken being investigated as part of the salmonella outbreak which has left 340 people ill",
+          "url": "https://www.mirror.co.uk/news/uk-news/salmonella-outbreak-latest-chicken-recalled-37588599",
+          "tone": -10
+        },
+        {
+          "title": "58 Arrested In Global Operation Against West African Crime Groups",
+          "url": "https://www.rttnews.com/story.aspx?Id=3684052",
+          "tone": -9
+        },
+        {
+          "title": "Operation Jackal : INTERPOL Arrests 58 Persons , Identifies Over 260 West African Organised Criminal Suspects",
+          "url": "https://saharareporters.com/2026/08/25/operation-jackal-interpol-arrests-58-persons-identifies-over-260-west-african-organised",
+          "tone": -9
+        },
+        {
+          "title": "Germany far - right AfD pushes headscarf ban for Muslim girls under 14",
+          "url": "https://www.dailysabah.com/world/europe/germanys-far-right-afd-pushes-headscarf-ban-for-muslim-girls-under-14",
+          "tone": -8
+        }
+      ],
+      "has_relevant": false,
+      "fetched_at": "2026-08-26T06:28:27.100002"
+    },
+    "Finland": {
+      "article_count": 225,
+      "avg_tone": -1.1,
+      "articles": [
+        {
+          "title": "Stora Enso Oyj ( OTCMKTS : SEOAY ) & UPM - Kymmene ( OTCMKTS : UPMKY ) Critical Comparison",
+          "url": "https://www.themarketsdaily.com/2026/08/25/stora-enso-oyj-otcmktsseoay-upm-kymmene-otcmktsupmky-critical-comparison.html",
+          "tone": 2
+        },
+        {
+          "title": "UN committee flags problems faced by Rohingya migrants in India",
+          "url": "http://www.batonrougepost.com/news/279264843/un-committee-flags-problems-faced-by-rohingya-migrants-in-india",
+          "tone": -13
+        },
+        {
+          "title": "School attacks are no longer just an American problem",
+          "url": "https://www.omanobserver.om/article/1195067/opinion/international/school-attacks-are-no-longer-just-an-american-problem",
+          "tone": -11
+        },
+        {
+          "title": "MARK GALEOTTI : If he chooses , Putin could order attacks that would cause chaos ... and serious loss of life",
+          "url": "https://www.dailymail.com/news/article-16079739/Putin-order-attacks-chaos-death-MARK-GALEOTTI.html",
+          "tone": -9
+        },
+        {
+          "title": "OPINION : The Lindsay Clancy case isnt your true - crime mystery - The Independent Florida Alligator",
+          "url": "https://www.alligator.org/article/2026/08/clancy-trial-reaction",
+          "tone": -9
+        }
+      ],
+      "has_relevant": true,
+      "fetched_at": "2026-08-26T06:28:53.421940"
     }
   },
   "harvest_stats": {
-    "total_errors": 1,
+    "total_errors": 0,
     "total_warnings": 0,
-    "total_successes": 10,
-    "errors": [
-      {
-        "source": "cpsc_recalls",
-        "error": "HTTPSConnectionPool(host='www.saferproducts.gov', port=443): Read timed out. (read timeout=20)",
-        "time": "2026-08-26T00:34:00.232407"
-      }
-    ],
+    "total_successes": 12,
+    "errors": [],
     "warnings": [],
-    "duration_seconds": 258.763197
+    "duration_seconds": 227.380805
   },
   "health": {
     "pillars": {
@@ -1649,7 +1711,7 @@
       "peers": "success",
       "suppliers": "success"
     },
-    "errors_count": 1,
+    "errors_count": 0,
     "warnings_count": 0,
     "circuit_breaker_state": "closed"
   }

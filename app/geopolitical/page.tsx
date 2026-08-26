@@ -125,7 +125,10 @@ export default function GeopoliticalIntelPage() {
                 positive the coverage of each country has been over the last 3 days. It doesn&apos;t
                 know anything about supply chains — it just measures the mood of the news. A
                 sudden dip is worth a look; it says nothing on its own about whether a specific
-                supplier is actually affected.
+                supplier is actually affected. Headlines are listed only where the coverage
+                actually touches your supply chain &mdash; a supplier by name, its industry, or
+                events like export controls, port disruption or a walkout. Most countries most
+                days will show a tone reading and no headlines, which is the honest answer.
               </p>
             </div>
             <div>
@@ -141,7 +144,7 @@ export default function GeopoliticalIntelPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="px-2 py-0.5 rounded-full text-xs font-bold border bg-red-100 text-red-800 border-red-300">&lt;-5</span>
-                  Clearly negative — worth reading the headlines below.
+                  Clearly negative — check whether any relevant headlines came with it.
                 </li>
                 <li className="pt-1 text-gray-500 dark:text-slate-500">
                   &quot;Articles&quot; is how much the world is talking about that country right
@@ -197,16 +200,14 @@ export default function GeopoliticalIntelPage() {
                           {data.article_count.toLocaleString()} articles · last 3 days
                           {data.fetched_at && ` · updated ${freshnessLabel(data.fetched_at)}`}
                         </div>
+                        {/* Headlines render only when the harvester confirmed
+                            they are supply-chain relevant. Gated on an explicit
+                            true so snapshots written before that check — whose
+                            stored articles are the old unfiltered top-five —
+                            fall through to the honest empty state rather than
+                            putting a salmonella outbreak under Germany. */}
                         <div className="space-y-2 pt-2 border-t border-gray-200 dark:border-slate-800">
-                          {data.articles.length === 0 ? (
-                            <p className="text-xs text-gray-400 dark:text-slate-500">No article examples returned.</p>
-                          ) : data.has_relevant === false ? (
-                            <p className="text-xs text-gray-400 dark:text-slate-500 italic">
-                              None of these mention a watchlist supplier or its industry — showing
-                              the most negative country news available instead.
-                            </p>
-                          ) : null}
-                          {data.articles.length > 0 && (
+                          {data.has_relevant === true && data.articles.length > 0 ? (
                             data.articles.map((a, idx) => (
                               <a
                                 key={idx}
@@ -227,6 +228,11 @@ export default function GeopoliticalIntelPage() {
                                 </div>
                               </a>
                             ))
+                          ) : (
+                            <p className="text-xs text-gray-400 dark:text-slate-500">
+                              No supply-chain-relevant coverage surfaced. The tone reading above
+                              still stands; there is just nothing here worth reading.
+                            </p>
                           )}
                         </div>
                       </div>

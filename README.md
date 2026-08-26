@@ -46,6 +46,31 @@ The workflow is configured to run automatically every 6 hours. To trigger manual
 2. Select "Harvest Intelligence Data"
 3. Click "Run workflow"
 
+## Supplier Watchlist
+
+The watchlist lives in `data/suppliers.json`, not in code. To add, remove or
+re-tier a supplier, edit that file:
+
+```json
+{
+  "name": "Acme Filters",
+  "category": "Filter Materials",
+  "bat_exposure": "High",
+  "location": "Japan",
+  "stock_ticker": "N/A"
+}
+```
+
+- `bat_exposure` — `Critical` (tier 1), `High` (tier 2) or `Medium` (tier 3)
+- `stock_ticker` — `"N/A"` for unlisted suppliers; those are scanned via
+  Google News instead of yfinance
+- `location` — must match a key in `GEOPOLITICAL_RISK_MAP` to pick up a
+  country risk floor
+- `category` — should have an entry in `category_segments` in the same file
+
+A malformed or empty file fails the harvest rather than producing an empty
+watchlist, which would read as "nothing to worry about".
+
 ## Intelligence Logic
 
 ### Cyber "Panic" Score

@@ -513,6 +513,32 @@ def scan_country_geopolitical_news(country):
     return risk_detected, max_level, headlines, reason
 
 
+# Supply-chain vocabulary shared across every country, used as the weakest
+# relevance tier when ranking GDELT headlines (see fetch_gdelt_country_intel).
+# Country news can matter to a CPO without naming one of the 24 suppliers:
+# a port closure, an export control, a tariff round or a factory fire is
+# actionable context; a local crime story with the same negative tone is not.
+# Matched whole-word, never as substrings: bare "port" inside "importing"
+# promoted a drone-smuggling bust to supply-chain news, the same class of
+# false positive already fixed for CISA and recall screening (see
+# supplier_terms_hit). Plurals are listed explicitly for the same reason —
+# a word boundary after "chip" will not match "chips".
+GDELT_SUPPLY_KEYWORDS = [
+    "supply chain", "supply chains", "export control", "export controls",
+    "export ban", "import ban", "tariff", "tariffs", "sanction", "sanctions",
+    "embargo", "embargoes", "port", "ports", "shipping", "freight",
+    "container", "containers", "factory", "factories", "plant closure",
+    "production halt", "shortage", "shortages", "customs", "trade war",
+    "trade deal", "manufacturing", "logistics", "raw material",
+    "raw materials", "commodity", "commodities", "chip", "chips",
+    "semiconductor", "semiconductors",
+    # Labour action only. Bare "strike" reads a missile strike as a factory
+    # walkout — "strike on mall kills 16" scored as supply-chain relevant.
+    "labor strike", "labour strike", "workers strike", "dockworkers",
+    "walkout", "walkouts",
+]
+
+
 def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max_attempts: int = 2) -> dict | None:
     """
     Independent geopolitical signal from GDELT (free, no key, globally
@@ -578,12 +604,18 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
         total_count = sum(b.get("count", 0) for b in bins)
         weighted_tone_sum = sum(b.get("bin", 0) * b.get("count", 0) for b in bins)
 
-        # Relevance terms: supplier names (strongest signal — a headline
-        # naming "Infineon" is unambiguous) plus each supplier's category
-        # keywords (weaker — "semiconductor" doesn't name a company, but
-        # still beats an unrelated crime story). Both checked as substrings
-        # against the lowercased headline.
-        name_terms = [s["name"].lower() for s in (relevant_suppliers or []) if s.get("name")]
+        # Relevance terms, strongest first: a supplier name (a headline
+        # naming "Infineon" is unambiguous), then that supplier's category
+        # vocabulary, then general supply-chain vocabulary. The third tier
+        # exists because plenty of country news is squarely a procurement
+        # concern without naming any supplier — "China tightens export
+        # controls on rare earths" is exactly what this page is for, and
+        # the previous two tiers alone dropped it on the floor.
+        name_terms = [
+            term.lower()
+            for s in (relevant_suppliers or []) if s.get("name")
+            for term in supplier_search_terms(s["name"])
+        ]
         keyword_terms = [
             kw for s in (relevant_suppliers or [])
             for kw in CATEGORY_KEYWORDS.get(s.get("category"), [])
@@ -591,9 +623,11 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
 
         def relevance(title: str) -> int:
             t = title.lower()
-            if any(term in t for term in name_terms):
+            if any(_mentions_subject(t, term) for term in name_terms):
+                return 3
+            if any(_mentions_subject(t, term) for term in keyword_terms):
                 return 2
-            if any(term in t for term in keyword_terms):
+            if any(_mentions_subject(t, term) for term in GDELT_SUPPLY_KEYWORDS):
                 return 1
             return 0
 
@@ -620,11 +654,20 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
                     "_relevance": relevance(title),
                 })
 
-        candidates.sort(key=lambda a: (-a["_relevance"], a["tone"]))
-        has_relevant = any(a["_relevance"] > 0 for a in candidates)
+        # Only relevant headlines ship. Previously the top five by tone went
+        # out whatever they were about, which filled a supply-chain page with
+        # a salmonella outbreak under Germany and a cancer-survivor study
+        # under China — country news that scores negative and means nothing
+        # here. The tone average and article volume above are the honest
+        # country-level signal; padding it out with unrelated headlines only
+        # taught the reader that the page is noise. Where nothing relevant
+        # surfaced, the country now says so and shows no headlines at all.
+        relevant = [a for a in candidates if a["_relevance"] > 0]
+        relevant.sort(key=lambda a: (-a["_relevance"], a["tone"]))
+        has_relevant = bool(relevant)
         articles_out = [
             {"title": a["title"], "url": a["url"], "tone": a["tone"]}
-            for a in candidates[:5]
+            for a in relevant[:5]
         ]
 
         return {
@@ -775,32 +818,47 @@ CATEGORY_KEYWORDS = {
 }
 
 # SUPPLIER WATCHLIST - Pillar 3
-WATCHLIST_DATA = [
-    {"name": "AMCOR", "category": "Printed Packaging"},
-    {"name": "GPI", "category": "Printed Packaging"},
-    {"name": "Stora Enso", "category": "Printing Substrates"},
-    {"name": "IP Sun", "category": "Printing Substrates"},
-    {"name": "Sappi", "category": "Printing Substrates"},
-    {"name": "Daicel", "category": "Filter Materials"},
-    {"name": "Eastman", "category": "Filter Materials"},
-    {"name": "Cerdia", "category": "Filter Materials"},
-    {"name": "Tae Young Filters", "category": "Filter Materials"},
-    {"name": "Fuji", "category": "Capsules"},
-    {"name": "SWM (Mativ)", "category": "Fine Papers"},
-    {"name": "Delfort", "category": "Fine Papers"},
-    {"name": "CNT", "category": "Nicotine"},
-    {"name": "ITC", "category": "Nicotine"},
-    {"name": "Porton", "category": "Nicotine"},
-    {"name": "Tenowo", "category": "Modern/Traditional Oral Fleece"},
-    {"name": "Huizhou BYD Electronic", "category": "EMS"},
-    {"name": "Smoore", "category": "EMS"},
-    {"name": "EVE Energy", "category": "Batteries"},
-    {"name": "Texas Instruments", "category": "EE Component"},
-    {"name": "Infineon", "category": "EE Component"},
-    {"name": "Weener", "category": "Mechanical"},
-    {"name": "Rosti", "category": "Mechanical"},
-    {"name": "Jabil", "category": "Mechanical"}
-]
+# The watchlist itself lives in data/suppliers.json, not here: adding,
+# removing or re-tiering a supplier is a procurement decision, and it used to
+# require editing four parallel dicts in this file (name->exposure,
+# name->location, name->ticker, category->segment) with nothing keeping them
+# in step. Loaded once at import; a missing or malformed file raises rather
+# than degrading to an empty watchlist, because a harvest that silently
+# reports zero suppliers would read as "nothing to worry about".
+WATCHLIST_FILE = Path(__file__).parent.parent / "data" / "suppliers.json"
+
+
+def _load_watchlist(path: Path) -> tuple:
+    with open(path) as f:
+        raw = json.load(f)
+
+    entries = raw.get("suppliers")
+    if not entries:
+        raise ValueError(f"{path} contains no suppliers")
+
+    segments = raw.get("category_segments", {})
+    watchlist, profiles = [], {}
+    for entry in entries:
+        name, category = entry.get("name"), entry.get("category")
+        if not name or not category:
+            raise ValueError(f"{path}: every supplier needs a name and a category, got {entry!r}")
+        if name in profiles:
+            raise ValueError(f"{path}: duplicate supplier {name!r}")
+        watchlist.append({"name": name, "category": category})
+        profiles[name] = {
+            "bat_exposure": entry.get("bat_exposure", "Medium"),
+            # Segment follows from the category, so it is declared once per
+            # category rather than repeated (and eventually contradicted) on
+            # every supplier row.
+            "segment": entry.get("segment") or segments.get(category, "Combustibles"),
+            "location": entry.get("location", "Unknown"),
+            "stock_ticker": entry.get("stock_ticker", "N/A"),
+            "url": entry.get("url"),
+        }
+    return watchlist, profiles
+
+
+WATCHLIST_DATA, SUPPLIER_PROFILES = _load_watchlist(WATCHLIST_FILE)
 
 # PEERS & COMPETITORS - Pillar 2 (Hardcoded Source of Truth)
 # match_terms gate which fetched headlines may be attributed to a peer.
@@ -1441,110 +1499,36 @@ def fetch_peers_overview(peer_group):
 # ============================================================================
 
 def get_supplier_deep_dive_data(supplier_name, category):
-    """Static reference attributes for a watchlist supplier.
+    """Hand-maintained reference attributes for a watchlist supplier.
 
-    Deliberately carries only facts we actually know and maintain by hand
-    (tier/exposure, site country, listing, segment). It used to also emit a
-    `latest_news_summary` assembled from f-string templates keyed purely off
-    the exposure tier — prose like "on-time delivery metrics above 98%" and
-    "regular quality audits completed successfully". None of that was ever
-    measured, yet it rendered on the supplier page under a "Live Intelligence"
-    heading, so invented text read as sourced intelligence. Real headlines come
-    from news_items / google_news_headlines; an empty news feed now shows as
-    empty rather than being papered over.
+    Reads data/suppliers.json (see _load_watchlist). This used to be four
+    parallel dicts inline — name->exposure, name->location, name->ticker,
+    category->segment — so adding a supplier meant four edits in this file
+    and a miss in any one of them silently produced "Unknown"/"N/A"/"Medium"
+    for a real supplier.
+
+    It also used to emit a `latest_news_summary` built from f-string
+    templates keyed off the exposure tier — "on-time delivery metrics above
+    98%", "regular quality audits completed successfully". None of that was
+    ever measured, yet it rendered under a "Live Intelligence" heading, so
+    invented text read as sourced intelligence. Real headlines come from
+    news_items / google_news_headlines; an empty news feed now shows as empty.
     """
-    # BAT Exposure mapping (Critical = Tier 1, High = Tier 2, Medium = Tier 3)
-    exposure_map = {
-        "AMCOR": "Critical",
-        "GPI": "High",
-        "Smoore": "Critical",
-        "Huizhou BYD Electronic": "Critical",
-        "EVE Energy": "High",
-        "Texas Instruments": "High",
-        "Infineon": "High",
-        "Jabil": "Medium",
-        "CNT": "Critical",
-        "ITC": "High",
-        "Porton": "Medium"
-    }
-    
-    # Segment mapping based on category
-    segment_map = {
-        "EMS": "New Categories (Vuse/Glo)",
-        "Batteries": "New Categories (Vuse/Glo)",
-        "EE Component": "New Categories (Vuse/Glo)",
-        "Printed Packaging": "Combustibles",
-        "Printing Substrates": "Combustibles",
-        "Filter Materials": "Combustibles",
-        "Fine Papers": "Combustibles",
-        "Capsules": "Combustibles",
-        "Nicotine": "Combustibles",
-        "Modern/Traditional Oral Fleece": "New Categories (Vuse/Glo)",
-        "Mechanical": "New Categories (Vuse/Glo)"
-    }
-    
-    # Location mapping
-    location_map = {
-        "AMCOR": "Switzerland",
-        "GPI": "USA",
-        "Stora Enso": "Finland",
-        "IP Sun": "China",
-        "Sappi": "South Africa",
-        "Daicel": "Japan",
-        "Eastman": "USA",
-        "Cerdia": "Switzerland",
-        "Tae Young Filters": "South Korea",
-        "Fuji": "Japan",
-        "SWM (Mativ)": "USA",
-        "Delfort": "Austria",
-        "CNT": "Germany",
-        "ITC": "India",
-        "Porton": "China",
-        "Tenowo": "Germany",
-        "Huizhou BYD Electronic": "China",
-        "Smoore": "China",
-        "EVE Energy": "China",
-        "Texas Instruments": "USA",
-        "Infineon": "Germany",
-        "Weener": "Netherlands",
-        "Rosti": "Sweden",
-        "Jabil": "USA"
-    }
-    
-    # Stock ticker mapping
-    ticker_map = {
-        "AMCOR": "AMCR",
-        "GPI": "GPI",
-        "Stora Enso": "STERV.HE",
-        "Sappi": "SAP",
-        "Eastman": "EMN",
-        "SWM (Mativ)": "MATV",
-        "ITC": "ITC.NS",
-        "Smoore": "6969.HK",
-        "EVE Energy": "300014.SZ",
-        "Texas Instruments": "TXN",
-        "Infineon": "IFX.DE",
-        "Jabil": "JBL"
-    }
-    
-    # URL mapping
-    url_map = {
-        "CNT": "https://nicotineusp.com"
-    }
-    
-    exposure = exposure_map.get(supplier_name, "Medium")
-    segment = segment_map.get(category, "Combustibles")
-    location = location_map.get(supplier_name, "Unknown")
-    ticker = ticker_map.get(supplier_name, "N/A")
-    url = url_map.get(supplier_name, None)
-    
-    return {
-        "bat_exposure": exposure,
-        "segment": segment,
-        "location": location,
-        "stock_ticker": ticker,
-        "url": url
-    }
+    profile = SUPPLIER_PROFILES.get(supplier_name)
+    if profile is None:
+        # Reachable only if a caller passes a name that is not on the
+        # watchlist; the harvest itself always iterates WATCHLIST_DATA.
+        logger.warning(f"No profile for {supplier_name!r} in {WATCHLIST_FILE.name}")
+        return {
+            "bat_exposure": "Medium",
+            "segment": "Combustibles",
+            "location": "Unknown",
+            "stock_ticker": "N/A",
+            "url": None,
+        }
+    return dict(profile)
+
+
 
 def fetch_supplier_stock_data(ticker_symbol):
     """

@@ -272,6 +272,10 @@ def calculate_data_hash(data: dict) -> str:
     # runs even with nothing meaningfully new — same reasoning as above.
     if 'geopolitical_intel' in data_copy:
         del data_copy['geopolitical_intel']
+    # Attempt bookkeeping records a timestamp for every country tried, every
+    # run — same reasoning as above.
+    if 'geopolitical_attempts' in data_copy:
+        del data_copy['geopolitical_attempts']
 
     json_str = json.dumps(data_copy, sort_keys=True)
     return hashlib.md5(json_str.encode()).hexdigest()[:12]
@@ -554,8 +558,8 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
     scan_country_geopolitical_news() uses above). Experimental: feeds only
     the standalone /geopolitical page for now, not the RAG pipeline.
 
-    Returns {article_count, avg_tone, articles: [...], has_relevant: bool}
-    or None on any failure — best-effort, never blocks the harvest.
+    Returns (intel_dict, "ok") or (None, status) where status names why it
+    failed — best-effort, never blocks the harvest.
 
     relevant_suppliers ({"name","category"} dicts, for suppliers located
     in this country) ranks the headlines GDELT returns: a country-level
@@ -606,7 +610,8 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
                 raise
         bins = response.json().get("tonechart", [])
         if not bins:
-            return None
+            return None, "empty"
+
 
         total_count = sum(b.get("count", 0) for b in bins)
         weighted_tone_sum = sum(b.get("bin", 0) * b.get("count", 0) for b in bins)
@@ -683,17 +688,67 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
             "articles": articles_out,
             "has_relevant": has_relevant,
             "fetched_at": utc_now_iso(),
-        }
+        }, "ok"
     except Exception as e:
-        logger.warning(f"GDELT fetch failed for {country}: {e}")
-        return None
+        # The reason is recorded per country and carried in the snapshot, not
+        # just logged: eight of twelve countries had never once returned data
+        # and the logs from the runs that failed them were long gone, so there
+        # was no way to tell a rate limit from a timeout from an empty result.
+        status = "error"
+        if isinstance(e, requests.HTTPError) and e.response is not None:
+            status = f"http_{e.response.status_code}"
+        elif isinstance(e, requests.Timeout):
+            status = "timeout"
+        elif isinstance(e, requests.ConnectionError):
+            status = "unreachable"
+        logger.warning(f"GDELT fetch failed for {country} ({status}): {e}")
+        return None, status
 
 
 GDELT_TIME_BUDGET_SEC = 150  # hard cap on the whole phase — see fetch_gdelt_intel
 GDELT_CIRCUIT_BREAKER_FAILS = 3  # consecutive failures before bailing out early
 
 
-def fetch_gdelt_intel(countries: list, priority_countries: tuple = (), suppliers_by_country: dict = None) -> dict:
+def order_gdelt_countries(countries: list, attempts: dict) -> list:
+    """Rotate which countries get the front of the budget.
+
+    The order used to be a fixed priority pair followed by the rest
+    alphabetically, and the circuit breaker abandons the run after three
+    consecutive failures. Those two together meant the same tail of the list
+    was never reached: across 24 harvests, every country from position six
+    onwards — India, Japan, Netherlands, South Africa, South Korea, Sweden,
+    Switzerland — had literally never been attempted to a successful result,
+    while positions two to five accounted for every success on record. Merging
+    results across runs (see fetch_gdelt_intel) cannot accumulate coverage if
+    the same countries are the ones always cut off.
+
+    Ordering by staleness fixes that: whoever has gone longest without a
+    successful reading goes first, so each cycle attacks a different part of
+    the list and coverage fills in over a day or so. Countries that keep
+    failing are demoted rather than dropped — a chronic failure would
+    otherwise sit at the front forever (never fetched = maximally stale) and
+    reintroduce exactly the blockage this replaces — but they still get
+    attempted whenever the budget reaches them.
+    """
+    def sort_key(country):
+        state = attempts.get(country, {})
+        # Bucketed so a country is not shuffled to the back on one bad run;
+        # 3+ consecutive failures is a pattern, 1-2 is noise.
+        streak = min(state.get("consecutive_failures", 0) // 3, 3)
+        last_success = state.get("last_success") or ""
+        # Tie-break on when it was last *tried*. Without this, every country
+        # that has never succeeded ties on last_success and falls through to
+        # the alphabetical tie-break, so the same handful at the top of the
+        # alphabet get retried every cycle until their failure streak finally
+        # demotes them — the original blockage, one level down. Never
+        # attempted sorts ahead of recently attempted.
+        last_attempt = state.get("last_attempt") or ""
+        return (streak, last_success, last_attempt, country)
+
+    return sorted(countries, key=sort_key)
+
+
+def fetch_gdelt_intel(countries: list, attempts: dict = None, suppliers_by_country: dict = None) -> tuple:
     """
     Best-effort GDELT scan across watchlist countries — see
     fetch_gdelt_country_intel.
@@ -721,7 +776,10 @@ def fetch_gdelt_intel(countries: list, priority_countries: tuple = (), suppliers
     """
     start = time.monotonic()
     result = {}
+    attempts = dict(attempts or {})
     consecutive_fails = 0
+    countries = order_gdelt_countries(countries, attempts)
+    logger.info(f"GDELT order this cycle: {', '.join(countries)}")
     for i, country in enumerate(countries):
         elapsed = time.monotonic() - start
         if elapsed > GDELT_TIME_BUDGET_SEC:
@@ -738,16 +796,27 @@ def fetch_gdelt_intel(countries: list, priority_countries: tuple = (), suppliers
             break
         if i > 0:
             time.sleep(random.uniform(5, 7))
-        max_attempts = 2 if country in priority_countries else 1
+        # Two attempts for whoever leads this cycle — the front of the queue is
+        # the stalest country, which is the one worth spending a retry on.
+        max_attempts = 2 if i == 0 else 1
         relevant_suppliers = (suppliers_by_country or {}).get(country, [])
-        intel = fetch_gdelt_country_intel(country, relevant_suppliers=relevant_suppliers, max_attempts=max_attempts)
+        intel, status = fetch_gdelt_country_intel(
+            country, relevant_suppliers=relevant_suppliers, max_attempts=max_attempts
+        )
+        state = dict(attempts.get(country, {}))
+        state["last_attempt"] = utc_now_iso()
+        state["last_status"] = status
         if intel:
             result[country] = intel
+            state["last_success"] = intel["fetched_at"]
+            state["consecutive_failures"] = 0
             consecutive_fails = 0
         else:
+            state["consecutive_failures"] = state.get("consecutive_failures", 0) + 1
             consecutive_fails += 1
+        attempts[country] = state
     logger.info(f"GDELT scan complete. {len(result)}/{len(countries)} countries returned data.")
-    return result
+    return result, attempts
 
 
 def scan_supplier_news_google(supplier_name, country):
@@ -3133,14 +3202,19 @@ def main():
                 {"name": s.get("name"), "category": s.get("category")}
             )
     all_gdelt_countries = set(suppliers_by_country.keys())
-    # China and USA go first: highest-priority countries for BAT's supply
-    # chain (semiconductor/trade-war exposure), so they get fetched while
-    # GDELT's rate-limit budget is freshest — a straight alphabetical/set
-    # order left them exposed to being among the ones dropped when a run
-    # hits 429s partway through.
-    priority = tuple(c for c in ("China", "USA") if c in all_gdelt_countries)
-    gdelt_countries = list(priority) + sorted(all_gdelt_countries - set(priority))
-    fresh_geo = fetch_gdelt_intel(gdelt_countries, priority_countries=priority, suppliers_by_country=suppliers_by_country)
+    # Order is decided per cycle from the attempt history rather than being
+    # fixed (see order_gdelt_countries): a fixed order plus the circuit
+    # breaker meant the same tail of the list was cut off every single run.
+    previous_attempts = {
+        country: state
+        for country, state in (previous_state or {}).get("geopolitical_attempts", {}).items()
+        if country in all_gdelt_countries
+    }
+    fresh_geo, gdelt_attempts = fetch_gdelt_intel(
+        sorted(all_gdelt_countries),
+        attempts=previous_attempts,
+        suppliers_by_country=suppliers_by_country,
+    )
     # Merge onto last run's results instead of replacing wholesale — GDELT's
     # rate limiting means only a handful of countries succeed on any given
     # run, and which ones is essentially random (whichever get through
@@ -3277,6 +3351,7 @@ def main():
         "macro_economy": macro_economy,
         "peer_group": peer_group,
         "geopolitical_intel": geopolitical_intel,
+        "geopolitical_attempts": gdelt_attempts,
         "harvest_stats": harvest_stats.summary(),
         "health": {
             "pillars": {

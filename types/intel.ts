@@ -291,6 +291,16 @@ export interface IntelSnapshot {
       fetched_at?: string;
     };
   };
+  // Per-country GDELT attempt bookkeeping — why a country has no reading,
+  // and what drives the fetch order next cycle (see order_gdelt_countries).
+  geopolitical_attempts?: {
+    [country: string]: {
+      last_attempt?: string;
+      last_status?: string;
+      last_success?: string | null;
+      consecutive_failures?: number;
+    };
+  };
   harvest_stats?: HarvestStats;
   health?: HealthStatus;
 }

@@ -36,6 +36,13 @@ function toneColor(tone: number | null): string {
 // Countries refresh opportunistically (GDELT rate-limits hard enough that
 // only some succeed per harvest), so a card can be showing data from
 // several cycles ago — say so plainly rather than implying it's live.
+function relativeAttempt(at: string): string {
+  const hours = (Date.now() - new Date(at).getTime()) / 3_600_000;
+  if (hours < 1) return 'in the last hour';
+  if (hours < 24) return `${Math.round(hours)}h ago`;
+  return `${Math.round(hours / 24)}d ago`;
+}
+
 function freshnessLabel(fetchedAt: string | undefined): string {
   if (!fetchedAt) return '';
   const hours = (Date.now() - new Date(fetchedAt).getTime()) / 3_600_000;
@@ -51,6 +58,32 @@ export default function GeopoliticalIntelPage() {
   const [isDark, setIsDark] = useState(false);
 
   const geo = typedIntel.geopolitical_intel || {};
+  const attempts = typedIntel.geopolitical_attempts || {};
+
+  // Why a country has no reading, in the reader's terms. "Awaiting data" on
+  // its own gave no way to tell a country that is queued from one that has
+  // been failing for days, which is the difference between waiting and
+  // needing to look at something.
+  const noReadingReason = (country: string): string => {
+    const state = attempts[country];
+    if (!state?.last_attempt) {
+      return 'Queued — GDELT is queried a few countries at a time each cycle, so coverage fills in over a day or so.';
+    }
+    const when = relativeAttempt(state.last_attempt);
+    const streak = state.consecutive_failures ?? 0;
+    const repeated = streak >= 3 ? ` Failing for ${streak} attempts running.` : '';
+    switch (state.last_status) {
+      case 'http_429':
+        return `Rate-limited by GDELT ${when}.${repeated} It will be retried on a later cycle.`;
+      case 'timeout':
+      case 'unreachable':
+        return `GDELT did not respond ${when}.${repeated} It will be retried on a later cycle.`;
+      case 'empty':
+        return `GDELT returned no coverage for this country ${when}.`;
+      default:
+        return `Last attempt ${when} did not return data.${repeated}`;
+    }
+  };
   const suppliersList: Supplier[] = typedIntel.suppliers?.suppliers || [];
 
   const suppliersByCountry: { [country: string]: Supplier[] } = {};
@@ -256,9 +289,7 @@ export default function GeopoliticalIntelPage() {
                             </p>
                           ) : (
                             <p className="text-xs text-gray-400 dark:text-slate-500">
-                              GDELT has not returned data for this country yet. It is queried
-                              every harvest; the API rate-limits hard, so countries fill in
-                              gradually rather than all at once.
+                              {noReadingReason(country)}
                             </p>
                           )}
                         </div>

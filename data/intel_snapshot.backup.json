@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-29T15:54:48.483810+00:00",
-  "version": "b2987ab2ec3f",
+  "last_updated": "2026-08-29T20:07:20.347925+00:00",
+  "version": "9a0d41f1f7de",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -15,18 +15,11 @@
     }
   },
   "executive_summary": {
-    "headline": "Macro weakness and unconfirmed supplier moves in batteries are keeping you on elevated alert despite recent reversals.",
-    "next_step": "Within 48 hours, request latest operational and demand signals from EVE Energy and cross-check whether the -2.1% stock move correlates with sector headwinds (battery oversupply, EV demand softness) or company-specific issues; simultaneously confirm whether macro AMBER is driven by EU weakening or a broader downturn.",
-    "context": "EVE Energy (high-exposure battery supplier in China) posted an unexplained 2.1% stock decline with no corroborating news\u2014typical of sector-wide pressure rather than a crisis, but worth verifying against EV cycle data. Macro pillar is AMBER due to EU outlook shifting to Weakening, while US remains Stable; no peers signal distress yet, so the risk sits at the margin between normal volatility and early warning."
+    "headline": "Three high-exposure suppliers posting unexplained declines in unison\u2014Texas Instruments, Jabil, and EVE Energy down 2\u20133% with no corroborating news\u2014suggests a sector or macro headwind worth verifying.",
+    "next_step": "Within 24 hours, cross-check whether semiconductor and battery supply-chain peers are reporting similar moves today; if correlated, escalate to macro/market analysis team to confirm it's sector-wide and not supplier-specific stress.",
+    "context": "Texas Instruments (high EE exposure, USA) and Jabil (medium mechanical exposure, USA) are both down 3%+, joined by EVE Energy (high battery exposure, China) at \u22122.1%, all with confirmed=false. The 7-day pattern shows Texas Instruments has whipsawed repeatedly (HIGH\u2192MEDIUM\u2192LOW\u2192MEDIUM\u2192LOW), while macro (US/EU outlook softening) and peers pillar both remain GREEN. Worth checking whether these stock moves and the recent EU weakening trend share a root cause\u2014geopolitical pressure on semiconductors, sector rotation, or isolated market noise\u2014rather than company-specific operational failure."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-08T18:20:15.497174",
-      "macro": "GREEN",
-      "peers": "RED",
-      "suppliers": "AMBER",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-08-09T00:45:56.446091",
       "macro": "GREEN",
@@ -579,6 +572,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-29T20:07:15.045866+00:00",
+      "macro": "AMBER",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "change_log": [
@@ -743,6 +743,24 @@
       "headline": "Jabil: MEDIUM \u2192 LOW",
       "detail": "\u2713 Normal operations. No risk signals.",
       "href": "/details/Jabil"
+    },
+    {
+      "at": "2026-08-29T20:07:15.045871+00:00",
+      "kind": "supplier_risk",
+      "direction": "up",
+      "entity": "Texas Instruments",
+      "headline": "Texas Instruments: LOW \u2192 MEDIUM",
+      "detail": "\ud83d\udcc9 Stock down -3.0% (no confirmed cause) - High exposure supplier",
+      "href": "/details/Texas Instruments"
+    },
+    {
+      "at": "2026-08-29T20:07:15.045871+00:00",
+      "kind": "supplier_risk",
+      "direction": "up",
+      "entity": "Jabil",
+      "headline": "Jabil: LOW \u2192 MEDIUM",
+      "detail": "\ud83d\udcc9 Stock down -3.4% (no confirmed cause) - monitoring",
+      "href": "/details/Jabil"
     }
   ],
   "macro": {
@@ -758,7 +776,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-29T15:51:46.719059+00:00"
+        "last_fetched": "2026-08-29T20:04:50.435814+00:00"
       },
       "eu": {
         "status": "success",
@@ -769,7 +787,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1643",
-        "last_fetched": "2026-08-29T15:51:47.599830+00:00"
+        "last_fetched": "2026-08-29T20:04:50.809961+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -780,11 +798,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-29T15:51:47.600689+00:00"
+        "last_fetched": "2026-08-29T20:04:50.810911+00:00"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-29T15:51:47.600706+00:00"
+    "last_fetched": "2026-08-29T20:04:50.810928+00:00"
   },
   "peers": {
     "status": "success",
@@ -792,7 +810,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-29T15:51:52.009528+00:00"
+    "last_fetched": "2026-08-29T20:04:53.492775+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -806,10 +824,10 @@
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 0,
     "total_high": 0,
-    "total_medium": 9,
+    "total_medium": 11,
     "actionable_critical": 0,
     "actionable_high": 0,
-    "actionable_medium": 1,
+    "actionable_medium": 3,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -824,11 +842,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.32,
+        "current_price": 46.67,
         "risk_analysis": "No supply chain risks identified. AMCOR (Printed Packaging) operating normally. BAT exposure: Critical.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "last_signal": "\u2713 Normal operations. Stock: +0.3%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -852,11 +870,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.73,
+        "current_price": 263.95,
         "risk_analysis": "No supply chain risks identified. GPI (Printed Packaging) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "last_signal": "\u2713 Normal operations. Stock: +0.7%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -932,8 +950,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
-            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
+            "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
+            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -958,8 +976,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.17,
+        "current_price": 221.54,
         "risk_analysis": "Geopolitical risk in South Africa: Economic instability, infrastructure challenges, energy crisis. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83c\udf0d Geopolitical: Economic instability, infrastructure challenges, energy crisis",
@@ -971,8 +989,7 @@
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
             "Iran war drains US military stockpiles, constraining global deterrence: Report - Muslim Network TV",
-            "Six Months In: The Iran War\u2019s Global Impact - BloombergNEF",
-            "Rare war of words exposes tension within South Sudan top leadership - The EastAfrican"
+            "Sugar and chicken trade war halted as US tariffs unite SA and Brazil - Business Day"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1025,11 +1042,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.52,
+        "current_price": 73.03,
         "risk_analysis": "No supply chain risks identified. Eastman (Filter Materials) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "last_signal": "\u2713 Normal operations. Stock: +0.5%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1093,9 +1110,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "Implications for the war in Ukraine drawn from the Korean war | Note de la FRS | Foundation for Strategic Research - Fondation pour la Recherche Strat\u00e9gique",
+            "US cancels joint marine drills with South Korea over Iran war-related force constraints - Reuters",
             "Opinion | Reinforcing ties with South Korea crucial - The Cap Times",
-            "US cancels joint marine drills with South Korea over Iran war-related force constraints - Reuters"
+            "After six months of war in Iran, the US is diminished as both ally and rival - The Christian Science Monitor"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1148,11 +1165,11 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
+        "daily_change_pct": 0.41,
+        "current_price": 12.13,
         "risk_analysis": "No supply chain risks identified. SWM (Mativ) (Fine Papers) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "last_signal": "\u2713 Normal operations. Stock: +0.4%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1244,9 +1261,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "Iran hard-liners tighten grip as war with US enters sixth month - India Today",
+            "Trump turns from bombs to economic war as Iran refuses to bend - PRESS Insider",
             "Closing Arguments: Thawing India-China Ties, US-Canada Trade War - Energy Intelligence",
-            "How Trump\u2019s war with Iran is putting the rest of his foreign policy at risk - MS NOW"
+            "Iran hard-liners tighten grip as war with US enters sixth month - India Today"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1284,8 +1301,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
-            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
+            "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
+            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1351,8 +1368,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
-            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
+            "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
+            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1390,8 +1407,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
-            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
+            "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
+            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1429,8 +1446,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
-            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
+            "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
+            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post"
           ],
           "escalated": false,
           "baseline_only": false
@@ -1455,13 +1472,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Texas Instruments (EE Component) operating normally. BAT exposure: High.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "daily_change_pct": -2.96,
+        "current_price": 258.64,
+        "risk_analysis": "Stock decline for high-exposure supplier Texas Instruments. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Stock down -3.0% (no confirmed cause) - High exposure supplier",
         "counts_toward_rag": true,
-        "price_move_only": false,
+        "price_move_only": true,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1567,13 +1584,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": null,
-        "current_price": null,
-        "risk_analysis": "No supply chain risks identified. Jabil (Mechanical) operating normally. BAT exposure: Medium.",
-        "risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. No risk signals.",
+        "daily_change_pct": -3.45,
+        "current_price": 301.45,
+        "risk_analysis": "Notable stock decline for Jabil. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance. BAT exposure: Medium.",
+        "risk_level": "MEDIUM",
+        "last_signal": "\ud83d\udcc9 Stock down -3.4% (no confirmed cause) - monitoring",
         "counts_toward_rag": true,
-        "price_move_only": false,
+        "price_move_only": true,
         "geopolitical_risk": null,
         "google_news_headlines": [],
         "bat_exposure": "Medium",
@@ -1583,14 +1600,14 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-29T15:52:57.372384+00:00"
+    "last_fetched": "2026-08-29T20:05:57.807098+00:00"
   },
   "macro_economy": {
     "us": {
       "cpi": "3.3%",
       "rate": "3.63%",
       "trend": "Stable",
-      "summary": "S&P 500 stable: +nan% change. Market reflects balanced economic conditions. Fed monitoring inflation and employment data closely. Industrial output steady, consumer spending patterns normal. Economic outlook remains cautiously optimistic."
+      "summary": "S&P 500 stable: -0.25% change. Market reflects balanced economic conditions. Fed monitoring inflation and employment data closely. Industrial output steady, consumer spending patterns normal. Economic outlook remains cautiously optimistic."
     },
     "eu": {
       "cpi": "2.2%",
@@ -1612,9 +1629,9 @@
       "region": "Global/US ADR",
       "sentiment": "Neutral",
       "latest_headline": "Is British American Tobacco (LSE:BATS) Cheap After Its 127% Five Year Gain?",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "-0.27%",
+      "current_price": 56.130001068115234,
+      "daily_change_pct": -0.27,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Is British American Tobacco (LSE:BATS) Cheap After Its 127% Five Year Gain?",
       "news_risk": false,
@@ -1629,9 +1646,9 @@
       "region": "US",
       "sentiment": "Neutral",
       "latest_headline": "Altria vs. Philip Morris: Which Tobacco Giant Looks Stronger?",
-      "stock_move": "N/A",
-      "current_price": null,
-      "daily_change_pct": null,
+      "stock_move": "+0.74%",
+      "current_price": 191.88999938964844,
+      "daily_change_pct": 0.74,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Altria vs. Philip Morris: Which Tobacco Giant Looks Stronger?",
       "news_risk": false,
@@ -1801,18 +1818,12 @@
     }
   },
   "harvest_stats": {
-    "total_errors": 1,
+    "total_errors": 0,
     "total_warnings": 0,
-    "total_successes": 11,
-    "errors": [
-      {
-        "source": "cpsc_recalls",
-        "error": "HTTPSConnectionPool(host='www.saferproducts.gov', port=443): Read timed out. (read timeout=20)",
-        "time": "2026-08-29T15:51:44.671458+00:00"
-      }
-    ],
+    "total_successes": 12,
+    "errors": [],
     "warnings": [],
-    "duration_seconds": 247.576198
+    "duration_seconds": 152.15661
   },
   "health": {
     "pillars": {
@@ -1820,7 +1831,7 @@
       "peers": "success",
       "suppliers": "success"
     },
-    "errors_count": 1,
+    "errors_count": 0,
     "warnings_count": 0,
     "circuit_breaker_state": "closed"
   }

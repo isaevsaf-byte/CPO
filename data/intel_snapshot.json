@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-29T20:07:20.347925+00:00",
-  "version": "9a0d41f1f7de",
+  "last_updated": "2026-08-30T02:04:35.287860+00:00",
+  "version": "3c126609fd01",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -15,18 +15,11 @@
     }
   },
   "executive_summary": {
-    "headline": "Three high-exposure suppliers posting unexplained declines in unison\u2014Texas Instruments, Jabil, and EVE Energy down 2\u20133% with no corroborating news\u2014suggests a sector or macro headwind worth verifying.",
-    "next_step": "Within 24 hours, cross-check whether semiconductor and battery supply-chain peers are reporting similar moves today; if correlated, escalate to macro/market analysis team to confirm it's sector-wide and not supplier-specific stress.",
-    "context": "Texas Instruments (high EE exposure, USA) and Jabil (medium mechanical exposure, USA) are both down 3%+, joined by EVE Energy (high battery exposure, China) at \u22122.1%, all with confirmed=false. The 7-day pattern shows Texas Instruments has whipsawed repeatedly (HIGH\u2192MEDIUM\u2192LOW\u2192MEDIUM\u2192LOW), while macro (US/EU outlook softening) and peers pillar both remain GREEN. Worth checking whether these stock moves and the recent EU weakening trend share a root cause\u2014geopolitical pressure on semiconductors, sector rotation, or isolated market noise\u2014rather than company-specific operational failure."
+    "headline": "Three high-exposure suppliers posted unexplained stock declines amid macro uncertainty, while EU economic weakness and peer-sector job cuts signal broader headwinds.",
+    "next_step": "Within 48 hours, check earnings calls and sector reports for Texas Instruments, EVE Energy, and Jabil to determine if declines reflect company-specific issues or market-wide compression; flag if battery/component sector is repricing.",
+    "context": "Texas Instruments (HIGH exposure, \u22123.0%), EVE Energy (HIGH exposure, \u22122.1%, China-based), and Jabil (MEDIUM exposure, \u22123.4%) all moved down with no confirmed news, suggesting either a sector rotation or macro-driven revaluation. This timing overlaps with EU outlook weakening to Weakening and peer reports (Imperial Brands cutting jobs across US/Europe), indicating demand or margin pressure may be spreading across the supply ecosystem."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-09T00:45:56.446091",
-      "macro": "GREEN",
-      "peers": "RED",
-      "suppliers": "AMBER",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-08-09T06:35:35.408625",
       "macro": "GREEN",
@@ -579,6 +572,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-30T02:04:30.895093+00:00",
+      "macro": "AMBER",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "change_log": [
@@ -776,7 +776,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-29T20:04:50.435814+00:00"
+        "last_fetched": "2026-08-30T02:02:07.073838+00:00"
       },
       "eu": {
         "status": "success",
@@ -787,7 +787,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1643",
-        "last_fetched": "2026-08-29T20:04:50.809961+00:00"
+        "last_fetched": "2026-08-30T02:02:07.768849+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -798,11 +798,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-29T20:04:50.810911+00:00"
+        "last_fetched": "2026-08-30T02:02:07.769661+00:00"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-29T20:04:50.810928+00:00"
+    "last_fetched": "2026-08-30T02:02:07.769677+00:00"
   },
   "peers": {
     "status": "success",
@@ -810,7 +810,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-29T20:04:53.492775+00:00"
+    "last_fetched": "2026-08-30T02:02:11.664569+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -910,9 +910,9 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
+            "Russia won't use nuclear weapons against Ukraine or attack NATO, Finland's president says - The Kyiv Independent",
             "Sweden to deploy fighter jets, warships to Finland - Reuters",
-            "Finland and Sweden team up to boost counter-drone defenses - Breaking Defense",
-            "Sweden to deploy fighter jets, war ships to Finland - TVP World"
+            "Finland and Sweden team up to boost counter-drone defenses - Breaking Defense"
           ],
           "escalated": true,
           "baseline_only": true
@@ -949,9 +949,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
             "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
-            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post"
+            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -988,6 +988,7 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
+            "Six Months In: The Iran War\u2019s Global Impact - BloombergNEF",
             "Iran war drains US military stockpiles, constraining global deterrence: Report - Muslim Network TV",
             "Sugar and chicken trade war halted as US tariffs unite SA and Brazil - Business Day"
           ],
@@ -1110,9 +1111,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "US cancels joint marine drills with South Korea over Iran war-related force constraints - Reuters",
             "Opinion | Reinforcing ties with South Korea crucial - The Cap Times",
-            "After six months of war in Iran, the US is diminished as both ally and rival - The Christian Science Monitor"
+            "After six months of war in Iran, the US is diminished as both ally and rival - The Christian Science Monitor",
+            "U.S. weapons shortage from Iran war alarms allies confronting China - The Washington Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1261,8 +1262,8 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "Trump turns from bombs to economic war as Iran refuses to bend - PRESS Insider",
             "Closing Arguments: Thawing India-China Ties, US-Canada Trade War - Energy Intelligence",
+            "Trump turns from bombs to economic war as Iran refuses to bend - PRESS Insider",
             "Iran hard-liners tighten grip as war with US enters sixth month - India Today"
           ],
           "escalated": true,
@@ -1300,9 +1301,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
             "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
-            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post"
+            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1367,9 +1368,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
             "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
-            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post"
+            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1406,9 +1407,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
             "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
-            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post"
+            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1445,9 +1446,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
             "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
-            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post"
+            "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": false,
           "baseline_only": false
@@ -1600,7 +1601,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-29T20:05:57.807098+00:00"
+    "last_fetched": "2026-08-30T02:03:17.078506+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1817,13 +1818,36 @@
       "fetched_at": "2026-08-29T11:55:31.748925+00:00"
     }
   },
+  "geopolitical_attempts": {
+    "Austria": {
+      "last_attempt": "2026-08-30T02:03:37.103491+00:00",
+      "last_status": "timeout",
+      "consecutive_failures": 1
+    },
+    "China": {
+      "last_attempt": "2026-08-30T02:04:02.668510+00:00",
+      "last_status": "timeout",
+      "consecutive_failures": 1
+    },
+    "Finland": {
+      "last_attempt": "2026-08-30T02:04:29.645432+00:00",
+      "last_status": "timeout",
+      "consecutive_failures": 1
+    }
+  },
   "harvest_stats": {
-    "total_errors": 0,
+    "total_errors": 1,
     "total_warnings": 0,
-    "total_successes": 12,
-    "errors": [],
+    "total_successes": 11,
+    "errors": [
+      {
+        "source": "cpsc_recalls",
+        "error": "503 Server Error: Service Unavailable for url: https://www.saferproducts.gov/RestWebServices/Recall?RecallDateStart=2026-06-01&format=json",
+        "time": "2026-08-30T02:02:05.087536+00:00"
+      }
+    ],
     "warnings": [],
-    "duration_seconds": 152.15661
+    "duration_seconds": 154.095716
   },
   "health": {
     "pillars": {
@@ -1831,7 +1855,7 @@
       "peers": "success",
       "suppliers": "success"
     },
-    "errors_count": 0,
+    "errors_count": 1,
     "warnings_count": 0,
     "circuit_breaker_state": "closed"
   }

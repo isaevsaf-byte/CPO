@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-30T10:53:44.225183+00:00",
-  "version": "dd06c5cf9dcc",
+  "last_updated": "2026-08-30T15:40:59.035986+00:00",
+  "version": "dde083a9e794",
   "status": "healthy",
   "overall_rag": {
     "score": "RED",
@@ -14,18 +14,11 @@
     }
   },
   "executive_summary": {
-    "headline": "ITC geopolitical escalation in India escalated supplier pillar from AMBER to RED; three high-exposure US/China suppliers also moving down unconfirmed, worth isolating from macro noise.",
-    "next_step": "Within 24 hours: confirm the ITC news source and map India geopolitical event to your supply chain (nicotine, high exposure). In parallel, check whether EVE Energy, Texas Instruments, and Jabil stock moves correlate with sector-wide selloff or company-specific triggers\u2014if sector-wide, likely not urgent; if isolated, escalate.",
-    "context": "ITC (High exposure, India, Nicotine) triggered geopolitical risk signal pending corroboration. EVE Energy (Batteries, China, \u22122.1%), Texas Instruments (EE Component, USA, \u22123.0%), and Jabil (Mechanical, USA, \u22123.4%) all show unconfirmed stock declines over the same window; no adverse news paired with these moves yet, so they may reflect market conditions rather than supplier distress\u2014but their size and concentration in high-exposure suppliers warrants a data check."
+    "headline": "ITC hit by geopolitical escalation in India; unconfirmed stock weakness across high-exposure US and Chinese suppliers complicates the picture.",
+    "next_step": "Within 24 hours, confirm ITC news source quality and escalation timeline; request ops team assess nicotine supply substitutability and lead times from secondary sources in less-affected regions.",
+    "context": "ITC (India, high BAT exposure, Nicotine) flagged for geopolitical event; simultaneously, Texas Instruments, Jabil, and EVE Energy all declined 2\u20133% on unconfirmed signals with no corroborating news. Worth checking whether the unconfirmed moves reflect genuine operational stress at those suppliers or are sector/macro contagion from the ITC news and EU economic weakness now showing in the macro pillar."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-09T12:24:04.813797",
-      "macro": "GREEN",
-      "peers": "RED",
-      "suppliers": "AMBER",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-08-09T18:22:10.400322",
       "macro": "GREEN",
@@ -578,6 +571,13 @@
       "peers": "GREEN",
       "suppliers": "RED",
       "overall": "RED"
+    },
+    {
+      "timestamp": "2026-08-30T15:40:53.965867+00:00",
+      "macro": "AMBER",
+      "peers": "GREEN",
+      "suppliers": "RED",
+      "overall": "RED"
     }
   ],
   "change_log": [
@@ -802,7 +802,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-30T10:49:46.440232+00:00"
+        "last_fetched": "2026-08-30T15:36:39.844585+00:00"
       },
       "eu": {
         "status": "success",
@@ -813,7 +813,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1643",
-        "last_fetched": "2026-08-30T10:49:47.316676+00:00"
+        "last_fetched": "2026-08-30T15:36:40.609277+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -824,11 +824,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-30T10:49:47.317680+00:00"
+        "last_fetched": "2026-08-30T15:36:40.610073+00:00"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-30T10:49:47.317699+00:00"
+    "last_fetched": "2026-08-30T15:36:40.610097+00:00"
   },
   "peers": {
     "status": "success",
@@ -836,7 +836,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-30T10:49:51.351072+00:00"
+    "last_fetched": "2026-08-30T15:37:00.597000+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -937,8 +937,8 @@
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
             "Finland's Stubb tells German newspaper Russia unlikely to risk attack on NATO - Reuters",
-            "Russia won't use nuclear weapons against Ukraine or attack NATO, Finland's president says - The Kyiv Independent",
-            "Finland and Sweden team up to boost counter-drone defenses - Breaking Defense"
+            "Finland\u2019s Stubb says Russia unlikely to risk attack on NATO - Anadolu Ajans\u0131",
+            "Russia won't use nuclear weapons against Ukraine or attack NATO, Finland's president says - The Kyiv Independent"
           ],
           "escalated": true,
           "baseline_only": true
@@ -975,9 +975,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
+            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1014,9 +1014,9 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "Conflict is rising in Ethiopia\u2019s Tigray region: 5 steps that could stop a return to full-scale war - The Conversation",
-            "US Treasury's Bessent faces G20 diplomacy test amid tariffs, Iran war, bond turmoil - The Straits Times",
-            "Iran war drains US military stockpiles, constraining global deterrence: Report - Muslim Network TV"
+            "Gaza War: South Africa takes its fight against Israel to the next level with fresh evidence at ICJ - Business Insider Africa",
+            "US Treasury's Bessent faces G20 diplomacy test amid tariffs, Iran war, bond turmoil - Reuters",
+            "Conflict is rising in Ethiopia\u2019s Tigray region: 5 steps that could stop a return to full-scale war - The Conversation"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1288,9 +1288,9 @@
           "level": "HIGH",
           "reason": "Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
           "headlines": [
+            "Iran war at 6 months: Who gained, who lost the most economically - The Times of India",
             "Closing Arguments: Thawing India-China Ties, US-Canada Trade War - Energy Intelligence",
-            "Military Digest | When the British feared airborne invasion of India, raised anti-parachute force - The Indian Express",
-            "Trump turns from bombs to economic war as Iran refuses to bend - PRESS Insider"
+            "Military Digest | When the British feared airborne invasion of India, raised anti-parachute force - The Indian Express"
           ],
           "escalated": true,
           "baseline_only": false
@@ -1327,9 +1327,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
+            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1394,9 +1394,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
+            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1433,9 +1433,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
+            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1472,9 +1472,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
+            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": false,
           "baseline_only": false
@@ -1627,7 +1627,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-30T10:50:56.101995+00:00"
+    "last_fetched": "2026-08-30T15:38:06.690606+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1646,7 +1646,7 @@
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: -0.03% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: +0.04% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1813,14 +1813,9 @@
       ]
     },
     "Austria": {
-      "article_count": 263,
-      "avg_tone": -1.0,
+      "article_count": 201,
+      "avg_tone": -1.2,
       "articles": [
-        {
-          "title": "Gas Prices Rise : In Vienna , Comparing Tariffs Is Worthwhile",
-          "url": "https://www.vol.at/gas-prices-rise-high-savings-now-lure-in-vienna/10418453",
-          "tone": 1
-        },
         {
           "title": "Austria Manufacturing Growth Hits 51 - month High",
           "url": "https://www.rttnews.com/3685673/austria-manufacturing-growth-hits-51-month-high.aspx",
@@ -1828,7 +1823,7 @@
         }
       ],
       "has_relevant": true,
-      "fetched_at": "2026-08-29T11:54:57.708656+00:00"
+      "fetched_at": "2026-08-30T15:40:52.471079+00:00"
     },
     "Finland": {
       "article_count": 617,
@@ -1893,13 +1888,27 @@
       ],
       "has_relevant": true,
       "fetched_at": "2026-08-30T10:53:37.690675+00:00"
+    },
+    "Sweden": {
+      "article_count": 635,
+      "avg_tone": -0.1,
+      "articles": [
+        {
+          "title": "The West must sanction E1 settlement to save its credibility",
+          "url": "https://www.arabnews.com/node/2656024",
+          "tone": -5
+        }
+      ],
+      "has_relevant": true,
+      "fetched_at": "2026-08-30T15:39:11.026956+00:00"
     }
   },
   "geopolitical_attempts": {
     "Austria": {
-      "last_attempt": "2026-08-30T02:03:37.103491+00:00",
-      "last_status": "timeout",
-      "consecutive_failures": 1
+      "last_attempt": "2026-08-30T15:40:52.471705+00:00",
+      "last_status": "ok",
+      "consecutive_failures": 0,
+      "last_success": "2026-08-30T15:40:52.471079+00:00"
     },
     "China": {
       "last_attempt": "2026-08-30T02:04:02.668510+00:00",
@@ -1937,6 +1946,27 @@
       "last_status": "ok",
       "last_success": "2026-08-30T10:53:37.690675+00:00",
       "consecutive_failures": 0
+    },
+    "South Korea": {
+      "last_attempt": "2026-08-30T15:38:31.909049+00:00",
+      "last_status": "timeout",
+      "consecutive_failures": 1
+    },
+    "Sweden": {
+      "last_attempt": "2026-08-30T15:39:11.027501+00:00",
+      "last_status": "ok",
+      "last_success": "2026-08-30T15:39:11.026956+00:00",
+      "consecutive_failures": 0
+    },
+    "Switzerland": {
+      "last_attempt": "2026-08-30T15:39:37.549007+00:00",
+      "last_status": "timeout",
+      "consecutive_failures": 1
+    },
+    "USA": {
+      "last_attempt": "2026-08-30T15:40:23.980253+00:00",
+      "last_status": "error",
+      "consecutive_failures": 1
     }
   },
   "harvest_stats": {
@@ -1945,7 +1975,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 240.126775
+    "duration_seconds": 261.769297
   },
   "health": {
     "pillars": {

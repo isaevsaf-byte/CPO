@@ -1,32 +1,24 @@
 {
-  "last_updated": "2026-08-30T02:04:35.287860+00:00",
-  "version": "3c126609fd01",
+  "last_updated": "2026-08-30T10:53:44.225183+00:00",
+  "version": "dd06c5cf9dcc",
   "status": "healthy",
   "overall_rag": {
-    "score": "AMBER",
+    "score": "RED",
     "driven_by": [
-      "macro",
       "suppliers"
     ],
     "pillar_scores": {
       "macro": "AMBER",
       "peers": "GREEN",
-      "suppliers": "AMBER"
+      "suppliers": "RED"
     }
   },
   "executive_summary": {
-    "headline": "Three high-exposure suppliers posted unexplained stock declines amid macro uncertainty, while EU economic weakness and peer-sector job cuts signal broader headwinds.",
-    "next_step": "Within 48 hours, check earnings calls and sector reports for Texas Instruments, EVE Energy, and Jabil to determine if declines reflect company-specific issues or market-wide compression; flag if battery/component sector is repricing.",
-    "context": "Texas Instruments (HIGH exposure, \u22123.0%), EVE Energy (HIGH exposure, \u22122.1%, China-based), and Jabil (MEDIUM exposure, \u22123.4%) all moved down with no confirmed news, suggesting either a sector rotation or macro-driven revaluation. This timing overlaps with EU outlook weakening to Weakening and peer reports (Imperial Brands cutting jobs across US/Europe), indicating demand or margin pressure may be spreading across the supply ecosystem."
+    "headline": "ITC geopolitical escalation in India escalated supplier pillar from AMBER to RED; three high-exposure US/China suppliers also moving down unconfirmed, worth isolating from macro noise.",
+    "next_step": "Within 24 hours: confirm the ITC news source and map India geopolitical event to your supply chain (nicotine, high exposure). In parallel, check whether EVE Energy, Texas Instruments, and Jabil stock moves correlate with sector-wide selloff or company-specific triggers\u2014if sector-wide, likely not urgent; if isolated, escalate.",
+    "context": "ITC (High exposure, India, Nicotine) triggered geopolitical risk signal pending corroboration. EVE Energy (Batteries, China, \u22122.1%), Texas Instruments (EE Component, USA, \u22123.0%), and Jabil (Mechanical, USA, \u22123.4%) all show unconfirmed stock declines over the same window; no adverse news paired with these moves yet, so they may reflect market conditions rather than supplier distress\u2014but their size and concentration in high-exposure suppliers warrants a data check."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-09T06:35:35.408625",
-      "macro": "GREEN",
-      "peers": "RED",
-      "suppliers": "AMBER",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-08-09T12:24:04.813797",
       "macro": "GREEN",
@@ -579,6 +571,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-30T10:53:39.373313+00:00",
+      "macro": "AMBER",
+      "peers": "GREEN",
+      "suppliers": "RED",
+      "overall": "RED"
     }
   ],
   "change_log": [
@@ -761,6 +760,33 @@
       "headline": "Jabil: LOW \u2192 MEDIUM",
       "detail": "\ud83d\udcc9 Stock down -3.4% (no confirmed cause) - monitoring",
       "href": "/details/Jabil"
+    },
+    {
+      "at": "2026-08-30T10:53:39.373317+00:00",
+      "kind": "overall_rag",
+      "direction": "up",
+      "entity": "Overall status",
+      "headline": "Overall status AMBER \u2192 RED",
+      "detail": "Driven by: suppliers",
+      "href": null
+    },
+    {
+      "at": "2026-08-30T10:53:39.373317+00:00",
+      "kind": "pillar_rag",
+      "direction": "up",
+      "entity": "Suppliers",
+      "headline": "Suppliers pillar AMBER \u2192 RED",
+      "detail": "",
+      "href": null
+    },
+    {
+      "at": "2026-08-30T10:53:39.373317+00:00",
+      "kind": "supplier_risk",
+      "direction": "up",
+      "entity": "ITC",
+      "headline": "ITC: MEDIUM \u2192 HIGH",
+      "detail": "New: geopolitical escalation. \ud83c\udf0d Geopolitical: Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
+      "href": "/details/ITC"
     }
   ],
   "macro": {
@@ -776,7 +802,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-30T02:02:07.073838+00:00"
+        "last_fetched": "2026-08-30T10:49:46.440232+00:00"
       },
       "eu": {
         "status": "success",
@@ -787,7 +813,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1643",
-        "last_fetched": "2026-08-30T02:02:07.768849+00:00"
+        "last_fetched": "2026-08-30T10:49:47.316676+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -798,11 +824,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-30T02:02:07.769661+00:00"
+        "last_fetched": "2026-08-30T10:49:47.317680+00:00"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-30T02:02:07.769677+00:00"
+    "last_fetched": "2026-08-30T10:49:47.317699+00:00"
   },
   "peers": {
     "status": "success",
@@ -810,11 +836,11 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-30T02:02:11.664569+00:00"
+    "last_fetched": "2026-08-30T10:49:51.351072+00:00"
   },
   "suppliers": {
     "status": "success",
-    "rag_score": "AMBER",
+    "rag_score": "RED",
     "total_suppliers": 24,
     "suppliers_at_sanctions_risk": 0,
     "suppliers_at_cyber_risk": 0,
@@ -823,10 +849,10 @@
     "suppliers_at_operational_risk": 0,
     "suppliers_at_geopolitical_risk": 9,
     "total_critical": 0,
-    "total_high": 0,
-    "total_medium": 11,
+    "total_high": 1,
+    "total_medium": 10,
     "actionable_critical": 0,
-    "actionable_high": 0,
+    "actionable_high": 1,
     "actionable_medium": 3,
     "suppliers": [
       {
@@ -910,8 +936,8 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
+            "Finland's Stubb tells German newspaper Russia unlikely to risk attack on NATO - Reuters",
             "Russia won't use nuclear weapons against Ukraine or attack NATO, Finland's president says - The Kyiv Independent",
-            "Sweden to deploy fighter jets, warships to Finland - Reuters",
             "Finland and Sweden team up to boost counter-drone defenses - Breaking Defense"
           ],
           "escalated": true,
@@ -949,9 +975,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
+            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -988,9 +1014,9 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "Six Months In: The Iran War\u2019s Global Impact - BloombergNEF",
-            "Iran war drains US military stockpiles, constraining global deterrence: Report - Muslim Network TV",
-            "Sugar and chicken trade war halted as US tariffs unite SA and Brazil - Business Day"
+            "Conflict is rising in Ethiopia\u2019s Tigray region: 5 steps that could stop a return to full-scale war - The Conversation",
+            "US Treasury's Bessent faces G20 diplomacy test amid tariffs, Iran war, bond turmoil - The Straits Times",
+            "Iran war drains US military stockpiles, constraining global deterrence: Report - Muslim Network TV"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1112,8 +1138,8 @@
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
             "Opinion | Reinforcing ties with South Korea crucial - The Cap Times",
-            "After six months of war in Iran, the US is diminished as both ally and rival - The Christian Science Monitor",
-            "U.S. weapons shortage from Iran war alarms allies confronting China - The Washington Post"
+            "South Korea, Japan and US to hold North Korea-focused nuclear missile drill - Reuters",
+            "After six months of war in Iran, the US is diminished as both ally and rival - The Christian Science Monitor"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1252,22 +1278,22 @@
         "operational_risk": false,
         "daily_change_pct": -1.12,
         "current_price": 266.0,
-        "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
-        "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
-        "counts_toward_rag": false,
+        "risk_analysis": "Geopolitical risk in India: Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
+        "risk_level": "HIGH",
+        "last_signal": "\ud83c\udf0d Geopolitical: Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
+        "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": {
           "detected": true,
-          "level": "MEDIUM",
-          "reason": "Border tensions with China and Pakistan",
+          "level": "HIGH",
+          "reason": "Geopolitical event (single-source, downgraded pending corroboration): 'invasion of' in recent news",
           "headlines": [
             "Closing Arguments: Thawing India-China Ties, US-Canada Trade War - Energy Intelligence",
-            "Trump turns from bombs to economic war as Iran refuses to bend - PRESS Insider",
-            "Iran hard-liners tighten grip as war with US enters sixth month - India Today"
+            "Military Digest | When the British feared airborne invasion of India, raised anti-parachute force - The Indian Express",
+            "Trump turns from bombs to economic war as Iran refuses to bend - PRESS Insider"
           ],
           "escalated": true,
-          "baseline_only": true
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "High",
@@ -1301,9 +1327,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
+            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1368,9 +1394,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
+            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1407,9 +1433,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
+            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1446,9 +1472,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Report: Iran War Drains US Weapons Stocks, Raising Fears Over China, Russia Threats - i24NEWS",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
+            "Opinion | The Real Winner of the Trade War With Canada - The New York Times"
           ],
           "escalated": false,
           "baseline_only": false
@@ -1601,7 +1627,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-30T02:03:17.078506+00:00"
+    "last_fetched": "2026-08-30T10:50:56.101995+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1816,6 +1842,57 @@
       ],
       "has_relevant": true,
       "fetched_at": "2026-08-29T11:55:31.748925+00:00"
+    },
+    "India": {
+      "article_count": 7207,
+      "avg_tone": -1.1,
+      "articles": [
+        {
+          "title": "Shipping Tribune",
+          "url": "https://www.shippingtribune.com/news/shipping/45+Power+Plants+in+India+Running+on+Critically+Low+Levels+of+Coal+Stocks",
+          "tone": -5
+        },
+        {
+          "title": "Baystreet . ca - India Crude Import Bill Surges as Hormuz Shipping Rates Soar",
+          "url": "http://baystreet.ca/articles/commodities/123358/Indias-Crude-Import-Bill-Surges-as-Hormuz-Shipping-Rates-Soar",
+          "tone": -5
+        },
+        {
+          "title": "Nippon Paint looks to expand India manufacturing , R & D for global markets ; leadership meets Piyush Goyal in Japan",
+          "url": "http://www.japanherald.com/news/279269365/nippon-paint-looks-to-expand-india-manufacturing-rd-for-global-markets-leadership-meets-piyush-goyal-in-japan",
+          "tone": 2
+        },
+        {
+          "title": "From Make in India to Make for the World : Nirmala Sitharaman Global Investment Pitch and Vision for a New Manufacturing Hub",
+          "url": "https://openthemagazine.com/india/from-make-in-india-to-make-for-the-world-nirmala-sitharamans-new-global-pitch-to-investors",
+          "tone": 3
+        },
+        {
+          "title": "Piyush Goyal pitches India as semiconductor hub , invites Kansai firms from Japan to ride $150 bn wave",
+          "url": "http://www.chinanationalnews.com/news/279269026/piyush-goyal-pitches-india-as-semiconductor-hub-invites-kansai-firms-from-japan-to-ride-150-bn-wave",
+          "tone": 4
+        }
+      ],
+      "has_relevant": true,
+      "fetched_at": "2026-08-30T10:52:03.009827+00:00"
+    },
+    "South Africa": {
+      "article_count": 780,
+      "avg_tone": -1.0,
+      "articles": [
+        {
+          "title": "JING CHIEN AND LAWRENCE EDWARDS | Trump latest tariffs leave SA exposed",
+          "url": "https://www.businessday.co.za/opinion/2026-08-28-jing-chien-and-lawrence-edwards-trumps-latest-tariffs-leave-sa-exposed/",
+          "tone": -3
+        },
+        {
+          "title": "South Africa raises sugar reference price , boosting tariff protection for local producers",
+          "url": "https://www.cnbcafrica.com/2026/south-africa-raises-sugar-reference-price-boosting-tariff-protection-for-local-producers",
+          "tone": 0
+        }
+      ],
+      "has_relevant": true,
+      "fetched_at": "2026-08-30T10:53:37.690675+00:00"
     }
   },
   "geopolitical_attempts": {
@@ -1833,21 +1910,42 @@
       "last_attempt": "2026-08-30T02:04:29.645432+00:00",
       "last_status": "timeout",
       "consecutive_failures": 1
+    },
+    "Germany": {
+      "last_attempt": "2026-08-30T10:51:17.242023+00:00",
+      "last_status": "timeout",
+      "consecutive_failures": 1
+    },
+    "India": {
+      "last_attempt": "2026-08-30T10:52:03.010555+00:00",
+      "last_status": "ok",
+      "last_success": "2026-08-30T10:52:03.009827+00:00",
+      "consecutive_failures": 0
+    },
+    "Japan": {
+      "last_attempt": "2026-08-30T10:52:35.691614+00:00",
+      "last_status": "timeout",
+      "consecutive_failures": 1
+    },
+    "Netherlands": {
+      "last_attempt": "2026-08-30T10:53:05.849681+00:00",
+      "last_status": "timeout",
+      "consecutive_failures": 1
+    },
+    "South Africa": {
+      "last_attempt": "2026-08-30T10:53:37.691371+00:00",
+      "last_status": "ok",
+      "last_success": "2026-08-30T10:53:37.690675+00:00",
+      "consecutive_failures": 0
     }
   },
   "harvest_stats": {
-    "total_errors": 1,
+    "total_errors": 0,
     "total_warnings": 0,
-    "total_successes": 11,
-    "errors": [
-      {
-        "source": "cpsc_recalls",
-        "error": "503 Server Error: Service Unavailable for url: https://www.saferproducts.gov/RestWebServices/Recall?RecallDateStart=2026-06-01&format=json",
-        "time": "2026-08-30T02:02:05.087536+00:00"
-      }
-    ],
+    "total_successes": 12,
+    "errors": [],
     "warnings": [],
-    "duration_seconds": 154.095716
+    "duration_seconds": 240.126775
   },
   "health": {
     "pillars": {
@@ -1855,7 +1953,7 @@
       "peers": "success",
       "suppliers": "success"
     },
-    "errors_count": 1,
+    "errors_count": 0,
     "warnings_count": 0,
     "circuit_breaker_state": "closed"
   }

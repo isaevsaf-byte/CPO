@@ -250,7 +250,9 @@ export default function GeopoliticalIntelPage() {
 
                         <div className="text-xs text-gray-500 dark:text-slate-400">
                           {data
-                            ? `${data.article_count.toLocaleString()} articles · last 3 days`
+                            ? `${data.article_count.toLocaleString()} articles · last ${
+                                data.window === '1d' ? '24 hours' : '3 days'
+                              }`
                             : 'Awaiting a GDELT reading'}
                           {data?.fetched_at && ` · updated ${freshnessLabel(data.fetched_at)}`}
                         </div>

@@ -319,6 +319,9 @@ export interface IntelSnapshot {
       // second way — GDELT cannot answer a mention query that large. Two
       // different measurements, so the page says which.
       query_mode?: 'mentions' | 'domestic_press';
+      /** Window this reading covers ("3d", "1d"). Not uniform: the US corpus
+       *  will not aggregate over three days before the request times out. */
+      window?: string;
       // Per-country, not per-snapshot: GDELT rate-limits hard enough that
       // only some countries refresh on any given harvest, so this can lag
       // last_updated by several cycles for a given country. See

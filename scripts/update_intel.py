@@ -641,16 +641,24 @@ GDELT_SUPPLY_KEYWORDS = [
 # how the country's own press is writing, rather than how the world writes
 # about it — so the mode travels with the reading and the page labels it.
 GDELT_COUNTRY_QUERY = {
-    "USA": {"query": "sourcecountry:US", "mode": "domestic_press"},
+    # Even as a source-country query the US corpus is too large to aggregate
+    # over three days: measured against the live API, `sourcecountry:US` with
+    # timespan=3d returns nothing before a 70s cut-off, while the same query
+    # over 1d answers in ~31s. A shorter window is the difference between a
+    # reading and no reading, so the US is read over one day and the window
+    # travels with the result rather than the page claiming three.
+    "USA": {"query": "sourcecountry:US", "mode": "domestic_press", "timespan": "1d"},
 }
+
+GDELT_DEFAULT_TIMESPAN = "3d"
 
 
 def gdelt_query_spec(country: str) -> tuple:
-    """(query fragment, measurement mode) for one country."""
+    """(query fragment, measurement mode, timespan) for one country."""
     spec = GDELT_COUNTRY_QUERY.get(country)
     if spec:
-        return spec["query"], spec["mode"]
-    return f'"{country}"', "mentions"
+        return spec["query"], spec["mode"], spec.get("timespan", GDELT_DEFAULT_TIMESPAN)
+    return f'"{country}"', "mentions", GDELT_DEFAULT_TIMESPAN
 
 # GDELT answers some rejections with HTTP 200 and a sentence of plain text
 # rather than an error status, so the body has to be read to tell what
@@ -661,10 +669,12 @@ GDELT_TEXT_RESPONSES = (
     ("timed out", "gdelt_timeout"),
 )
 
-# GDELT tonechart queries routinely take 25-40s. The shared 15-20s fetch
-# timeout was cutting off answers that were on their way, which is most of what
-# the attempt log recorded as "timeout".
-GDELT_REQUEST_TIMEOUT = 40
+# GDELT tonechart queries are slow enough that the ceiling is the main thing
+# deciding whether a country returns anything: measured live, Germany takes
+# 38.5s and the US (over one day) 31s, so the previous 40s cut off answers
+# that were arriving. That is most of what the attempt log recorded as a
+# timeout — Finland, Japan and Switzerland each sat on three straight.
+GDELT_REQUEST_TIMEOUT = 60
 
 
 def _gdelt_text_status(body: str) -> str | None:
@@ -718,11 +728,11 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
     cost the entire harvest job its timeout — see fetch_gdelt_intel).
     """
     try:
-        query_fragment, query_mode = gdelt_query_spec(country)
+        query_fragment, query_mode, timespan = gdelt_query_spec(country)
         query = requests.utils.quote(f'{query_fragment} sourcelang:english')
         url = (
             "https://api.gdeltproject.org/api/v2/doc/doc"
-            f"?query={query}&mode=tonechart&timespan=3d&format=json"
+            f"?query={query}&mode=tonechart&timespan={timespan}&format=json"
         )
         response = None
         for attempt in range(max_attempts):
@@ -791,9 +801,16 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
         for b in sorted(bins, key=lambda b: b.get("bin", 0)):
             for a in b.get("toparts", []):
                 title = a.get("title", "")
-                if title in seen_titles:
+                # Dedupe on the headline without its trailing source credit.
+                # GDELT indexes the same wire story from every syndicating
+                # outlet, and each copy carries a different " - Outlet Name"
+                # suffix, so exact-title matching let the same story through
+                # twice — verified live, where one Iran sanctions story
+                # occupied both visible US slots.
+                key = re.split(r'\s+[-–—]\s+', title)[0].strip().lower()
+                if not key or key in seen_titles:
                     continue
-                seen_titles.add(title)
+                seen_titles.add(key)
                 candidates.append({
                     "title": title,
                     "url": a.get("url", ""),
@@ -826,6 +843,10 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
             # coverage published in it. Carried so the page can say which,
             # rather than presenting two different measurements as one.
             "query_mode": query_mode,
+            # The window this reading covers. Not uniform across countries —
+            # see GDELT_COUNTRY_QUERY — so the page states it rather than
+            # assuming three days.
+            "window": timespan,
             "fetched_at": utc_now_iso(),
         }, "ok"
     except Exception as e:
@@ -844,7 +865,7 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
         return None, status
 
 
-GDELT_TIME_BUDGET_SEC = 210  # hard cap on the whole phase — see fetch_gdelt_intel
+GDELT_TIME_BUDGET_SEC = 260  # hard cap on the whole phase — see fetch_gdelt_intel
 GDELT_CIRCUIT_BREAKER_FAILS = 3  # consecutive failures before bailing out early
 
 

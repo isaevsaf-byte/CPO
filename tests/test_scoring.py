@@ -191,15 +191,19 @@ def test_usa_is_queried_by_source_country(harvester):
     """"USA" is three characters and GDELT rejects quoted phrases that short;
     "United States" is a valid phrase whose corpus is too large to return at
     all. Reading US-published coverage is the only form that answers."""
-    query, mode = harvester.gdelt_query_spec("USA")
+    query, mode, timespan = harvester.gdelt_query_spec("USA")
     assert query == "sourcecountry:US"
     assert mode == "domestic_press"
+    # Even as a source-country query the US corpus will not aggregate over
+    # three days before the request times out; one day answers.
+    assert timespan == "1d"
 
 
 def test_other_countries_keep_the_mention_query(harvester):
-    query, mode = harvester.gdelt_query_spec("Germany")
+    query, mode, timespan = harvester.gdelt_query_spec("Germany")
     assert query == '"Germany"'
     assert mode == "mentions"
+    assert timespan == harvester.GDELT_DEFAULT_TIMESPAN
 
 
 @pytest.mark.parametrize(

@@ -116,6 +116,13 @@ function MacroCard({
   label: string;
   data?: MacroEconomyRegion;
 }) {
+  // The snapshot is a flat file that lags a deploy: after a release the board
+  // serves the new UI against whatever the last harvest wrote, for up to six
+  // hours. Rendering an older snapshot's macro block field-by-field silently
+  // resurrected exactly what this release removed — hardcoded CPI and policy
+  // rates, with no observation date beside them. A snapshot without
+  // market_label predates the current shape, so the card says so instead.
+  const isCurrentShape = data?.market_label != null;
   const severity = data?.market_severity ?? 'quiet';
   const change = data?.market_change_pct;
   const sigma = data?.market_sigma_pct;
@@ -141,6 +148,12 @@ function MacroCard({
         )}
       </div>
 
+      {!isCurrentShape ? (
+        <p className="text-sm text-gray-500 leading-relaxed">
+          Waiting for the next harvest — the current snapshot was written before
+          this reading was added.
+        </p>
+      ) : (
       <div className="space-y-2 text-sm">
         <div className="flex justify-between items-baseline gap-2">
           <span className="text-gray-600">{data?.market_label || 'Market'}</span>
@@ -172,6 +185,7 @@ function MacroCard({
           </span>
         </div>
       </div>
+      )}
     </Link>
   );
 }

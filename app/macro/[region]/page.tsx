@@ -97,6 +97,11 @@ export default function MacroDetailPage() {
 
   const metadata = regionMetadata[regionKey] || { name: regionKey, flag: '🌍', fullName: regionKey };
 
+  // Same guard as the dashboard cards: a snapshot written before this release
+  // has no market reading and carries the old hardcoded CPI/rate strings, which
+  // must not be rendered as if they were this month's observation.
+  const isCurrentShape = regionData.market_label != null;
+
   // External links based on region
   const externalLinks: { [key: string]: Array<{ label: string; icon: string; url: string }> } = {
     us: [
@@ -162,12 +167,16 @@ export default function MacroDetailPage() {
                 CPI (Inflation)
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {regionData.cpi || <span className="text-xl text-gray-400">Not connected</span>}
+                {isCurrentShape && regionData.cpi
+                  ? regionData.cpi
+                  : <span className="text-xl text-gray-400">Not connected</span>}
               </div>
               <div className="text-xs text-gray-500">
-                {regionData.cpi
-                  ? `Year on year${regionData.cpi_as_of ? `, ${regionData.cpi_as_of}` : ''} · FRED`
-                  : 'No free feed for this region still updates'}
+                {!isCurrentShape
+                  ? 'Waiting for the next harvest'
+                  : regionData.cpi
+                    ? `Year on year${regionData.cpi_as_of ? `, ${regionData.cpi_as_of}` : ''} · FRED`
+                    : 'No free feed for this region still updates'}
               </div>
             </div>
 
@@ -177,11 +186,14 @@ export default function MacroDetailPage() {
                 Interest Rate
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {regionData.rate || <span className="text-xl text-gray-400">Not connected</span>}
+                {isCurrentShape && regionData.rate
+                  ? regionData.rate
+                  : <span className="text-xl text-gray-400">Not connected</span>}
               </div>
               <div className="text-xs text-gray-500">
-                {regionData.rate_label || 'Policy rate'}
-                {regionData.rate && regionData.rate_as_of ? ` · ${regionData.rate_as_of}` : ''}
+                {!isCurrentShape
+                  ? 'Waiting for the next harvest'
+                  : `${regionData.rate_label || 'Policy rate'}${regionData.rate && regionData.rate_as_of ? ` · ${regionData.rate_as_of}` : ''}`}
               </div>
             </div>
 

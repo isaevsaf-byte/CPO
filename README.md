@@ -113,7 +113,9 @@ re-tier a supplier, edit that file:
   the registered office. Where the headquarters sits elsewhere, record it as
   `hq_country` so the fact isn't lost — Weener's plant is in Weener, Germany
   while the group HQ moved to Ede, Netherlands in 2016; Cerdia's acetate tow
-  comes out of Freiburg, Germany while the company is registered in Basel.
+  comes out of Freiburg, Germany while the company is registered in Basel; and
+  CNT's nicotine is produced under contract by Siegfried AG in Switzerland,
+  from a company headquartered in Heilbronn.
   Must match a country in `data/country_risk.json` to pick up a standing risk
   floor; a country absent from that file carries none, which is the correct
   state for stable countries

@@ -780,7 +780,7 @@ export default function MorningCoffeeDashboard() {
 
         {/* Peer Intelligence */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Peer Intelligence</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Peer Intelligence &mdash; sample set</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {peerGroup.map((peer: PeerGroupItem, idx: number) => {
               const isBAT = peer.name === 'British American Tobacco' || peer.name === 'BAT' || peer.ticker === 'BTI';
@@ -804,7 +804,7 @@ export default function MorningCoffeeDashboard() {
                         <h3 className="font-bold text-gray-900">{peer.name}</h3>
                         {isBAT && (
                           <span className="px-2 py-0.5 bg-blue-600 text-white text-xs font-semibold rounded">
-                            Our View
+                            Tracked view
                           </span>
                         )}
                       </div>
@@ -856,7 +856,7 @@ export default function MorningCoffeeDashboard() {
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Supplier Watchlist</h2>
+                <h2 className="text-xl font-bold text-gray-900">Supplier Watchlist &mdash; sample set</h2>
                 <p className="text-sm text-gray-600 mt-1">Click any supplier for detailed intelligence</p>
               </div>
               {riskFilter !== 'all' && (
@@ -992,7 +992,7 @@ export default function MorningCoffeeDashboard() {
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Supplier</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">BAT Exposure</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Exposure tier</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Segment</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[320px]">Risk Status</th>
@@ -1120,6 +1120,9 @@ export default function MorningCoffeeDashboard() {
         <div className="max-w-[100rem] mx-auto px-6 text-center text-sm">
           <p>Global Supply Chain Watchtower • Built with the "Flat Data" pattern</p>
           <p className="mt-2">Zero infrastructure cost • Unbreakable stability • Official data sources only</p>
+          <p className="mt-3 text-xs text-gray-500">
+            A demonstration build. Supplier and peer data is illustrative.
+          </p>
         </div>
       </footer>
 
@@ -1153,9 +1156,16 @@ export default function MorningCoffeeDashboard() {
 
             {/* Body */}
             <div className="px-6 py-6 prose prose-sm max-w-none">
-              <p className="text-gray-700 leading-relaxed mb-6">
-                This Intelligence Deck aggregates real-time supply chain signals for British American Tobacco leadership.
+              <p className="text-gray-700 leading-relaxed mb-4">
+                This Intelligence Deck aggregates real-time supply chain signals for procurement leadership.
                 Risk assessment is based on <strong>threats to supply continuity</strong>, not stock price movements.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                <strong>This is a demonstration build.</strong> The supplier and peer lists are an
+                illustrative sample, and the exposure tiers beside each supplier were assigned for
+                this demo &mdash; they are not any company&apos;s own classification. Every signal
+                shown is drawn from public sources, and the mechanics, scoring and analysis are the
+                real thing.
               </p>
 
               {/* What Changed — the feed is the first thing on the page now */}

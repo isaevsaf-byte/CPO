@@ -192,7 +192,11 @@ export default function CompanyDetailPage() {
                 {supplier ? (
                   <>
                     <Stat label="Category" value={supplier.category} />
-                    <Stat label="BAT Exposure" value={supplier.bat_exposure} />
+                    <Stat
+                      label="Exposure tier"
+                      value={supplier.bat_exposure}
+                      note="Assigned for this demonstration"
+                    />
                     <Stat
                       label="Location"
                       value={supplier.location || 'Unknown'}

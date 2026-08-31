@@ -1,4 +1,8 @@
-# Supply Chain Intelligence Dashboard
+# Supply Chain Watchtower
+
+**A demonstration build.** The supplier and peer lists are an illustrative sample and the
+exposure tiers are assigned for the demo — they are not any company's own classification.
+Every signal is drawn from public sources. The mechanics, scoring and analysis are real.
 
 A zero-cost, sovereign intelligence engine using the "Flat Data" pattern. This dashboard aggregates intelligence from official government endpoints without requiring any infrastructure or database.
 

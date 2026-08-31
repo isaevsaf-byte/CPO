@@ -236,3 +236,60 @@ def test_gdelt_queue_still_puts_staleness_first(harvester):
     counts = {"USA": 5, "Sweden": 1}
 
     assert harvester.order_gdelt_countries(countries, attempts, counts)[0] == "Sweden"
+
+
+# ---------------------------------------------------------------------------
+# Macro data contract
+# ---------------------------------------------------------------------------
+
+def test_macro_economy_emits_the_fields_the_dashboard_reads(harvester, monkeypatch):
+    """Pin the shape the macro cards render.
+
+    The snapshot is a flat file on a six-hour cycle, so a deploy always serves
+    the new UI against the previous harvest's output for a while. When this
+    contract drifts, the card falls back to a "waiting for the next harvest"
+    state — but only if the fields it keys off are actually the ones produced
+    here, which is what this test holds in place.
+    """
+    monkeypatch.setattr(harvester, "fetch_price_reading", lambda *a, **k: {
+        "daily_change_pct": -0.4, "current_price": 100.0,
+        "headlines": [], "daily_sigma_pct": 0.8,
+    })
+    monkeypatch.setattr(harvester, "fetch_fred_observation", lambda *a, **k: None)
+
+    economy = harvester.fetch_macro_economy()
+
+    assert set(economy) == {"us", "eu", "china"}
+    required = {
+        "cpi", "cpi_as_of", "rate", "rate_as_of", "rate_label",
+        "market_label", "market_change_pct", "market_sigma_pct",
+        "market_severity", "trend", "summary", "sources",
+    }
+    for region, data in economy.items():
+        missing = required - set(data)
+        assert not missing, f"{region} is missing {sorted(missing)}"
+        # market_label is what the frontend uses to tell a current snapshot
+        # from one written before this shape existed.
+        assert data["market_label"]
+        assert data["market_severity"] in {"quiet", "notable", "severe"}
+
+    # With no FRED key the statistics read as absent, never as a stale number.
+    assert economy["us"]["cpi"] is None
+    assert "no live inflation" in economy["us"]["summary"].lower()
+
+
+def test_macro_summary_never_invents_commentary(harvester, monkeypatch):
+    """The summary states measurements. It used to pick one of three canned
+    paragraphs about Fed policy and industrial output from the sign of a single
+    day's index move."""
+    monkeypatch.setattr(harvester, "fetch_price_reading", lambda *a, **k: {
+        "daily_change_pct": -0.25, "current_price": 100.0,
+        "headlines": [], "daily_sigma_pct": 0.85,
+    })
+    monkeypatch.setattr(harvester, "fetch_fred_observation", lambda *a, **k: None)
+
+    summary = harvester.fetch_macro_economy()["us"]["summary"]
+
+    assert "-0.25%" in summary
+    for invented in ("Fed ", "industrial output", "consumer", "outlook remains"):
+        assert invented.lower() not in summary.lower()

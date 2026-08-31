@@ -43,14 +43,30 @@ export interface MacroData {
     china: MacroRegion;
   };
   volatility_pct: number | null;
+  /** Which regions' market moves produced the pillar score, if any. */
+  rag_drivers?: string[];
   last_fetched: string;
 }
 
+// Every field here is either measured or explicitly absent. `cpi` and `rate`
+// are null where no live feed is connected for that region (China has no free
+// source that still updates) — rendered as "not connected", never as a stale
+// number dressed up as this month's reading.
 export interface MacroEconomyRegion {
-  cpi: string;
-  rate: string;
+  cpi: string | null;
+  cpi_as_of: string | null;
+  rate: string | null;
+  rate_as_of: string | null;
+  rate_label: string;
+  /** The live market this region is read from, e.g. "S&P 500", "EUR/USD". */
+  market_label: string;
+  market_change_pct: number | null;
+  /** That market's own recent daily volatility — the yardstick for "unusual". */
+  market_sigma_pct: number | null;
+  market_severity: 'quiet' | 'notable' | 'severe';
   trend: Trend;
   summary: string;
+  sources: string[];
 }
 
 export interface MacroEconomy {
@@ -85,6 +101,7 @@ export interface PeerGroupItem {
   stock_move: string;
   current_price: number | null;
   daily_change_pct: number | null;
+  daily_sigma_pct?: number | null;
   risk_level: RiskLevel;
   last_signal: string;
   news_risk?: boolean;
@@ -127,14 +144,23 @@ export interface Supplier {
   stock_risk?: boolean;
   operational_risk?: boolean;
   daily_change_pct: number | null;
+  /** The listing's own recent daily volatility, so a move can be shown as
+   *  unusual *for this stock* rather than as a bare percentage. */
+  daily_sigma_pct?: number | null;
   current_price: number | null;
+  /** True when the risk level reflects only an uncorroborated price move. */
+  price_move_only?: boolean;
   risk_analysis: string;
   risk_level: RiskLevel;
   last_signal: string;
   counts_toward_rag?: boolean;
   bat_exposure: Exposure;
   segment: string;
+  /** Country of the site that supplies BAT — where a strike or border closure
+   *  would actually bite. Not necessarily the legal headquarters. */
   location: string;
+  /** Headquarters country, present only when it differs from the site. */
+  hq_country?: string | null;
   stock_ticker: string;
   // Geopolitical risk (null when no risk detected)
   geopolitical_risk: {
@@ -283,6 +309,11 @@ export interface IntelSnapshot {
       // negative country-level news available, not evidence of anything
       // supplier-specific. See fetch_gdelt_country_intel's has_relevant.
       has_relevant?: boolean;
+      // How the reading was taken: "mentions" is coverage naming the country,
+      // "domestic_press" is coverage published in it. The USA is read the
+      // second way — GDELT cannot answer a mention query that large. Two
+      // different measurements, so the page says which.
+      query_mode?: 'mentions' | 'domestic_press';
       // Per-country, not per-snapshot: GDELT rate-limits hard enough that
       // only some countries refresh on any given harvest, so this can lag
       // last_updated by several cycles for a given country. See

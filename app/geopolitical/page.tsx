@@ -254,6 +254,18 @@ export default function GeopoliticalIntelPage() {
                             : 'Awaiting a GDELT reading'}
                           {data?.fetched_at && ` · updated ${freshnessLabel(data.fetched_at)}`}
                         </div>
+                        {/* Two different measurements, so say which. Most
+                            countries are read from coverage that names them;
+                            the USA is read from coverage published there,
+                            because a mention query that large never returns. */}
+                        {data?.query_mode === 'domestic_press' && (
+                          <div
+                            className="text-[11px] text-gray-400 dark:text-slate-500 -mt-1"
+                            title="GDELT cannot answer a mention-based query for a country this heavily covered, so this reads the tone of coverage published in the country instead."
+                          >
+                            tone of US-published coverage, not of coverage about the US
+                          </div>
+                        )}
                         {/* Headlines render only when the harvester confirmed
                             they are supply-chain relevant. Gated on an explicit
                             true so snapshots written before that check — whose

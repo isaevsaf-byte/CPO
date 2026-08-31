@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import intel from '../data/intel_snapshot.json';
 import { useDataFreshness } from '../hooks/useDataFreshness';
@@ -11,6 +10,8 @@ import type {
   Supplier,
   PeerGroupItem,
   ChangeLogEntry,
+  MacroEconomyRegion,
+  RagHistoryEntry,
 } from '../types/intel';
 import {
   getRAGColor,
@@ -91,6 +92,129 @@ function relativeAge(date: Date): string {
   const hours = minutes / 60;
   if (hours < 36) return `${Math.round(hours)}h ago`;
   return `${Math.round(hours / 24)}d ago`;
+}
+
+const MACRO_REGIONS = [
+  { key: 'us' as const, flag: '🇺🇸', label: 'US' },
+  { key: 'eu' as const, flag: '🇪🇺', label: 'EU' },
+  { key: 'china' as const, flag: '🇨🇳', label: 'China' },
+];
+
+// One card per region, replacing three near-identical hand-written blocks.
+// Shows the live market move against that market's own normal daily range —
+// a bare "-0.58%" tells a reader nothing about whether to care — and states
+// plainly where an official statistic has no live feed behind it, instead of
+// printing a hardcoded number that hasn't changed in months.
+function MacroCard({
+  regionKey,
+  flag,
+  label,
+  data,
+}: {
+  regionKey: string;
+  flag: string;
+  label: string;
+  data?: MacroEconomyRegion;
+}) {
+  const severity = data?.market_severity ?? 'quiet';
+  const change = data?.market_change_pct;
+  const sigma = data?.market_sigma_pct;
+  const moveTone =
+    severity === 'severe' ? 'text-red-700' :
+    severity === 'notable' ? 'text-amber-700' :
+    change != null && change > 0 ? 'text-green-700' : 'text-gray-700';
+
+  return (
+    <Link
+      href={`/macro/${regionKey}`}
+      className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 block hover:border-gray-300 transition-colors cursor-pointer"
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">{flag}</span>
+          <span className="font-bold text-gray-900">{label}</span>
+        </div>
+        {severity !== 'quiet' && (
+          <span className={`text-xs font-semibold uppercase tracking-wide ${moveTone}`}>
+            {severity === 'severe' ? 'Sharp move' : 'Unusual move'}
+          </span>
+        )}
+      </div>
+
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between items-baseline gap-2">
+          <span className="text-gray-600">{data?.market_label || 'Market'}</span>
+          <span className={`font-mono font-semibold ${moveTone}`}>
+            {change != null ? `${change > 0 ? '+' : ''}${change.toFixed(2)}%` : '—'}
+          </span>
+        </div>
+        {sigma != null && (
+          <div className="text-xs text-gray-400 text-right -mt-1">
+            normal day: ±{sigma.toFixed(1)}%
+          </div>
+        )}
+        <div className="flex justify-between items-baseline gap-2">
+          <span className="text-gray-600">CPI</span>
+          <span className="font-mono font-semibold text-gray-900">
+            {data?.cpi ?? <span className="font-sans text-xs text-gray-400">not connected</span>}
+            {data?.cpi && data?.cpi_as_of && (
+              <span className="ml-1 font-sans text-xs font-normal text-gray-400">{data.cpi_as_of}</span>
+            )}
+          </span>
+        </div>
+        <div className="flex justify-between items-baseline gap-2">
+          <span className="text-gray-600">Policy rate</span>
+          <span className="font-mono font-semibold text-gray-900">
+            {data?.rate ?? <span className="font-sans text-xs text-gray-400">not connected</span>}
+            {data?.rate && data?.rate_as_of && (
+              <span className="ml-1 font-sans text-xs font-normal text-gray-400">{data.rate_as_of}</span>
+            )}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// Twenty days of overall status at a glance: whether today's colour is a blip
+// or the tail of a run. The history was already in the snapshot and nothing
+// rendered it.
+function RagSparkline({ history }: { history: RagHistoryEntry[] }) {
+  const recent = history.slice(-60);
+  if (recent.length < 4) return null;
+
+  const tone = (score: string) =>
+    score === 'RED' ? 'bg-red-500' : score === 'AMBER' ? 'bg-amber-400' : 'bg-green-500';
+
+  // Every label here is derived from the data itself rather than from the
+  // clock or the viewer's locale. `toLocaleString()` formats differently on
+  // the server and in the browser (8/15/2026 vs 15/08/2026), which React
+  // reports as a hydration mismatch, and anything measured against Date.now()
+  // drifts between the two renders for the same reason.
+  const first = parseSnapshotTime(recent[0].timestamp);
+  const last = parseSnapshotTime(recent[recent.length - 1].timestamp);
+  const spanDays = Math.max(1, Math.round((last.getTime() - first.getTime()) / 86_400_000));
+  const stamp = (iso: string) => parseSnapshotTime(iso).toISOString().slice(0, 16).replace('T', ' ');
+
+  return (
+    <div className="w-full pt-3 mt-1 border-t border-black/10">
+      <div className="flex items-end gap-[2px] h-6" aria-hidden="true">
+        {recent.map((entry, idx) => (
+          <div
+            key={idx}
+            title={`${stamp(entry.timestamp)} UTC — ${entry.overall}`}
+            className={`flex-1 rounded-sm ${tone(entry.overall)} ${
+              entry.overall === 'GREEN' ? 'h-2' : entry.overall === 'AMBER' ? 'h-4' : 'h-6'
+            }`}
+          />
+        ))}
+      </div>
+      <div className="mt-1 flex justify-between text-[11px] text-gray-500">
+        <span>last {spanDays} days</span>
+        <span>now</span>
+      </div>
+    </div>
+  );
 }
 
 function ChangeEntryRow({ entry }: { entry: ChangeLogEntry }) {
@@ -228,7 +352,6 @@ function ChangeFeed({ entries }: { entries: ChangeLogEntry[] }) {
 }
 
 export default function MorningCoffeeDashboard() {
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [riskFilter, setRiskFilter] = useState<'all' | 'cyber' | 'news' | 'operational' | 'critical' | 'high' | 'medium' | 'geopolitical' | 'sanctions' | 'recall'>('all');
 
@@ -468,6 +591,7 @@ export default function MorningCoffeeDashboard() {
                 {typedIntel.overall_rag.score === 'GREEN' ? 'Stable' : `Status unchanged`} for {currentStreakDuration(typedIntel.rag_history)}
               </div>
             )}
+            {typedIntel.rag_history && <RagSparkline history={typedIntel.rag_history} />}
           </div>
         )}
 
@@ -528,8 +652,17 @@ export default function MorningCoffeeDashboard() {
                 {peers?.total_red_signals > 0 && (
                   <div className="text-red-600 font-semibold text-xs">🔴 {peers.total_red_signals} Distress</div>
                 )}
+                {/* Item 5.02 filings are officer/director departures — a
+                    planned retirement files the same item code as a
+                    scandal-driven exit, and the filing itself does not say
+                    which. The harvester deliberately does not treat these as
+                    risk (see fetch_peer_group), so labelling them "Warning"
+                    here contradicted the pillar's own GREEN badge. */}
                 {peers?.total_amber_signals > 0 && (
-                  <div className="text-amber-600 font-semibold text-xs">⚠️ {peers.total_amber_signals} Warning</div>
+                  <div className="text-gray-500 text-xs">
+                    📄 {peers.total_amber_signals} leadership-change filing{peers.total_amber_signals > 1 ? 's' : ''}
+                    <span className="block text-gray-400">context only, not a risk signal</span>
+                  </div>
                 )}
               </div>
             )}
@@ -639,103 +772,15 @@ export default function MorningCoffeeDashboard() {
           <h2 className="text-xl font-bold text-gray-900 mb-4">Global Macro Context</h2>
           <p className="text-sm text-gray-600 mb-4">Click any region for detailed economic intelligence</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* US Card */}
-            <Link
-              href="/macro/us"
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 block hover:scale-[1.01] transition-transform cursor-pointer"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🇺🇸</span>
-                  <span className="font-bold text-gray-900">US</span>
-                </div>
-                {macroEconomy?.us?.trend === 'Stable' && <span className="text-gray-500">→</span>}
-                {macroEconomy?.us?.trend === 'Improving' && <span className="text-green-600">↗</span>}
-                {macroEconomy?.us?.trend === 'Volatile' && <span className="text-red-600">↕</span>}
-                {macroEconomy?.us?.trend === 'Declining' && <span className="text-red-600">↕</span>}
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">CPI:</span>
-                  <span className="font-mono font-semibold text-gray-900">{macroEconomy?.us?.cpi || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Rate:</span>
-                  <span className="font-mono font-semibold text-gray-900">{macroEconomy?.us?.rate || 'N/A'}</span>
-                </div>
-                <div className="pt-2 border-t border-gray-200">
-                  <p className="text-xs text-gray-700 leading-relaxed">{macroEconomy?.us?.summary || 'No data'}</p>
-                </div>
-              </div>
-            </Link>
-
-            {/* EU Card */}
-            <Link
-              href="/macro/eu"
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 block hover:scale-[1.01] transition-transform cursor-pointer"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🇪🇺</span>
-                  <span className="font-bold text-gray-900">EU</span>
-                </div>
-                {macroEconomy?.eu?.trend === 'Stable' && <span className="text-gray-500">→</span>}
-                {macroEconomy?.eu?.trend === 'Improving' && <span className="text-green-600">↗</span>}
-                {macroEconomy?.eu?.trend === 'Strengthening' && <span className="text-green-600">↗</span>}
-                {macroEconomy?.eu?.trend === 'Volatile' && <span className="text-red-600">↕</span>}
-                {macroEconomy?.eu?.trend === 'Weakening' && <span className="text-red-600">↕</span>}
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">CPI:</span>
-                  <span className="font-mono font-semibold text-gray-900">{macroEconomy?.eu?.cpi || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Rate:</span>
-                  <span className="font-mono font-semibold text-gray-900">{macroEconomy?.eu?.rate || 'N/A'}</span>
-                </div>
-                <div className="pt-2 border-t border-gray-200">
-                  <p className="text-xs text-gray-700 leading-relaxed">{macroEconomy?.eu?.summary || 'No data'}</p>
-                </div>
-              </div>
-            </Link>
-
-            {/* China Card */}
-            <Link
-              href="/macro/china"
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 block hover:scale-[1.01] transition-transform cursor-pointer"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🇨🇳</span>
-                  <span className="font-bold text-gray-900">CN</span>
-                </div>
-                {macroEconomy?.china?.trend === 'Stable' && <span className="text-gray-500">→</span>}
-                {macroEconomy?.china?.trend === 'Improving' && <span className="text-green-600">↗</span>}
-                {macroEconomy?.china?.trend === 'Growing' && <span className="text-green-600">↗</span>}
-                {macroEconomy?.china?.trend === 'Volatile' && <span className="text-red-600">↕</span>}
-                {macroEconomy?.china?.trend === 'Declining' && <span className="text-red-600">↕</span>}
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">CPI:</span>
-                  <span className="font-mono font-semibold text-gray-900">{macroEconomy?.china?.cpi || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Rate:</span>
-                  <span className="font-mono font-semibold text-gray-900">{macroEconomy?.china?.rate || 'N/A'}</span>
-                </div>
-                <div className="pt-2 border-t border-gray-200">
-                  <p className="text-xs text-gray-700 leading-relaxed">{macroEconomy?.china?.summary || 'No data'}</p>
-                </div>
-              </div>
-            </Link>
+            {MACRO_REGIONS.map(({ key, flag, label }) => (
+              <MacroCard key={key} regionKey={key} flag={flag} label={label} data={macroEconomy?.[key]} />
+            ))}
           </div>
         </div>
 
         {/* Peer Intelligence */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Peer Intelligence</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Peer Intelligence &mdash; sample set</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {peerGroup.map((peer: PeerGroupItem, idx: number) => {
               const isBAT = peer.name === 'British American Tobacco' || peer.name === 'BAT' || peer.ticker === 'BTI';
@@ -759,7 +804,7 @@ export default function MorningCoffeeDashboard() {
                         <h3 className="font-bold text-gray-900">{peer.name}</h3>
                         {isBAT && (
                           <span className="px-2 py-0.5 bg-blue-600 text-white text-xs font-semibold rounded">
-                            Our View
+                            Tracked view
                           </span>
                         )}
                       </div>
@@ -811,7 +856,7 @@ export default function MorningCoffeeDashboard() {
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Supplier Watchlist</h2>
+                <h2 className="text-xl font-bold text-gray-900">Supplier Watchlist &mdash; sample set</h2>
                 <p className="text-sm text-gray-600 mt-1">Click any supplier for detailed intelligence</p>
               </div>
               {riskFilter !== 'all' && (
@@ -947,7 +992,7 @@ export default function MorningCoffeeDashboard() {
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Supplier</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">BAT Exposure</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Exposure tier</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Segment</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[320px]">Risk Status</th>
@@ -1075,6 +1120,9 @@ export default function MorningCoffeeDashboard() {
         <div className="max-w-[100rem] mx-auto px-6 text-center text-sm">
           <p>Global Supply Chain Watchtower • Built with the "Flat Data" pattern</p>
           <p className="mt-2">Zero infrastructure cost • Unbreakable stability • Official data sources only</p>
+          <p className="mt-3 text-xs text-gray-500">
+            A demonstration build. Supplier and peer data is illustrative.
+          </p>
         </div>
       </footer>
 
@@ -1108,9 +1156,16 @@ export default function MorningCoffeeDashboard() {
 
             {/* Body */}
             <div className="px-6 py-6 prose prose-sm max-w-none">
-              <p className="text-gray-700 leading-relaxed mb-6">
-                This Intelligence Deck aggregates real-time supply chain signals for British American Tobacco leadership.
+              <p className="text-gray-700 leading-relaxed mb-4">
+                This Intelligence Deck aggregates real-time supply chain signals for procurement leadership.
                 Risk assessment is based on <strong>threats to supply continuity</strong>, not stock price movements.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                <strong>This is a demonstration build.</strong> The supplier and peer lists are an
+                illustrative sample, and the exposure tiers beside each supplier were assigned for
+                this demo &mdash; they are not any company&apos;s own classification. Every signal
+                shown is drawn from public sources, and the mechanics, scoring and analysis are the
+                real thing.
               </p>
 
               {/* What Changed — the feed is the first thing on the page now */}
@@ -1172,7 +1227,7 @@ export default function MorningCoffeeDashboard() {
                     <div className="text-sm">
                       <p className="font-semibold text-red-800">Immediate threat to supply</p>
                       <p className="text-red-700 mt-1">
-                        <strong>Triggers:</strong> name match on the US sanctions watchlist, 2+ product safety recalls, bankruptcy, factory fire/closure, ransomware attack, labor strike, active war zone
+                        <strong>Triggers:</strong> name match on the US sanctions watchlist, 2+ product safety recalls, bankruptcy, factory fire/closure, ransomware attack, labor strike, active war zone, or a share-price fall far outside that stock&apos;s normal range with no explanation
                       </p>
                       <p className="text-red-600 mt-1 text-xs italic">
                         Example: &quot;Supplier X files for Chapter 11 bankruptcy&quot;
@@ -1186,7 +1241,7 @@ export default function MorningCoffeeDashboard() {
                     <div className="text-sm">
                       <p className="font-semibold text-orange-800">Serious concern requiring monitoring</p>
                       <p className="text-orange-700 mt-1">
-                        <strong>Triggers:</strong> Fraud/SEC investigation, major product recall, stock crash &gt;15%, executive exodus, severe regional tensions/sanctions
+                        <strong>Triggers:</strong> Fraud/SEC investigation, major product recall, executive exodus, severe regional tensions/sanctions, or an unusually large unexplained share-price fall at a Critical/High exposure supplier
                       </p>
                       <p className="text-orange-600 mt-1 text-xs italic">
                         Example: &quot;SEC opens investigation into Supplier Y accounting practices&quot;
@@ -1200,7 +1255,7 @@ export default function MorningCoffeeDashboard() {
                     <div className="text-sm">
                       <p className="font-semibold text-amber-800">Potential concern, watch closely</p>
                       <p className="text-amber-700 mt-1">
-                        <strong>Triggers:</strong> Mass layoffs, supply disruption news, stock &gt;10% drop (Critical/High exposure suppliers), credit downgrade, trade war/instability
+                        <strong>Triggers:</strong> Mass layoffs, supply disruption news, credit downgrade, trade war/instability, or an unusually large unexplained share-price fall at a Medium exposure supplier
                       </p>
                       <p className="text-amber-600 mt-1 text-xs italic">
                         Example: &quot;Supplier Z announces 20% workforce reduction&quot;
@@ -1214,10 +1269,10 @@ export default function MorningCoffeeDashboard() {
                     <div className="text-sm">
                       <p className="font-semibold text-green-800">Normal operations</p>
                       <p className="text-green-700 mt-1">
-                        <strong>Status:</strong> No negative operational news. Stock fluctuations &lt;10% are considered normal market volatility.
+                        <strong>Status:</strong> No negative operational news, and any share-price movement is within that stock&apos;s own normal daily range.
                       </p>
                       <p className="text-green-600 mt-1 text-xs italic">
-                        Note: A 2-5% stock drop alone is NOT a supply risk
+                        Note: &quot;Normal&quot; is measured per company, not as one fixed percentage — a 2% day is routine for some listings and unusual for others.
                       </p>
                     </div>
                   </div>
@@ -1227,7 +1282,7 @@ export default function MorningCoffeeDashboard() {
               <div className="mb-6">
                 <h3 className="text-base font-bold text-gray-900 mb-3">Where the Information Comes From</h3>
                 <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>Global Economy:</strong> official European Central Bank exchange rates and market data, for the US, EU, and China</li>
+                  <li><strong>Global Economy:</strong> live market prices (S&amp;P 500, EUR/USD, USD/CNY) plus official inflation and policy-rate statistics from the US Federal Reserve&apos;s FRED database, and the ECB&apos;s daily euro reference rate. Where a region has no free feed that still updates — China&apos;s inflation and policy rate — the dashboard says &quot;not connected&quot; rather than showing an old number</li>
                   <li><strong>Competitors:</strong> live stock prices, news headlines, and official regulatory filings for PMI, Imperial, and Japan Tobacco</li>
                   <li><strong>Cyber Security:</strong> the US government&apos;s public list of security flaws currently being exploited by attackers</li>
                   <li><strong>Sanctions:</strong> the US Treasury&apos;s official watchlist of people and companies barred from doing business — a match here is flagged for a compliance team to double-check by hand, since name-matching software can occasionally get it wrong</li>

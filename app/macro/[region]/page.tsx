@@ -2,7 +2,13 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import intel from '../../../data/intel_snapshot.json';
+import intelData from '../../../data/intel_snapshot.json';
+import type { IntelSnapshot } from '../../../types/intel';
+
+// The JSON import is typed structurally from whatever the checked-in snapshot
+// happens to contain, so new harvester fields read as errors until a fresh
+// snapshot lands. The declared type is the contract; the file is one sample.
+const intel = intelData as unknown as IntelSnapshot;
 
 function getTrendColor(trend: string): string {
   switch (trend?.toLowerCase()) {
@@ -53,16 +59,15 @@ export default function MacroDetailPage() {
   const macroEconomy = intel?.macro_economy || {};
   const regionData = macroEconomy[regionKey as keyof typeof macroEconomy];
 
-  // Get FX rate from macro regions if available
+  // The ECB reference rate, and only where one actually exists. The US and
+  // China entries in macro.regions carry placeholder *strings*
+  // ("Placeholder - USD/EUR"), which are truthy — so this used to resolve to a
+  // string, fail the isNumber check downstream, and print the region's trend
+  // word ("Stable") inside a card labelled "FX Rate".
   const macroRegions = intel?.macro?.regions || {};
-  let fxRate = null;
-  if (regionKey === 'us' && macroRegions.us?.indicators?.fx_rate) {
-    fxRate = macroRegions.us.indicators.fx_rate;
-  } else if (regionKey === 'eu' && macroRegions.eu?.indicators?.fx_rate) {
-    fxRate = macroRegions.eu.indicators.fx_rate;
-  } else if (regionKey === 'china' && macroRegions.china?.indicators?.fx_rate) {
-    fxRate = macroRegions.china.indicators.fx_rate;
-  }
+  const rawFx = (macroRegions as Record<string, { indicators?: { fx_rate?: unknown } }>)[regionKey]
+    ?.indicators?.fx_rate;
+  const fxRate = typeof rawFx === 'number' ? rawFx : null;
 
   if (!regionData) {
     return (
@@ -113,8 +118,6 @@ export default function MacroDetailPage() {
 
   const links = externalLinks[regionKey] || [];
 
-  // Mock GDP trend (would be fetched from real API in production)
-  const gdpTrend = regionData.trend === 'Stable' || regionData.trend === 'Improving' ? 'Moderate Growth' : 'Slowing';
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -159,9 +162,13 @@ export default function MacroDetailPage() {
                 CPI (Inflation)
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {regionData.cpi || 'N/A'}
+                {regionData.cpi || <span className="text-xl text-gray-400">Not connected</span>}
               </div>
-              <div className="text-xs text-gray-500">Consumer Price Index</div>
+              <div className="text-xs text-gray-500">
+                {regionData.cpi
+                  ? `Year on year${regionData.cpi_as_of ? `, ${regionData.cpi_as_of}` : ''} · FRED`
+                  : 'No free feed for this region still updates'}
+              </div>
             </div>
 
             {/* Interest Rate Card */}
@@ -170,57 +177,71 @@ export default function MacroDetailPage() {
                 Interest Rate
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {regionData.rate || 'N/A'}
+                {regionData.rate || <span className="text-xl text-gray-400">Not connected</span>}
               </div>
               <div className="text-xs text-gray-500">
-                {regionKey === 'us' ? 'Fed Funds Rate' : 
-                 regionKey === 'eu' ? 'ECB Main Rate' : 
-                 'PBOC Policy Rate'}
+                {regionData.rate_label || 'Policy rate'}
+                {regionData.rate && regionData.rate_as_of ? ` · ${regionData.rate_as_of}` : ''}
               </div>
             </div>
 
-            {/* FX Rate Card */}
+            {/* Market move card — the one genuinely live reading each region has */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                FX Rate
+                {regionData.market_label || 'Market'}
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-1">
-                {fxRate && typeof fxRate === 'number' 
-                  ? (regionKey === 'eu' ? `€1 = $${fxRate.toFixed(4)}` : 
-                     regionKey === 'china' ? `¥1 = $${fxRate.toFixed(4)}` : 
-                     `$${fxRate.toFixed(4)}`)
-                  : regionData.trend || 'N/A'}
+              <div className={`text-3xl font-bold mb-1 ${
+                regionData.market_severity === 'severe' ? 'text-red-700' :
+                regionData.market_severity === 'notable' ? 'text-amber-700' :
+                'text-gray-900'
+              }`}>
+                {regionData.market_change_pct != null
+                  ? `${regionData.market_change_pct > 0 ? '+' : ''}${regionData.market_change_pct.toFixed(2)}%`
+                  : <span className="text-xl text-gray-400">No reading</span>}
               </div>
               <div className="text-xs text-gray-500">
-                {regionKey === 'eu' ? 'EUR/USD' : 
-                 regionKey === 'china' ? 'CNY/USD' : 
-                 'USD Index'}
+                {regionData.market_sigma_pct != null
+                  ? `Today · normal daily range ±${regionData.market_sigma_pct.toFixed(1)}%`
+                  : 'Today'}
               </div>
             </div>
 
-            {/* GDP Trend Card */}
+            {/* FX Rate Card — ECB daily reference rate, EU only */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                GDP Trend
+                ECB Reference Rate
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-1">
-                {gdpTrend}
+                {fxRate != null
+                  ? `€1 = $${fxRate.toFixed(4)}`
+                  : <span className="text-xl text-gray-400">Not published</span>}
               </div>
-              <div className="text-xs text-gray-500">Economic Growth Outlook</div>
+              <div className="text-xs text-gray-500">
+                {fxRate != null
+                  ? 'EUR/USD · European Central Bank, daily fixing'
+                  : 'The ECB publishes euro reference rates only'}
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Analyst Summary */}
+        {/* What the numbers say — measured facts only. This section used to be
+            headed "Analyst Summary" and filled with template prose about Fed
+            policy and industrial output that nothing had fetched. */}
         <div className="mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-200 pb-2">
-              Analyst Summary
+              What the numbers say
             </h2>
             <div className="prose prose-sm max-w-none">
               <p className="text-base text-gray-700 leading-relaxed">
-                {regionData.summary || 'No summary available.'}
+                {regionData.summary || 'No reading available for this region.'}
               </p>
+              {regionData.sources?.length > 0 && (
+                <p className="text-xs text-gray-500 mt-3">
+                  Sources: {regionData.sources.join(', ')}. This dashboard reports what these
+                  feeds publish; it does not add commentary or forecasts.
+                </p>
+              )}
             </div>
           </div>
         </div>

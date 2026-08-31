@@ -13,7 +13,9 @@ import csv
 import io
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from pathlib import Path
+from urllib.parse import quote
 import sys
 import time
 import random
@@ -21,7 +23,15 @@ import hashlib
 import logging
 import os
 import shutil
-import yfinance as yf
+
+try:
+    import yfinance as yf
+except ImportError:  # pragma: no cover - exercised only where yfinance is absent
+    # Optional at import time so the pure scoring/classification helpers in
+    # this module can be imported and unit-tested (see tests/) without
+    # installing the market-data stack. Every caller checks for None and
+    # degrades the same way it already degrades on a fetch failure.
+    yf = None
 
 # ============================================================================
 # CONFIGURATION
@@ -172,7 +182,8 @@ yfinance_circuit_breaker = CircuitBreaker(failure_threshold=5, reset_timeout=120
 # RETRY AND FETCH UTILITIES
 # ============================================================================
 
-def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None) -> requests.Response:
+def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None,
+                     timeout: int = None) -> requests.Response:
     """
     Fetch URL with exponential backoff retry logic.
 
@@ -180,6 +191,10 @@ def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None) ->
         url: URL to fetch
         max_retries: Maximum number of retry attempts (default from config)
         headers: Optional headers dict
+        timeout: Per-request timeout in seconds (default from config). GDELT
+            routinely takes 25-40s to answer a tonechart query, so it passes a
+            longer one — the shared 15-20s default was cutting off responses
+            that were on their way.
 
     Returns:
         requests.Response object
@@ -191,11 +206,13 @@ def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None) ->
         max_retries = MAX_RETRIES
     if headers is None:
         headers = USER_AGENT
+    if timeout is None:
+        timeout = TIMEOUT
 
     last_exception = None
     for attempt in range(max_retries):
         try:
-            response = requests.get(url, headers=headers, timeout=TIMEOUT)
+            response = requests.get(url, headers=headers, timeout=timeout)
             response.raise_for_status()
             return response
         except requests.RequestException as e:
@@ -209,16 +226,27 @@ def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None) ->
     raise last_exception
 
 
-def fetch_fred_latest(series_id: str, units: str = "lin") -> float | None:
+# An official statistic that stopped updating is worse than no statistic: it
+# reads as current on the board. Several OECD-sourced FRED series for China
+# are more than a year stale, which is exactly how "China CPI 0.5%" ended up
+# rendered as a live indicator. Anything older than this is dropped.
+FRED_MAX_OBSERVATION_AGE_DAYS = 150
+
+
+def fetch_fred_observation(series_id: str, units: str = "lin") -> dict | None:
     """
     Latest observation for a FRED (Federal Reserve Economic Data) series —
     free public API, no cost, one API key. units='pc1' returns year-over-year
     percent change (for CPI, since the raw index isn't directly meaningful);
     'lin' returns the raw series value (for FEDFUNDS, which is already a rate).
 
+    Returns {"value": float, "date": "YYYY-MM-DD"} or None. The date matters:
+    CPI and policy rates are monthly, so the board must be able to say "3.3%
+    as of Jul 2026" rather than implying it was measured today. Observations
+    older than FRED_MAX_OBSERVATION_AGE_DAYS are discarded as stale.
+
     Best-effort: returns None if FRED_API_KEY isn't set or the fetch/parse
-    fails, so callers fall back to their existing static value rather than
-    the harvest failing.
+    fails, so the harvest never blocks on it.
     """
     if not FRED_API_KEY:
         return None
@@ -233,9 +261,19 @@ def fetch_fred_latest(series_id: str, units: str = "lin") -> float | None:
         if not observations:
             return None
         value = observations[0].get("value")
+        date_str = observations[0].get("date", "")
         if value in (None, ".", ""):
             return None
-        return float(value)
+        if date_str:
+            observed = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            age_days = (datetime.now(timezone.utc) - observed).days
+            if age_days > FRED_MAX_OBSERVATION_AGE_DAYS:
+                logger.warning(
+                    f"FRED series {series_id} last observed {date_str} "
+                    f"({age_days}d ago) — too stale to publish"
+                )
+                return None
+        return {"value": float(value), "date": date_str}
     except (requests.RequestException, ValueError, KeyError) as e:
         logger.warning(f"FRED fetch failed for {series_id}: {e}")
         return None
@@ -332,18 +370,52 @@ NEGATION_MARKERS = [
 ]
 
 
+# Keywords deliberately matched as a word *prefix* rather than a whole word,
+# because the tail varies and all variants mean the same thing:
+# "restructur(ing|e|ed)", "escalat(ing|ed|es)". Everything else is matched
+# whole-word — see _keyword_pattern.
+PREFIX_KEYWORDS = {
+    "restructur", "tensions escalat", "de-escalat", "ceasefire collapse",
+}
+
+
+@lru_cache(maxsize=512)
+def _keyword_pattern(keyword: str) -> re.Pattern:
+    """Compiled whole-word matcher for one risk keyword.
+
+    Substring matching was quietly producing false risk signals on ordinary
+    words: "miss" fired on *emissions* (a routine word in tobacco coverage),
+    "fine" on *refinery*/*defined*, "down" on *download*/*downtown*, "cut" on
+    *haircut*. Each of those pushed a peer to MEDIUM or a supplier into a risk
+    bucket off a headline that said nothing of the sort.
+
+    Word boundaries are only applied where they make sense: a trailing \\b is
+    skipped for PREFIX_KEYWORDS (so "restructur" still matches
+    "restructuring"), and boundaries are dropped entirely on an edge that
+    isn't a word character, so multi-word phrases and trailing spaces in the
+    keyword lists keep working.
+    """
+    kw = keyword.strip().lower()
+    lead = r'\b' if kw[:1].isalnum() else ''
+    trail = '' if keyword in PREFIX_KEYWORDS or not kw[-1:].isalnum() else r'\b'
+    return re.compile(lead + re.escape(kw) + trail)
+
+
 def _is_negated_near(text_lower: str, keyword: str, window: int = 45) -> bool:
     """True if a negation/de-escalation marker appears just before the keyword."""
-    idx = text_lower.find(keyword)
-    if idx == -1:
+    match = _keyword_pattern(keyword).search(text_lower)
+    if match is None:
         return False
-    context = text_lower[max(0, idx - window):idx]
+    context = text_lower[max(0, match.start() - window):match.start()]
     return any(marker in context for marker in NEGATION_MARKERS)
 
 
 def _keyword_hit(text_lower: str, keyword: str) -> bool:
-    """A keyword only counts if present and not immediately negated nearby."""
-    return keyword in text_lower and not _is_negated_near(text_lower, keyword)
+    """A keyword only counts if present as a whole word and not negated nearby."""
+    return (
+        _keyword_pattern(keyword).search(text_lower) is not None
+        and not _is_negated_near(text_lower, keyword)
+    )
 
 
 def _mentions_subject(text_lower: str, subject: str) -> bool:
@@ -550,6 +622,60 @@ GDELT_SUPPLY_KEYWORDS = [
 ]
 
 
+# How each country is asked for. The default is mention-based: articles that
+# name the country. Two things made that impossible for the USA, which is the
+# joint-largest supplier country on the watchlist and had never once returned
+# a reading:
+#
+#   1. GDELT rejects a quoted phrase shorter than four characters outright.
+#      `"USA"` answers HTTP 200 with the plain-text line "The specified phrase
+#      is too short" — never JSON — so the attempt log recorded a generic
+#      "error" and the rotation kept retrying a query that could not succeed.
+#   2. `"United States"` is a valid phrase and still doesn't come back: the
+#      matching corpus is large enough that the tonechart request times out,
+#      verified at 60s against a control query for Germany that answers in
+#      under two.
+#
+# So the USA is read from the tone of US-published coverage instead
+# (`sourcecountry:US`), which does answer. That is a different measurement —
+# how the country's own press is writing, rather than how the world writes
+# about it — so the mode travels with the reading and the page labels it.
+GDELT_COUNTRY_QUERY = {
+    "USA": {"query": "sourcecountry:US", "mode": "domestic_press"},
+}
+
+
+def gdelt_query_spec(country: str) -> tuple:
+    """(query fragment, measurement mode) for one country."""
+    spec = GDELT_COUNTRY_QUERY.get(country)
+    if spec:
+        return spec["query"], spec["mode"]
+    return f'"{country}"', "mentions"
+
+# GDELT answers some rejections with HTTP 200 and a sentence of plain text
+# rather than an error status, so the body has to be read to tell what
+# happened. Mapped to short statuses the dashboard can explain to a reader.
+GDELT_TEXT_RESPONSES = (
+    ("too short", "query_rejected"),
+    ("limit requests", "rate_limited"),
+    ("timed out", "gdelt_timeout"),
+)
+
+# GDELT tonechart queries routinely take 25-40s. The shared 15-20s fetch
+# timeout was cutting off answers that were on their way, which is most of what
+# the attempt log recorded as "timeout".
+GDELT_REQUEST_TIMEOUT = 40
+
+
+def _gdelt_text_status(body: str) -> str | None:
+    """Classify a plain-text GDELT response, or None if it isn't one."""
+    lowered = body[:300].lower()
+    for marker, status in GDELT_TEXT_RESPONSES:
+        if marker in lowered:
+            return status
+    return None
+
+
 def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max_attempts: int = 2) -> dict | None:
     """
     Independent geopolitical signal from GDELT (free, no key, globally
@@ -592,7 +718,8 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
     cost the entire harvest job its timeout — see fetch_gdelt_intel).
     """
     try:
-        query = requests.utils.quote(f'"{country}" sourcelang:english')
+        query_fragment, query_mode = gdelt_query_spec(country)
+        query = requests.utils.quote(f'{query_fragment} sourcelang:english')
         url = (
             "https://api.gdeltproject.org/api/v2/doc/doc"
             f"?query={query}&mode=tonechart&timespan=3d&format=json"
@@ -600,7 +727,7 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
         response = None
         for attempt in range(max_attempts):
             try:
-                response = fetch_with_retry(url, max_retries=1)
+                response = fetch_with_retry(url, max_retries=1, timeout=GDELT_REQUEST_TIMEOUT)
                 break
             except requests.HTTPError as e:
                 is_last = attempt == max_attempts - 1
@@ -608,6 +735,14 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
                     time.sleep(5)
                     continue
                 raise
+
+        # A rejection can arrive as HTTP 200 with one sentence of plain text,
+        # in which case .json() raises and the real reason is lost. Read it.
+        text_status = _gdelt_text_status(response.text)
+        if text_status:
+            logger.warning(f"GDELT rejected the {country} query ({text_status}): {response.text[:120].strip()}")
+            return None, text_status
+
         bins = response.json().get("tonechart", [])
         if not bins:
             return None, "empty"
@@ -687,6 +822,10 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
             "avg_tone": round(weighted_tone_sum / total_count, 1) if total_count else None,
             "articles": articles_out,
             "has_relevant": has_relevant,
+            # "mentions" = coverage naming this country; "domestic_press" =
+            # coverage published in it. Carried so the page can say which,
+            # rather than presenting two different measurements as one.
+            "query_mode": query_mode,
             "fetched_at": utc_now_iso(),
         }, "ok"
     except Exception as e:
@@ -705,11 +844,11 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
         return None, status
 
 
-GDELT_TIME_BUDGET_SEC = 150  # hard cap on the whole phase — see fetch_gdelt_intel
+GDELT_TIME_BUDGET_SEC = 210  # hard cap on the whole phase — see fetch_gdelt_intel
 GDELT_CIRCUIT_BREAKER_FAILS = 3  # consecutive failures before bailing out early
 
 
-def order_gdelt_countries(countries: list, attempts: dict) -> list:
+def order_gdelt_countries(countries: list, attempts: dict, supplier_counts: dict = None) -> list:
     """Rotate which countries get the front of the budget.
 
     The order used to be a fixed priority pair followed by the rest
@@ -730,12 +869,21 @@ def order_gdelt_countries(countries: list, attempts: dict) -> list:
     reintroduce exactly the blockage this replaces — but they still get
     attempted whenever the budget reaches them.
     """
+    counts = supplier_counts or {}
+
     def sort_key(country):
         state = attempts.get(country, {})
         # Bucketed so a country is not shuffled to the back on one bad run;
         # 3+ consecutive failures is a pattern, 1-2 is noise.
         streak = min(state.get("consecutive_failures", 0) // 3, 3)
         last_success = state.get("last_success") or ""
+        # Then by how much of the watchlist sits there. The circuit breaker
+        # abandons the run after three consecutive failures, so position in
+        # this queue decides who actually gets attempted on a bad day — and
+        # spending that on Switzerland (one supplier) ahead of the USA (five)
+        # is the wrong trade. Countries that have never returned data all tie
+        # on last_success, and this is what separates them.
+        weight = -counts.get(country, 0)
         # Tie-break on when it was last *tried*. Without this, every country
         # that has never succeeded ties on last_success and falls through to
         # the alphabetical tie-break, so the same handful at the top of the
@@ -743,7 +891,7 @@ def order_gdelt_countries(countries: list, attempts: dict) -> list:
         # demotes them — the original blockage, one level down. Never
         # attempted sorts ahead of recently attempted.
         last_attempt = state.get("last_attempt") or ""
-        return (streak, last_success, last_attempt, country)
+        return (streak, last_success, weight, last_attempt, country)
 
     return sorted(countries, key=sort_key)
 
@@ -778,7 +926,10 @@ def fetch_gdelt_intel(countries: list, attempts: dict = None, suppliers_by_count
     result = {}
     attempts = dict(attempts or {})
     consecutive_fails = 0
-    countries = order_gdelt_countries(countries, attempts)
+    countries = order_gdelt_countries(
+        countries, attempts,
+        supplier_counts={c: len(v) for c, v in (suppliers_by_country or {}).items()},
+    )
     logger.info(f"GDELT order this cycle: {', '.join(countries)}")
     for i, country in enumerate(countries):
         elapsed = time.monotonic() - start
@@ -932,7 +1083,12 @@ def _load_watchlist(path: Path) -> tuple:
             # category rather than repeated (and eventually contradicted) on
             # every supplier row.
             "segment": entry.get("segment") or segments.get(category, "Combustibles"),
+            # The country of the site that supplies BAT — a strike or a border
+            # closure hits the plant, not the registered office. Where the legal
+            # headquarters sits elsewhere, hq_country keeps that fact visible
+            # rather than forcing one field to mean both.
             "location": entry.get("location", "Unknown"),
+            "hq_country": entry.get("hq_country"),
             "stock_ticker": entry.get("stock_ticker", "N/A"),
             "url": entry.get("url"),
         }
@@ -1322,49 +1478,66 @@ def fetch_macro_china():
             "last_fetched": utc_now_iso()
         }
 
-def fetch_macro_overview(previous_eur_usd=None):
-    """Aggregate Macro Overview for US, EU, China"""
+def score_macro_rag(macro_economy: dict) -> tuple:
+    """Macro pillar RAG from how unusual today's market moves are.
+
+    Returns (rag_score, drivers) where drivers names the regions that moved.
+
+    The old rule scored this pillar on two things that could not carry it.
+    First, a count of "how many regions returned data" — with two of the three
+    hardcoded as placeholders, that count could never reach 3, so the pillar
+    started every cycle at AMBER by construction. Then it was overwritten by
+    the EUR/USD move against the *previous snapshot's* rate — but ECB publishes
+    that rate once a day and the harvest runs four times a day, so three runs
+    in four compared a number against itself (volatility 0.0%, an automatic
+    GREEN) and the fourth compared a full day's move against a 0.5% AMBER line
+    that ordinary trading clears constantly. The recorded history shows the
+    result: 53 of 80 readings amber, most of them with nothing happening.
+
+    Now: a move is judged against that market's own recent volatility (the
+    same yardstick suppliers use), so "unusual" means unusual for EUR/USD or
+    the S&P, not "bigger than half a percent".
+    """
+    severities = {
+        region: data.get("market_severity", "quiet")
+        for region, data in (macro_economy or {}).items()
+    }
+    severe = [r for r, s in severities.items() if s == "severe"]
+    notable = [r for r, s in severities.items() if s == "notable"]
+
+    if severe:
+        return "RED", severe
+    if notable:
+        return "AMBER", notable
+    return "GREEN", []
+
+
+def fetch_macro_overview(macro_economy: dict = None):
+    """Aggregate Macro Overview for US, EU, China.
+
+    Keeps the ECB reference rate as the authoritative EUR/USD print (it is the
+    official daily fixing, and the dashboard quotes it directly); the RAG score
+    comes from score_macro_rag over the live market readings.
+    """
     us_data = fetch_macro_us()
     eu_data = fetch_macro_eu()
     china_data = fetch_macro_china()
-    
-    # Calculate overall RAG score. Only EU has a real live feed right now —
-    # US and China are placeholder/not-yet-integrated (see fetch_macro_us
-    # and fetch_macro_china) and report status "placeholder", not
-    # "success", so they no longer count here. This pillar can't reach a
-    # "3 of 3 healthy" GREEN this way until real US/China sources are
-    # wired up; GREEN is still reachable via the EUR/USD volatility check
-    # below when EU data is available and stable.
-    regions_ok = sum(1 for r in [us_data, eu_data, china_data] if r.get("status") == "success")
-    if regions_ok == 3:
-        rag_score = "GREEN"
-    elif regions_ok >= 1:
-        rag_score = "AMBER"
-    else:
-        rag_score = "RED"
-    
-    # Calculate EUR/USD volatility if we have previous rate
-    volatility_pct = None
-    if eu_data.get("status") == "success" and previous_eur_usd:
-        current_rate = eu_data.get("indicators", {}).get("fx_rate")
-        if current_rate and isinstance(current_rate, (int, float)):
-            volatility_pct = abs((current_rate - previous_eur_usd) / previous_eur_usd) * 100
-            if volatility_pct > 1.5:
-                rag_score = "RED"
-            elif volatility_pct < 0.5:
-                rag_score = "GREEN"
-            else:
-                rag_score = "AMBER"
-    
+
+    rag_score, drivers = score_macro_rag(macro_economy or {})
+
     return {
         "status": "success",
         "rag_score": rag_score,
+        "rag_drivers": drivers,
         "regions": {
             "us": us_data,
             "eu": eu_data,
             "china": china_data
         },
-        "volatility_pct": volatility_pct,
+        # Kept for backward compatibility with older snapshots' shape; the
+        # meaningful volatility figure is now per-region market_sigma_pct in
+        # macro_economy.
+        "volatility_pct": None,
         "last_fetched": utc_now_iso()
     }
 
@@ -1614,6 +1787,7 @@ def get_supplier_deep_dive_data(supplier_name, category):
             "bat_exposure": "Medium",
             "segment": "Combustibles",
             "location": "Unknown",
+            "hq_country": None,
             "stock_ticker": "N/A",
             "url": None,
         }
@@ -1621,41 +1795,86 @@ def get_supplier_deep_dive_data(supplier_name, category):
 
 
 
-def fetch_supplier_stock_data(ticker_symbol):
+EMPTY_STOCK_READING = {
+    "daily_change_pct": None,
+    "current_price": None,
+    "headlines": [],
+    "daily_sigma_pct": None,
+}
+
+
+def daily_sigma_from_closes(closes: list) -> float | None:
+    """Standard deviation of daily % returns, as a percentage.
+
+    A fixed -1.5%/-3% threshold treats every listing as equally jumpy, and
+    they are not: for Texas Instruments a 2% day is a normal Tuesday, for a
+    utility-like packaging name it is unusual. Reading the move against the
+    supplier's own recent volatility is what turns "the price moved" into
+    "the price moved more than this stock usually moves" — see
+    classify_price_move. Needs at least 20 usable closes; returns None
+    otherwise, and callers fall back to the absolute thresholds.
     """
-    Fetch stock data for a supplier using yfinance.
-    Returns (daily_change_pct, current_price, headlines_list) or (None, None, []) on error.
-    headlines_list contains up to 5 news headline strings.
+    usable = [c for c in closes if isinstance(c, (int, float)) and math.isfinite(c) and c > 0]
+    if len(usable) < 21:
+        return None
+    returns = [
+        (usable[i] - usable[i - 1]) / usable[i - 1] * 100
+        for i in range(1, len(usable))
+    ]
+    mean = sum(returns) / len(returns)
+    variance = sum((r - mean) ** 2 for r in returns) / (len(returns) - 1)
+    sigma = math.sqrt(variance)
+    return sigma if sigma > 0 else None
+
+
+def fetch_price_reading(ticker_symbol, source_label: str = None) -> dict:
     """
-    if not ticker_symbol or ticker_symbol == "N/A":
-        return None, None, []
+    Fetch a price reading for any listed instrument (supplier share, peer
+    share, index, FX pair) using yfinance.
+
+    Returns a dict with daily_change_pct, current_price, headlines (up to 5
+    raw titles) and daily_sigma_pct (the listing's own recent daily
+    volatility, used to judge whether today's move is actually unusual —
+    see daily_sigma_from_closes). Every failure path returns the same shape
+    with None/empty values rather than raising.
+    """
+    source_label = source_label or f"price_{ticker_symbol}"
+    if not ticker_symbol or ticker_symbol == "N/A" or yf is None:
+        return dict(EMPTY_STOCK_READING)
 
     # Check circuit breaker
     if not yfinance_circuit_breaker.can_execute():
-        return None, None, []
+        return dict(EMPTY_STOCK_READING)
 
     try:
         rate_limiter.wait_if_needed()
         ticker = yf.Ticker(ticker_symbol)
 
-        # Get historical data for price change
-        hist = ticker.history(period="5d")  # 5 days for more reliable data
+        # 3 months rather than 5 days: the last two closes give today's move,
+        # and the rest gives the baseline volatility that move is judged
+        # against. One request, same cost as before.
+        hist = ticker.history(period="3mo")
 
         daily_change_pct = None
         current_price = None
+        closes = [float(c) for c in hist['Close'].tolist()] if len(hist) else []
+        # Skip over gaps rather than giving up on them. yfinance routinely
+        # returns a trailing NaN row for a session that hasn't printed a close
+        # yet (non-US listings mid-session, thinly traded lines), and reading
+        # only the last two rows meant Infineon, Sappi and Stora Enso showed no
+        # daily move at all on a normal trading day — the supplier was scanned
+        # for news but silently had no price layer. Comparing the two most
+        # recent *actual* closes keeps that layer alive; NaN was also what
+        # previously leaked a literal "nan%" into signal text.
+        usable = [c for c in closes if math.isfinite(c)]
 
-        if len(hist) >= 2:
-            current = hist['Close'].iloc[-1]
-            previous = hist['Close'].iloc[-2]
-            # Guard against NaN in either side — a gap in the price history
-            # (common on thinly-traded listings) can leave `current` NaN
-            # even when `previous` is fine, which previously slipped through
-            # as a literal "nan%" baked into last_signal text.
-            if previous and not math.isnan(previous) and not math.isnan(current):
+        if len(usable) >= 2:
+            current, previous = usable[-1], usable[-2]
+            if previous:
                 daily_change_pct = ((current - previous) / previous) * 100
-            current_price = current if not math.isnan(current) else None
-        elif len(hist) == 1:
-            current_price = hist['Close'].iloc[-1]
+            current_price = current
+        elif len(usable) == 1:
+            current_price = usable[0]
 
         # Get up to 5 news headlines for broader risk scanning
         headlines = []
@@ -1675,15 +1894,91 @@ def fetch_supplier_stock_data(ticker_symbol):
             pass
 
         yfinance_circuit_breaker.record_success()
-        return daily_change_pct, current_price, headlines
+        return {
+            "daily_change_pct": daily_change_pct,
+            "current_price": current_price,
+            "headlines": headlines,
+            "daily_sigma_pct": daily_sigma_from_closes(closes),
+        }
 
     except Exception as e:
         yfinance_circuit_breaker.record_failure()
-        harvest_stats.record_warning(f"supplier_stock_{ticker_symbol}", str(e)[:100])
-        return None, None, []
+        harvest_stats.record_warning(source_label, str(e)[:100])
+        return dict(EMPTY_STOCK_READING)
 
 
-def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
+# ============================================================================
+# PRICE-MOVE SEVERITY
+# ============================================================================
+# A fixed percentage threshold reads every listing as equally volatile. The
+# live board showed what that costs: Texas Instruments and Jabil crossed the
+# old -1.5%/-3% lines and fell back four times in 48 hours, and the change
+# feed — the thing meant to answer "what moved since I last looked" — ended
+# up as ten entries of the same two names oscillating, plus the overall
+# traffic light flipping AMBER→RED→AMBER on the back of it. Nothing had
+# happened; the price had wobbled inside its normal range.
+#
+# So a move is now judged against how much that stock usually moves in a day
+# (sigma over ~3 months, see daily_sigma_from_closes), with an absolute floor
+# so a very quiet listing can't trip on a rounding error, and an absolute
+# fallback for listings with too little history to measure. Thresholds relax
+# once a supplier is already flagged (hysteresis), so a move hovering at the
+# boundary holds its level instead of flapping every six hours.
+PRICE_SIGMA_NOTABLE = 2.0     # standard deviations for "unusual for this stock"
+PRICE_SIGMA_SEVERE = 3.5
+PRICE_MIN_PCT = 2.0           # never flag a move smaller than this, however quiet the stock
+PRICE_ABS_NOTABLE = 4.0       # fallback thresholds when sigma is unmeasurable
+PRICE_ABS_SEVERE = 7.0
+PRICE_HYSTERESIS = 0.75       # already-flagged suppliers clear at 75% of the entry bar
+
+
+def classify_price_move(change_pct, sigma_pct=None, already_flagged: bool = False) -> str:
+    """Severity of a *downward* daily price move: 'quiet' | 'notable' | 'severe'.
+
+    sigma_pct is the listing's own recent daily volatility; when it is None
+    (short history, thinly traded) the absolute fallbacks apply. already_flagged
+    relaxes both bars by PRICE_HYSTERESIS so a supplier that was flagged last
+    cycle does not clear on a marginal improvement — that oscillation is what
+    filled the change feed with noise.
+    """
+    if change_pct is None or change_pct >= 0:
+        return "quiet"
+    drop = abs(change_pct)
+    scale = PRICE_HYSTERESIS if already_flagged else 1.0
+
+    if drop < PRICE_MIN_PCT * scale:
+        return "quiet"
+
+    if sigma_pct:
+        z = drop / sigma_pct
+        if z >= PRICE_SIGMA_SEVERE * scale:
+            return "severe"
+        if z >= PRICE_SIGMA_NOTABLE * scale:
+            return "notable"
+        return "quiet"
+
+    if drop >= PRICE_ABS_SEVERE * scale:
+        return "severe"
+    if drop >= PRICE_ABS_NOTABLE * scale:
+        return "notable"
+    return "quiet"
+
+
+def describe_price_move(change_pct, sigma_pct) -> str:
+    """How unusual the move is, in the reader's terms — appended to signals."""
+    if change_pct is None:
+        return ""
+    if not sigma_pct:
+        return f"{change_pct:+.1f}% today"
+    z = abs(change_pct) / sigma_pct
+    return f"{change_pct:+.1f}% today ({z:.1f}× its normal daily range of ±{sigma_pct:.1f}%)"
+
+
+GEO_ESCALATION_STICKY_HOURS = 48
+
+
+def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
+                      previous_suppliers=None, previous_geo_state=None):
     """
     Process supplier watchlist and assess SUPPLY CHAIN RISK to BAT.
 
@@ -1691,9 +1986,13 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
       0. Sanctions screening (OFAC SDN) — an automatic, non-overridable CRITICAL
       1. CISA cyber vulnerabilities (KEV catalog)
       2. CPSC safety recalls (saferproducts.gov)
-      3. Stock price movements (yfinance)
+      3. Stock price movements (yfinance, judged against the listing's own
+         volatility — see classify_price_move)
       4. News scanning (yfinance headlines + Google News RSS)
       5. Geopolitical risk (conflict zones, sanctions, instability)
+
+    previous_suppliers is last snapshot's supplier list, used only for
+    hysteresis on the price-move layer (see classify_price_move).
 
     CRITICAL - Immediate threat to supply:
       - Sanctions match (OFAC SDN) — cannot legally transact
@@ -1702,27 +2001,33 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
       - Government sanctions, bans, seizure
       - Major cyber attack disrupting operations
       - Labor strike at production facility
-      - Stock crash >5% (indicates serious problems)
+      - A severe, unexplained price move (>=3.5 sigma, or >=7% where sigma
+        can't be measured)
       - Supplier in active war zone
 
     HIGH - Serious concern:
       - Fraud/SEC investigation
       - Major product recall
-      - Stock drop >3% for Critical/High exposure suppliers
+      - An unusual unexplained price move (>=2 sigma / >=4%) on a
+        Critical/High exposure supplier
       - Supplier in high-tension region (military buildup, severe sanctions)
 
     MEDIUM - Watch closely:
-      - Stock drop >3% for Medium exposure suppliers
-      - Stock drop >1.5% for Critical/High exposure suppliers
+      - An unusual unexplained price move on a Medium exposure supplier
       - Major layoffs, restructuring
       - Supply disruption mentions
       - Supplier in region with trade war, instability, or border tensions
 
     LOW - Normal operations:
-      - Stock fluctuations within normal range
+      - Price moves inside the stock's normal daily range
       - No negative operational news
       - No geopolitical risk signals
     """
+    previous_by_name = {
+        s.get("name"): s
+        for s in (previous_suppliers or [])
+        if s.get("name")
+    }
     suppliers = []
     cisa_vulns = cyber_data.get("recent_vulnerabilities", [])
     cpsc_recalls = (recalls_data or {}).get("recalls", [])
@@ -1741,6 +2046,8 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
 
     logger.info(f"Scanning {len(unique_countries)} unique countries for geopolitical risk...")
     country_news_cache = {}
+    geo_escalation_state = {}
+    now = datetime.now(timezone.utc)
     for country in unique_countries:
         # Check static risk map
         static_risk = GEOPOLITICAL_RISK_MAP.get(country, None)
@@ -1776,6 +2083,36 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
             final_level = static_level
             final_reason = static_reason
 
+        escalated_now = final_level != static_level
+
+        # An escalation is held for GEO_ESCALATION_STICKY_HOURS after the last
+        # cycle that saw it. Google News returns the eight most recent matches
+        # for a country query, and that set turns over within hours — so an
+        # escalation drops out of view long before the situation behind it
+        # does. Unheld, that produced ITC going MEDIUM → HIGH → MEDIUM inside
+        # ten hours, with a matching pair of entries in the change feed and the
+        # whole board flipping RED and back. A border flare-up doesn't resolve
+        # in ten hours; the headline just scrolled off.
+        prior = (previous_geo_state or {}).get(country) or {}
+        if escalated_now:
+            geo_escalation_state[country] = {
+                "level": final_level,
+                "reason": final_reason,
+                "since": prior.get("since") or utc_now_iso(),
+                "last_seen": utc_now_iso(),
+            }
+        elif prior.get("last_seen"):
+            last_seen = datetime.fromisoformat(prior["last_seen"])
+            if last_seen.tzinfo is None:
+                last_seen = last_seen.replace(tzinfo=timezone.utc)
+            age_hours = (now - last_seen).total_seconds() / 3600
+            held_level = prior.get("level", static_level)
+            if age_hours < GEO_ESCALATION_STICKY_HOURS and RISK_PRIORITY.get(held_level, 0) > RISK_PRIORITY.get(final_level, 0):
+                final_level = held_level
+                final_reason = f"{prior.get('reason', '')} (still held, last corroborated {round(age_hours)}h ago)".strip()
+                escalated_now = True
+                geo_escalation_state[country] = prior
+
         country_news_cache[country] = {
             "level": final_level,
             "reason": final_reason,
@@ -1785,7 +2122,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
             # standing structural floor this cycle — i.e. something changed
             # today, as opposed to an always-on baseline like "China: trade
             # tensions" or "Finland: NATO border state" that never varies.
-            "escalated_by_live_news": final_level != static_level,
+            "escalated_by_live_news": escalated_now,
         }
 
         if final_level != "LOW":
@@ -1870,8 +2207,25 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
         operational_risk = False  # True supply chain risk, not just stock movement
         risk_reason = ""
 
+        daily_sigma_pct = None
         if stock_ticker and stock_ticker != "N/A":
-            daily_change_pct, current_price, headlines_list = fetch_supplier_stock_data(stock_ticker)
+            reading = fetch_price_reading(stock_ticker, source_label=f"supplier_stock_{stock_ticker}")
+            daily_change_pct = reading["daily_change_pct"]
+            current_price = reading["current_price"]
+            daily_sigma_pct = reading["daily_sigma_pct"]
+
+            # Only headlines that actually name this supplier are attributed to
+            # it. yfinance's ticker.news returns sector-adjacent coverage, not
+            # only articles about the ticker — the peer pillar already filters
+            # this way (see PEERS_CONFIG match_terms), while suppliers did not,
+            # so an unrelated "chip export ban" story under a semiconductor
+            # ticker could raise a CRITICAL supply-risk flag against a supplier
+            # the article never mentioned. Same whole-word matcher used for
+            # CISA/recall/sanctions screening.
+            headlines_list = [
+                h for h in reading["headlines"]
+                if h and supplier_terms_hit(h.upper(), search_terms)
+            ]
 
             # Analyze ALL news headlines (up to 5) for SUPPLY CHAIN risk keywords
             for headline in headlines_list:
@@ -2006,45 +2360,47 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
                 last_signal = f"📋 Monitor: {news_headline[:100]}"
             risk_analysis = f"{risk_reason}. {supplier_name} ({category}) requires monitoring. BAT exposure: {bat_exposure}."
 
-        # Priorities 3-5: pure stock-price triggers, reached only when the
-        # news scan above found nothing concerning. A price move alone
-        # doesn't confirm an operational problem — it may be market/sector-
-        # wide noise, or news that hasn't broken yet. Say so explicitly
-        # instead of instructing "investigate for operational impacts" as
-        # if a cause were already confirmed (EVE Energy's stock dipped 3.4%
-        # the same day its own headlines reported a strong, normal quarter
-        # — a real, correctly-thresholded signal, but not evidence of a
-        # problem, and the old wording implied otherwise).
-
-        # Priority 3: Severe stock crash (>5%) indicates serious company problems.
-        # Still uncorroborated (no negative news behind it), so — like
-        # Priorities 4/5 — it's marked price_move_only and can't flip the
-        # overall board to RED on its own; see high_exposure_hit and the
-        # confirmed_* RAG rollup below.
-        elif daily_change_pct is not None and daily_change_pct < -5.0:
+        # Priority 3-4: pure price triggers, reached only when the news scan
+        # above found nothing concerning. A price move alone doesn't confirm
+        # an operational problem — it may be market/sector-wide noise, or news
+        # that hasn't broken yet. Say so explicitly instead of instructing
+        # "investigate for operational impacts" as if a cause were already
+        # confirmed (EVE Energy's stock dipped 3.4% the same day its own
+        # headlines reported a strong, normal quarter).
+        #
+        # Severity is judged against the listing's own volatility, with
+        # hysteresis so a supplier already flagged last cycle doesn't clear on
+        # a marginal move (see classify_price_move for what the old fixed
+        # thresholds cost).
+        elif (price_severity := classify_price_move(
+            daily_change_pct,
+            daily_sigma_pct,
+            already_flagged=previous_by_name.get(supplier_name, {}).get("price_move_only", False),
+        )) != "quiet":
             price_move_only = True
-            supplier_risk_level = "CRITICAL"
-            last_signal = f"📉 Severe stock crash: {daily_change_pct:.1f}% (no confirmed cause yet)"
-            risk_analysis = f"Severe stock decline of {daily_change_pct:.1f}% at {supplier_name}. {corroboration_note} A drop this size at {bat_exposure.lower()} exposure warrants direct follow-up regardless. BAT exposure: {bat_exposure}."
-
-        # Priority 4: Significant stock drop (>3%) — escalate for Critical/High exposure
-        elif daily_change_pct is not None and daily_change_pct < -3.0:
-            price_move_only = True
-            if bat_exposure in ["Critical", "High"]:
+            move_text = describe_price_move(daily_change_pct, daily_sigma_pct)
+            if price_severity == "severe":
+                supplier_risk_level = "CRITICAL"
+                last_signal = f"📉 Severe unexplained drop: {move_text}"
+                risk_analysis = (
+                    f"{supplier_name} fell {move_text} — far outside its normal trading range. "
+                    f"{corroboration_note} A move this size warrants direct follow-up regardless. "
+                    f"BAT exposure: {bat_exposure}."
+                )
+            elif bat_exposure in ["Critical", "High"]:
                 supplier_risk_level = "HIGH"
-                last_signal = f"📉 Stock down {daily_change_pct:.1f}% (no confirmed cause) - {bat_exposure} exposure supplier"
-                risk_analysis = f"Stock decline for {bat_exposure.lower()}-exposure supplier {supplier_name}. {corroboration_note} BAT exposure: {bat_exposure}."
+                last_signal = f"📉 Unusual drop: {move_text} — {bat_exposure} exposure supplier"
+                risk_analysis = (
+                    f"Unusual decline for {bat_exposure.lower()}-exposure supplier {supplier_name}: "
+                    f"{move_text}. {corroboration_note} BAT exposure: {bat_exposure}."
+                )
             else:
                 supplier_risk_level = "MEDIUM"
-                last_signal = f"📉 Stock down {daily_change_pct:.1f}% (no confirmed cause) - monitoring"
-                risk_analysis = f"Notable stock decline for {supplier_name}. {corroboration_note} BAT exposure: {bat_exposure}."
-
-        # Priority 5: Moderate stock drop (>1.5%) — flag for Critical/High exposure
-        elif daily_change_pct is not None and daily_change_pct < -1.5 and bat_exposure in ["Critical", "High"]:
-            price_move_only = True
-            supplier_risk_level = "MEDIUM"
-            last_signal = f"📉 Stock down {daily_change_pct:.1f}% (no confirmed cause) - {bat_exposure} exposure supplier"
-            risk_analysis = f"Stock decline for {bat_exposure.lower()}-exposure supplier {supplier_name}. {corroboration_note}"
+                last_signal = f"📉 Unusual drop: {move_text} — monitoring"
+                risk_analysis = (
+                    f"Unusual decline for {supplier_name}: {move_text}. {corroboration_note} "
+                    f"BAT exposure: {bat_exposure}."
+                )
 
         # Default: Normal operations
         else:
@@ -2113,6 +2469,10 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
             "news_items": news_items,
             "operational_risk": operational_risk,
             "daily_change_pct": round(daily_change_pct, 2) if daily_change_pct is not None else None,
+            # The listing's own recent daily volatility, so the dashboard can
+            # say whether today's move is unusual *for this stock* rather than
+            # printing a bare percentage the reader has no yardstick for.
+            "daily_sigma_pct": round(daily_sigma_pct, 2) if daily_sigma_pct is not None else None,
             "current_price": round(current_price, 2) if current_price is not None else None,
             "risk_analysis": risk_analysis,
             "risk_level": supplier_risk_level,
@@ -2221,6 +2581,10 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
         "actionable_high": actionable_high,
         "actionable_medium": actionable_medium,
         "suppliers": suppliers,
+        # Carried forward in the snapshot so a live-news geopolitical
+        # escalation survives the headline scrolling out of Google News'
+        # eight-item window (see GEO_ESCALATION_STICKY_HOURS).
+        "geo_escalation_state": geo_escalation_state,
         "last_fetched": utc_now_iso()
     }
 
@@ -2228,196 +2592,143 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None):
 # MACRO ECONOMY DATA GENERATION (LIVE DATA)
 # ============================================================================
 
-def fetch_macro_economy():
-    """Fetch real macro economic data using yfinance with rate limiting"""
+def classify_move(change_pct, sigma_pct=None) -> str:
+    """Severity of a daily move in either direction: 'quiet' | 'notable' | 'severe'."""
+    if change_pct is None:
+        return "quiet"
+    return classify_price_move(-abs(change_pct), sigma_pct)
 
-    # Check circuit breaker before making yfinance calls
-    if not yfinance_circuit_breaker.can_execute():
-        logger.warning("yfinance circuit breaker is OPEN - skipping macro economy fetch")
-        harvest_stats.record_warning("macro_economy", "Circuit breaker open - using fallback data")
-        return {
-            "us": {"cpi": "N/A", "rate": "N/A", "trend": "N/A", "summary": "Data temporarily unavailable (circuit breaker active)."},
-            "eu": {"cpi": "N/A", "rate": "N/A", "trend": "N/A", "summary": "Data temporarily unavailable (circuit breaker active)."},
-            "china": {"cpi": "N/A", "rate": "N/A", "trend": "N/A", "summary": "Data temporarily unavailable (circuit breaker active)."}
+
+# The one genuinely live number each region has, and what it is.
+MACRO_MARKETS = {
+    "us": {"ticker": "^GSPC", "label": "S&P 500", "kind": "index"},
+    "eu": {"ticker": "EURUSD=X", "label": "EUR/USD", "kind": "fx"},
+    # CNY=X quotes yuan per dollar, so a rise means the yuan is weakening.
+    "china": {"ticker": "CNY=X", "label": "USD/CNY", "kind": "fx_inverted"},
+}
+
+# Official statistics, from FRED. A region maps to None where there is no
+# free source that still updates — China's OECD-sourced CPI and policy-rate
+# series on FRED stopped over a year ago, and publishing a year-old number
+# next to a live market move is how "China CPI 0.5%" came to sit on the board
+# as if it were this month's reading. Absent is honest; stale is not.
+MACRO_SERIES = {
+    "us": {
+        "cpi": ("CPIAUCSL", "pc1"),
+        "rate": ("FEDFUNDS", "lin"),
+        "rate_label": "Fed funds rate",
+    },
+    "eu": {
+        "cpi": ("CP0000EZ19M086NEST", "pc1"),
+        "rate": ("ECBDFR", "lin"),
+        "rate_label": "ECB deposit facility rate",
+    },
+    "china": {
+        "cpi": None,
+        "rate": None,
+        "rate_label": "PBOC policy rate",
+    },
+}
+
+
+def _format_observation_month(date_str: str) -> str:
+    """'2026-07-01' -> 'Jul 2026'. Empty string when unparseable."""
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").strftime("%b %Y")
+    except (ValueError, TypeError):
+        return ""
+
+
+def _region_trend(kind: str, change_pct, severity: str) -> str:
+    """Trend label for a region, from the direction and size of the move.
+
+    'Stable' now means "inside this market's normal daily range", not
+    "moved less than half a percent". EUR/USD clears 0.5% on perfectly
+    ordinary days, and under the old fixed cut-off that alone pushed the
+    macro pillar to AMBER — which is most of why the board spent 66% of its
+    recorded history amber with nothing actually wrong.
+    """
+    if change_pct is None or severity == "quiet":
+        return "Stable"
+    falling = change_pct < 0
+    if kind == "fx":
+        return "Weakening" if falling else "Strengthening"
+    if kind == "fx_inverted":
+        # A rising USD/CNY means a weaker yuan.
+        return "Declining" if not falling else "Growing"
+    return "Declining" if falling else "Growing"
+
+
+def fetch_macro_economy():
+    """Live market reading plus official statistics for US, EU and China.
+
+    Everything here is either measured or explicitly absent. The previous
+    version composed a paragraph of macro commentary from a template chosen
+    by the sign of one day's index move — "Fed signals potential rate cuts in
+    Q3 as inflation moderates", "Industrial output remains resilient",
+    "consumer confidence elevated". None of that was fetched from anywhere.
+    It rendered under an "Analyst Summary" heading on the region pages, which
+    made invented sentences read as sourced intelligence — the single most
+    damaging thing a board like this can do to its own credibility.
+    """
+    regions = {}
+
+    for region_key, market in MACRO_MARKETS.items():
+        reading = fetch_price_reading(market["ticker"], source_label=f"macro_{region_key}")
+        change_pct = reading["daily_change_pct"]
+        sigma_pct = reading["daily_sigma_pct"]
+        severity = classify_move(change_pct, sigma_pct)
+        trend = _region_trend(market["kind"], change_pct, severity)
+
+        series = MACRO_SERIES[region_key]
+        cpi_obs = fetch_fred_observation(*series["cpi"]) if series["cpi"] else None
+        rate_obs = fetch_fred_observation(*series["rate"]) if series["rate"] else None
+
+        if change_pct is None:
+            market_sentence = f"{market['label']}: no reading available this cycle."
+        else:
+            if sigma_pct:
+                band = f"its normal daily range of ±{sigma_pct:.1f}%"
+                comparison = (
+                    f"inside {band}" if severity == "quiet"
+                    else f"{abs(change_pct) / sigma_pct:.1f}× {band}"
+                )
+                market_sentence = f"{market['label']} {change_pct:+.2f}% today, {comparison}."
+            else:
+                market_sentence = f"{market['label']} {change_pct:+.2f}% today."
+
+        stat_parts = []
+        if cpi_obs:
+            stat_parts.append(f"CPI {cpi_obs['value']:.1f}% YoY ({_format_observation_month(cpi_obs['date'])})")
+        if rate_obs:
+            stat_parts.append(f"{series['rate_label']} {rate_obs['value']:.2f}% ({_format_observation_month(rate_obs['date'])})")
+        stat_sentence = (
+            " ".join(stat_parts) + "."
+            if stat_parts
+            else "No live inflation or policy-rate feed is connected for this region."
+        )
+
+        regions[region_key] = {
+            "cpi": f"{cpi_obs['value']:.1f}%" if cpi_obs else None,
+            "cpi_as_of": _format_observation_month(cpi_obs["date"]) if cpi_obs else None,
+            "rate": f"{rate_obs['value']:.2f}%" if rate_obs else None,
+            "rate_as_of": _format_observation_month(rate_obs["date"]) if rate_obs else None,
+            "rate_label": series["rate_label"],
+            "market_label": market["label"],
+            "market_change_pct": round(change_pct, 2) if change_pct is not None else None,
+            "market_sigma_pct": round(sigma_pct, 2) if sigma_pct else None,
+            "market_severity": severity,
+            "trend": trend,
+            "summary": f"{market_sentence} {stat_sentence}".strip(),
+            "sources": ["Yahoo Finance"] + (["FRED"] if (cpi_obs or rate_obs) else []),
         }
 
-    def get_trend_from_change(change_pct):
-        """Determine trend from daily percentage change"""
-        if change_pct is None:
-            return "N/A"
-        if change_pct > 0.5:
-            return "Growing"
-        elif change_pct < -0.5:
-            return "Declining"
+        if change_pct is not None:
+            harvest_stats.record_success(f"macro_{region_key}")
         else:
-            return "Stable"
+            harvest_stats.record_warning(f"macro_{region_key}", "no market reading this cycle")
 
-    def fetch_us_macro():
-        rate_limiter.wait_if_needed()
-        """Fetch US macro data from S&P 500"""
-        try:
-            ticker = yf.Ticker("^GSPC")
-            hist = ticker.history(period="2d")
-            if len(hist) < 2:
-                return {
-                    "cpi": "N/A",
-                    "rate": "N/A",
-                    "trend": "N/A",
-                    "summary": "Unable to fetch S&P 500 data. Market may be closed."
-                }
-            
-            # Calculate daily change
-            current = hist['Close'].iloc[-1]
-            previous = hist['Close'].iloc[-2]
-            change_pct = ((current - previous) / previous) * 100
-            
-            trend = get_trend_from_change(change_pct)
-            
-            # Enhanced summary with more context
-            if trend == "Declining":
-                summary = f"S&P 500 declining: {change_pct:+.2f}% change. Market reflects broader economic conditions. Fed signals potential rate cuts in Q3 as inflation moderates. Industrial output remains resilient despite market volatility. Investors monitoring employment data and consumer spending trends."
-            elif trend == "Growing":
-                summary = f"S&P 500 growing: {change_pct:+.2f}% change. Market reflects positive economic momentum. Fed maintains current policy stance as inflation trends toward target. Industrial output strong, consumer confidence elevated. Economic indicators suggest sustained growth trajectory."
-            else:
-                summary = f"S&P 500 stable: {change_pct:+.2f}% change. Market reflects balanced economic conditions. Fed monitoring inflation and employment data closely. Industrial output steady, consumer spending patterns normal. Economic outlook remains cautiously optimistic."
-            
-            fred_cpi = fetch_fred_latest("CPIAUCSL", units="pc1")  # YoY % change
-            fred_rate = fetch_fred_latest("FEDFUNDS", units="lin")  # effective fed funds rate
-
-            return {
-                "cpi": f"{fred_cpi:.1f}%" if fred_cpi is not None else "2.8%",  # FRED CPIAUCSL if FRED_API_KEY set, else static fallback
-                "rate": f"{fred_rate:.2f}%" if fred_rate is not None else "4.25%",  # FRED FEDFUNDS if FRED_API_KEY set, else static fallback
-                "trend": trend,
-                "summary": summary
-            }
-        except Exception as e:
-            yfinance_circuit_breaker.record_failure()
-            harvest_stats.record_error("macro_us", str(e))
-            return {
-                "cpi": "N/A",
-                "rate": "N/A",
-                "trend": "N/A",
-                "summary": f"Error fetching US macro data: {str(e)}"
-            }
-
-    def fetch_eu_macro():
-        rate_limiter.wait_if_needed()
-        """Fetch EU macro data from EUR/USD exchange rate"""
-        try:
-            ticker = yf.Ticker("EURUSD=X")
-            hist = ticker.history(period="2d")
-            if len(hist) < 2:
-                return {
-                    "cpi": "N/A",
-                    "rate": "N/A",
-                    "trend": "N/A",
-                    "summary": "Unable to fetch EUR/USD data. Market may be closed."
-                }
-            
-            # Calculate daily change
-            current = hist['Close'].iloc[-1]
-            previous = hist['Close'].iloc[-2]
-            change_pct = ((current - previous) / previous) * 100
-            
-            # For EUR/USD, negative change means Euro weakening
-            if change_pct < -0.5:
-                trend = "Weakening"
-            elif change_pct > 0.5:
-                trend = "Strengthening"
-            else:
-                trend = "Stable"
-            
-            # Enhanced summary with more context
-            if trend == "Weakening":
-                summary = f"EUR/USD weakening: {change_pct:+.2f}% change. Euro declining against USD. ECB maintains dovish monetary policy stance. Manufacturing PMI shows mixed signals across key markets. Inflation pressures easing, but growth concerns persist. Export competitiveness improving with weaker currency."
-            elif trend == "Strengthening":
-                summary = f"EUR/USD strengthening: {change_pct:+.2f}% change. Euro gaining against USD. ECB policy decisions supporting currency stability. Manufacturing PMI showing signs of recovery in key markets. Inflation moderating toward target, economic activity picking up. Strong euro reflects improved economic fundamentals."
-            else:
-                summary = f"EUR/USD stable: {change_pct:+.2f}% change. Euro trading in narrow range against USD. ECB maintaining current policy framework. Manufacturing PMI stable across major economies. Inflation near target levels, balanced economic outlook. Currency stability supports trade and investment flows."
-            
-            return {
-                "cpi": "2.2%",  # Static for now - would need separate API
-                "rate": "2.65%",  # Static for now - would need separate API
-                "trend": trend,
-                "summary": summary
-            }
-        except Exception as e:
-            yfinance_circuit_breaker.record_failure()
-            harvest_stats.record_error("macro_eu", str(e))
-            return {
-                "cpi": "N/A",
-                "rate": "N/A",
-                "trend": "N/A",
-                "summary": f"Error fetching EU macro data: {str(e)}"
-            }
-
-    def fetch_china_macro():
-        rate_limiter.wait_if_needed()
-        """Fetch China macro data from CNY/USD exchange rate"""
-        try:
-            ticker = yf.Ticker("CNY=X")
-            hist = ticker.history(period="2d")
-            if len(hist) < 2:
-                return {
-                    "cpi": "N/A",
-                    "rate": "N/A",
-                    "trend": "N/A",
-                    "summary": "Unable to fetch CNY/USD data. Market may be closed."
-                }
-            
-            # Calculate daily change
-            current = hist['Close'].iloc[-1]
-            previous = hist['Close'].iloc[-2]
-            change_pct = ((current - previous) / previous) * 100
-            
-            # For CNY/USD, positive change means CNY weakening (USD strengthening)
-            # Negative change means CNY strengthening
-            if change_pct > 0.5:
-                trend = "Declining"  # CNY weakening
-            elif change_pct < -0.5:
-                trend = "Growing"  # CNY strengthening
-            else:
-                trend = "Stable"
-            
-            # Enhanced summary with more context
-            if trend == "Declining":
-                summary = f"CNY/USD declining: {change_pct:+.2f}% change. Yuan weakening against USD. Industrial output slowing amid property sector headwinds. PBOC considering additional stimulus measures to support growth. Export competitiveness improving, but domestic demand remains subdued. Policy makers balancing growth support with financial stability."
-            elif trend == "Growing":
-                summary = f"CNY/USD growing: {change_pct:+.2f}% change. Yuan strengthening against USD. Industrial output showing resilience despite external headwinds. PBOC maintaining accommodative policy stance. Export sector performing well, domestic consumption recovering. Currency strength reflects improved economic fundamentals and policy effectiveness."
-            else:
-                summary = f"CNY/USD stable: {change_pct:+.2f}% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
-            
-            return {
-                "cpi": "0.5%",  # Static for now - would need separate API
-                "rate": "3.10%",  # Static for now - would need separate API
-                "trend": trend,
-                "summary": summary
-            }
-        except Exception as e:
-            yfinance_circuit_breaker.record_failure()
-            harvest_stats.record_error("macro_china", str(e))
-            return {
-                "cpi": "N/A",
-                "rate": "N/A",
-                "trend": "N/A",
-                "summary": f"Error fetching China macro data: {str(e)}"
-            }
-
-    us_data = fetch_us_macro()
-    eu_data = fetch_eu_macro()
-    china_data = fetch_china_macro()
-
-    # Track successes
-    for region, data in [("us", us_data), ("eu", eu_data), ("china", china_data)]:
-        if data.get("trend") != "N/A":
-            yfinance_circuit_breaker.record_success()
-            harvest_stats.record_success(f"macro_{region}")
-
-    return {
-        "us": us_data,
-        "eu": eu_data,
-        "china": china_data
-    }
+    return regions
 
 # ============================================================================
 # PEER GROUP DATA GENERATION (LIVE DATA)
@@ -2437,8 +2748,19 @@ def fetch_peer_group():
     CRITICAL_KEYWORDS = ["investigation", "fraud", "sanctioned", "bankruptcy", "recall",
                           "labor strike", "workers strike", "import ban", "export ban",
                           "trade ban", "seized", "breach", "hacked", "lawsuit"]
-    WARNING_KEYWORDS = ["delay", "shortage", "volatile", "drop", "miss", "down",
-                        "fine", "cut", "layoff", "restructur", "warning", "concern"]
+    # Single common words carried no information about a competitor and read
+    # as risk anyway: "down" and "drop" fire on every routine "shares down 1%"
+    # market wrap (the price move is already scored separately, below), "cut"
+    # on a dividend raise headline that happens to mention cutting costs,
+    # "fine" on "finest", "miss" on "emissions". Each is replaced by the
+    # phrase that actually means something for a peer.
+    WARNING_KEYWORDS = [
+        "profit warning", "guidance cut", "cuts guidance", "cuts forecast",
+        "earnings miss", "misses estimates", "missed estimates",
+        "supply shortage", "production delay", "regulatory fine", "fined",
+        "layoff", "layoffs", "job cuts", "restructur", "downgrade",
+        "market share loss", "sales decline", "profit fall", "profits fall",
+    ]
 
     # Check circuit breaker before making yfinance calls
     if not yfinance_circuit_breaker.can_execute():
@@ -2470,33 +2792,16 @@ def fetch_peer_group():
             ticker_symbol = peer_config["ticker"]
             ticker = yf.Ticker(ticker_symbol)
 
-            # Get current price and historical data for daily change
-            info = ticker.info
-            hist = ticker.history(period="5d")  # 5 days for more reliable data
-
-            # Calculate daily change
-            current_price = None
-            daily_change_pct = None
-            stock_move = "N/A"
-
-            if len(hist) >= 2:
-                current = hist['Close'].iloc[-1]
-                previous = hist['Close'].iloc[-2]
-                # Guard against NaN in either side — a gap in the price
-                # history (common on thinly-traded listings, e.g. Japan
-                # Tobacco's Tokyo listing) can leave `current` NaN even when
-                # `previous` is fine, which previously slipped through as a
-                # literal "nan%" baked into stock_move/last_signal text.
-                if previous and not math.isnan(previous) and not math.isnan(current):
-                    daily_change_pct = ((current - previous) / previous) * 100
-                    stock_move = f"{daily_change_pct:+.2f}%"
-                current_price = current if not math.isnan(current) else None
-            elif len(hist) == 1:
-                current_price = hist['Close'].iloc[-1]
-                stock_move = "N/A (single day)"
-            elif 'currentPrice' in info:
-                current_price = info['currentPrice']
-                stock_move = "N/A (no historical data)"
+            # Price, volatility and headlines come from the same helper the
+            # supplier pillar uses, so both pillars judge a move the same way.
+            # ticker.info is no longer fetched here: it is a slow, frequently
+            # failing endpoint and its only use was a fallback price for the
+            # case where no history exists at all.
+            reading = fetch_price_reading(ticker_symbol, source_label=f"peer_{ticker_symbol}")
+            current_price = reading["current_price"]
+            daily_change_pct = reading["daily_change_pct"]
+            daily_sigma_pct = reading["daily_sigma_pct"]
+            stock_move = f"{daily_change_pct:+.2f}%" if daily_change_pct is not None else "N/A"
 
             # Get up to 5 news headlines for broader scanning. Only headlines
             # that actually name this peer survive: an unrelated article is
@@ -2572,25 +2877,26 @@ def fetch_peer_group():
 
             # STEP 2: Check stock movement (ALWAYS check, can escalate risk)
             # Peers are competitors, not suppliers — a peer's stock wobbling
-            # a point or two on an ordinary day isn't procurement-relevant,
-            # so only genuinely large moves are treated as a risk signal here
-            # (raised from -1%/-2% after this proved too noisy in practice).
-            if daily_change_pct is not None:
-                if daily_change_pct < -6.0:
-                    # Severe drop - CRITICAL regardless of news
+            # a point or two on an ordinary day isn't procurement-relevant.
+            # Judged against the listing's own volatility, same as suppliers,
+            # so a jumpy small-cap and a defensive large-cap aren't held to
+            # one shared percentage.
+            peer_severity = classify_price_move(daily_change_pct, daily_sigma_pct)
+            if peer_severity != "quiet":
+                move_text = describe_price_move(daily_change_pct, daily_sigma_pct)
+                if peer_severity == "severe":
                     if risk_level != "CRITICAL":
                         risk_level = "CRITICAL"
-                        last_signal = f"🚨 Severe market drop: Stock down {daily_change_pct:.2f}%"
+                        last_signal = f"🚨 Severe market drop: {move_text}"
                     else:
-                        last_signal += f" | Stock down {daily_change_pct:.2f}%"
+                        last_signal += f" | {move_text}"
                     stock_risk_detected = True
-                elif daily_change_pct < -3.0:
-                    # Significant drop - at least MEDIUM
+                else:
                     if risk_level == "LOW":
                         risk_level = "MEDIUM"
-                        last_signal = f"📉 Market drop: Stock down {daily_change_pct:.2f}%"
+                        last_signal = f"📉 Unusual market drop: {move_text}"
                     elif risk_level == "MEDIUM" and not news_risk_detected:
-                        last_signal = f"📉 Market drop: Stock down {daily_change_pct:.2f}%"
+                        last_signal = f"📉 Unusual market drop: {move_text}"
                     stock_risk_detected = True
 
             # STEP 3: Default signal if no risk detected
@@ -2644,6 +2950,7 @@ def fetch_peer_group():
                 "stock_move": stock_move,
                 "current_price": current_price,
                 "daily_change_pct": round(daily_change_pct, 2) if daily_change_pct is not None else None,
+                "daily_sigma_pct": round(daily_sigma_pct, 2) if daily_sigma_pct else None,
                 "risk_level": risk_level,
                 "last_signal": last_signal,
                 "news_risk": news_risk_detected,
@@ -2847,7 +3154,10 @@ def compute_changes(previous_state: dict | None, suppliers_data: dict,
         name = supplier.get("name")
         if not name:
             continue
-        href = f"/details/{name}"
+        # Percent-encoded, matching how the dashboard's own links are built
+        # (encodeURIComponent). "SWM (Mativ)" otherwise produced a raw
+        # "/details/SWM (Mativ)" that only worked by browser leniency.
+        href = f"/details/{quote(name, safe='')}"
         before = prev_suppliers.get(name)
 
         if before is None:
@@ -2862,7 +3172,25 @@ def compute_changes(previous_state: dict | None, suppliers_data: dict,
         appeared = [label for label in new_signals if label not in old_signals]
         cleared = [label for label in old_signals if label not in new_signals]
 
-        if old_level and new_level and old_level != new_level:
+        # A risk level that moved purely because the share price moved is not
+        # an event, and logging it as one is what turned this feed into a wall
+        # of "Texas Instruments: LOW → MEDIUM" / "MEDIUM → LOW" pairs. The move
+        # itself is still reported below, once, as a price_move — which says
+        # what actually happened without implying the supplier's risk profile
+        # changed.
+        price_driven = (
+            supplier.get("price_move_only", False) or before.get("price_move_only", False)
+        ) and not (appeared or cleared)
+
+        if price_driven:
+            move = supplier.get("daily_change_pct")
+            if supplier.get("price_move_only") and isinstance(move, (int, float)):
+                sigma = supplier.get("daily_sigma_pct")
+                yardstick = f" ({abs(move) / sigma:.1f}× its normal daily range)" if sigma else ""
+                add("price_move", "info", name,
+                    f"{name} {move:+.1f}%{yardstick}, no corroborating signal",
+                    f"BAT exposure: {supplier.get('bat_exposure')}. Cause unconfirmed.", href)
+        elif old_level and new_level and old_level != new_level:
             direction = "up" if RISK_PRIORITY.get(new_level, 0) > RISK_PRIORITY.get(old_level, 0) else "down"
             detail = supplier.get("last_signal", "")
             if appeared:
@@ -2908,7 +3236,7 @@ def compute_changes(previous_state: dict | None, suppliers_data: dict,
         if old_level and new_level and old_level != new_level:
             direction = "up" if RISK_PRIORITY.get(new_level, 0) > RISK_PRIORITY.get(old_level, 0) else "down"
             add("peer_risk", direction, name, f"{name}: {old_level} → {new_level}",
-                peer.get("last_signal", ""), f"/details/{name}")
+                peer.get("last_signal", ""), f"/details/{quote(name, safe='')}")
 
     # --- Macro trends ----------------------------------------------------
     prev_macro = previous_state.get("macro_economy") or {}
@@ -3154,9 +3482,9 @@ def main():
     """Main aggregation function - Three Core Pillars"""
     logger.info("Starting CPO intelligence harvest (Three Core Pillars)...")
 
-    # Load previous state for volatility calculation and fallback
+    # Load previous state — price-move hysteresis, geopolitical escalation
+    # memory, the change log, RAG history and the fallback all read from it.
     data_dir = Path(__file__).parent.parent / "data"
-    previous_eur_usd = None
     previous_state = None
     previous_file = data_dir / "intel_snapshot.json"
 
@@ -3164,11 +3492,6 @@ def main():
         try:
             with open(previous_file, "r") as f:
                 previous_state = json.load(f)
-                previous_macro = previous_state.get("macro", {})
-                if previous_macro.get("status") == "success":
-                    eu_data = previous_macro.get("regions", {}).get("eu", {})
-                    if eu_data.get("status") == "success":
-                        previous_eur_usd = eu_data.get("indicators", {}).get("fx_rate")
             logger.info("Loaded previous state successfully")
         except Exception as e:
             harvest_stats.record_warning("previous_state", f"Could not load: {e}")
@@ -3178,8 +3501,11 @@ def main():
     recalls_data = fetch_cpsc_recalls()
     sanctions_data = fetch_ofac_sdn()
 
-    # PILLAR 1: Macro Overview
-    macro_data = fetch_macro_overview(previous_eur_usd)
+    # PILLAR 1: Macro Overview. The live market readings are fetched first
+    # because the pillar's RAG score is derived from them (see score_macro_rag)
+    # rather than from a region-count that could never reach GREEN.
+    macro_economy = fetch_macro_economy()
+    macro_data = fetch_macro_overview(macro_economy)
 
     # PILLAR 2: Peers & Competitors — peer_group (live stock/news + SEC
     # filing signals, all merged in fetch_peer_group) is now the single
@@ -3190,7 +3516,14 @@ def main():
     peers_data = fetch_peers_overview(peer_group)
 
     # PILLAR 3: Supplier Watchlist
-    suppliers_data = process_suppliers(cyber_data, recalls_data, sanctions_data)
+    suppliers_data = process_suppliers(
+        cyber_data, recalls_data, sanctions_data,
+        # Last cycle's supplier rows drive price-move hysteresis, and its
+        # geopolitical escalation state keeps a flare-up flagged after the
+        # headline behind it scrolls out of the news window.
+        previous_suppliers=(previous_state or {}).get("suppliers", {}).get("suppliers", []),
+        previous_geo_state=(previous_state or {}).get("suppliers", {}).get("geo_escalation_state", {}),
+    )
 
     # Experimental GDELT geopolitical signal — feeds only the standalone
     # /geopolitical page (see fetch_gdelt_intel), not the RAG pipeline above.
@@ -3230,29 +3563,10 @@ def main():
     }
     geopolitical_intel = {**previous_geo, **fresh_geo}
 
-    # Generate additional intelligence data (LIVE DATA)
-    macro_economy = fetch_macro_economy()
-
-    # ================================================================
-    # MERGE live macro_economy trend data INTO macro pillar RAG score
-    # The pillar 1 macro only uses ECB FX rate; macro_economy has live
-    # S&P 500, EUR/USD, and CNY/USD from yfinance.
-    # ================================================================
-    declining_regions = 0
-    for region_key in ["us", "eu", "china"]:
-        region_data = macro_economy.get(region_key, {})
-        trend = region_data.get("trend", "N/A")
-        if trend in ("Declining", "Weakening"):
-            declining_regions += 1
-
-    if declining_regions >= 2:
-        if macro_data.get("rag_score") != "RED":
-            logger.info(f"Escalating macro RAG to RED: {declining_regions} regions declining")
-            macro_data["rag_score"] = "RED"
-    elif declining_regions >= 1:
-        if macro_data.get("rag_score") == "GREEN":
-            logger.info(f"Escalating macro RAG to AMBER: {declining_regions} region(s) declining")
-            macro_data["rag_score"] = "AMBER"
+    # The macro pillar's RAG score is computed in score_macro_rag from these
+    # same readings (fetched at the top of main), so there is no second
+    # trend-count escalation pass here any more — that one fired on any single
+    # region merely labelled "Weakening", which a 0.6% EUR/USD day satisfied.
 
     # Calculate overall health status
     pillar_statuses = [

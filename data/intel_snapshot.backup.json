@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-08-30T20:13:39.085319+00:00",
-  "version": "ee2ca0fdbf34",
+  "last_updated": "2026-08-31T02:02:03.168808+00:00",
+  "version": "d81ac53fd983",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -15,18 +15,11 @@
     }
   },
   "executive_summary": {
-    "headline": "ITC geopolitical risk escalated to HIGH; three high-exposure suppliers showing synchronized stock declines with no confirmed cause.",
-    "next_step": "Within 48 hours: (1) Verify ITC operational status and border-crossing delays via direct supplier contact; (2) cross-check whether EVE Energy, Texas Instruments, and Jabil declines are sector-wide or idiosyncratic\u2014check semiconductor and battery ETF moves for the same window.",
-    "context": "ITC's jump from MEDIUM to HIGH is driven by new geopolitical escalation news (border tensions with China/Pakistan), a confirmed signal that directly affects your India supply chain. Separately, EVE Energy (China batteries, -2.1%), Texas Instruments (US components, -3.0%), and Jabil (US mechanical, -3.4%) all posted material stock drops this cycle with no news corroboration\u2014their synchrony and size suggest either a real but unconfirmed sector shock or coordinated market repricing. Worth checking whether the ITC geopolitical event and the unconfirmed supplier moves share a regional or trade-policy root cause."
+    "headline": "China-exposed suppliers (Smoore, EVE Energy) and US components (Texas Instruments, Jabil) all down 2\u20133.4% with no confirmed cause, suggesting sector-wide pressure rather than isolated risk.",
+    "next_step": "Within 24 hours, check whether sector indices (semiconductors, battery materials, contract manufacturing) are down proportionally; if broader-market weakness, deprioritize individual supplier deep-dives; if sector-specific, escalate to supply planning to assess demand signals and inventory posture.",
+    "context": "Four high-exposure suppliers spanning EMS, batteries, and components have posted unconfirmed stock declines across both US and China locations. No corroborating news has surfaced for any of them, making this a pattern worth validating\u2014worth checking whether these moves reflect genuine supply-chain stress or simply follow an index selloff in semiconductors and battery materials."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-10T00:48:09.387172",
-      "macro": "GREEN",
-      "peers": "RED",
-      "suppliers": "AMBER",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-08-10T07:05:10.852771",
       "macro": "GREEN",
@@ -579,6 +572,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-08-31T02:01:58.225545+00:00",
+      "macro": "AMBER",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "change_log": [
@@ -830,7 +830,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-30T20:10:29.410063+00:00"
+        "last_fetched": "2026-08-31T01:57:51.673752+00:00"
       },
       "eu": {
         "status": "success",
@@ -841,7 +841,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1643",
-        "last_fetched": "2026-08-30T20:10:30.328016+00:00"
+        "last_fetched": "2026-08-31T01:57:52.256875+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -852,11 +852,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-08-30T20:10:30.328980+00:00"
+        "last_fetched": "2026-08-31T01:57:52.257926+00:00"
       }
     },
     "volatility_pct": 0.0,
-    "last_fetched": "2026-08-30T20:10:30.328995+00:00"
+    "last_fetched": "2026-08-31T01:57:52.257943+00:00"
   },
   "peers": {
     "status": "success",
@@ -864,7 +864,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-08-30T20:10:39.146851+00:00"
+    "last_fetched": "2026-08-31T01:58:10.673010+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -881,7 +881,7 @@
     "total_medium": 11,
     "actionable_critical": 0,
     "actionable_high": 0,
-    "actionable_medium": 3,
+    "actionable_medium": 4,
     "suppliers": [
       {
         "name": "AMCOR",
@@ -964,7 +964,7 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
-            "Finland's Stubb tells German newspaper Russia unlikely to risk attack on NATO - Reuters",
+            "Sweden to deploy fighter jets, warships to Finland - Reuters",
             "Finland and Sweden team up to boost counter-drone defenses - Breaking Defense",
             "Russia won't use nuclear weapons against Ukraine or attack NATO, Finland's president says - The Kyiv Independent"
           ],
@@ -1003,9 +1003,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "US Treasury's Bessent faces G20 diplomacy test amid tariffs, Iran war, bond turmoil - Reuters"
+            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1044,7 +1044,7 @@
           "headlines": [
             "Gaza War: South Africa takes its fight against Israel to the next level with fresh evidence at ICJ - Business Insider Africa",
             "U.S. Treasury's Bessent faces G20 diplomacy test amid tariffs, Iran war, bond turmoil - CNBC",
-            "Conflict is rising in Ethiopia\u2019s Tigray region: 5 steps that could stop a return to full-scale war - The Conversation"
+            "Iran war drains US military stockpiles, constraining global deterrence: Report - Muslim Network TV"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1165,9 +1165,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
+            "South Korea launches new phase of search for Korean War remains - UA.NEWS",
             "Opinion | Reinforcing ties with South Korea crucial - The Cap Times",
-            "After six months of war in Iran, the US is diminished as both ally and rival - The Christian Science Monitor",
-            "U.S. weapons shortage from Iran war alarms allies confronting China - The Washington Post"
+            "South Korea, Japan and US to hold North Korea-focused nuclear missile drill - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1316,9 +1316,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
+            "Trump\u2019s Iran war sets test for Xi and Putin\u2019s security club - The Japan Times",
             "Why West Asia war didn\u2019t hurt India economy as much as was feared - The Indian Express",
-            "Modi Is Hedging Against Trump, One Deal at a Time - The New York Times",
-            "Closing Arguments: Thawing India-China Ties, US-Canada Trade War - Energy Intelligence"
+            "Modi Is Hedging Against Trump, One Deal at a Time - The New York Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1355,9 +1355,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "US Treasury's Bessent faces G20 diplomacy test amid tariffs, Iran war, bond turmoil - Reuters"
+            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1422,9 +1422,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "US Treasury's Bessent faces G20 diplomacy test amid tariffs, Iran war, bond turmoil - Reuters"
+            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1449,24 +1449,24 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.42,
-        "current_price": 11.13,
-        "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
+        "daily_change_pct": -2.7,
+        "current_price": 10.83,
+        "risk_analysis": "Stock decline for critical-exposure supplier Smoore. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
-        "last_signal": "\ud83c\udf0d Geopolitical: US-China trade war, Taiwan risk, export controls on tech",
-        "counts_toward_rag": false,
-        "price_move_only": false,
+        "last_signal": "\ud83d\udcc9 Stock down -2.7% (no confirmed cause) - Critical exposure supplier",
+        "counts_toward_rag": true,
+        "price_move_only": true,
         "geopolitical_risk": {
           "detected": true,
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "US Treasury's Bessent faces G20 diplomacy test amid tariffs, Iran war, bond turmoil - Reuters"
+            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
-          "escalated": true,
-          "baseline_only": true
+          "escalated": false,
+          "baseline_only": false
         },
         "google_news_headlines": [],
         "bat_exposure": "Critical",
@@ -1488,8 +1488,8 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.07,
-        "current_price": 54.32,
+        "daily_change_pct": -2.06,
+        "current_price": 53.2,
         "risk_analysis": "Stock decline for high-exposure supplier EVE Energy. No negative news identified alongside this move \u2014 likely market/sector-wide rather than company-specific, but a move this size is worth a glance.",
         "risk_level": "MEDIUM",
         "last_signal": "\ud83d\udcc9 Stock down -2.1% (no confirmed cause) - High exposure supplier",
@@ -1500,9 +1500,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
             "The U.S. and Canada are in a trade war. China aims to win it. - The Washington Post",
-            "US Treasury's Bessent faces G20 diplomacy test amid tariffs, Iran war, bond turmoil - Reuters"
+            "Air raids, conscripts and China: How Myanmar\u2019s military is regaining ground - Al Jazeera",
+            "Drain on U.S. Munitions From Iran War Raises Fears Over Ability to Deter China, Russia - WSJ"
           ],
           "escalated": false,
           "baseline_only": false
@@ -1655,7 +1655,7 @@
         "url": null
       }
     ],
-    "last_fetched": "2026-08-30T20:11:44.495585+00:00"
+    "last_fetched": "2026-08-31T01:59:15.238031+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1668,13 +1668,13 @@
       "cpi": "2.2%",
       "rate": "2.65%",
       "trend": "Weakening",
-      "summary": "EUR/USD weakening: -0.59% change. Euro declining against USD. ECB maintains dovish monetary policy stance. Manufacturing PMI shows mixed signals across key markets. Inflation pressures easing, but growth concerns persist. Export competitiveness improving with weaker currency."
+      "summary": "EUR/USD weakening: -0.53% change. Euro declining against USD. ECB maintains dovish monetary policy stance. Manufacturing PMI shows mixed signals across key markets. Inflation pressures easing, but growth concerns persist. Export competitiveness improving with weaker currency."
     },
     "china": {
       "cpi": "0.5%",
       "rate": "3.10%",
       "trend": "Stable",
-      "summary": "CNY/USD stable: +0.04% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
+      "summary": "CNY/USD stable: -0.01% change. Yuan trading in managed range against USD. Industrial output steady, property sector stabilization underway. PBOC maintaining balanced monetary policy. Export growth moderate, domestic demand gradually improving. Economic indicators suggest stable growth trajectory with manageable risks."
     }
   },
   "peer_group": [
@@ -1735,9 +1735,9 @@
       "region": "Japan",
       "sentiment": "Neutral",
       "latest_headline": "Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
-      "stock_move": "-0.76%",
-      "current_price": 6948.0,
-      "daily_change_pct": -0.76,
+      "stock_move": "-0.26%",
+      "current_price": 6930.0,
+      "daily_change_pct": -0.26,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
       "news_risk": false,
@@ -1805,35 +1805,37 @@
       "fetched_at": "2026-08-29T11:56:00.886672+00:00"
     },
     "South Korea": {
-      "article_count": 682,
-      "avg_tone": -1.1,
+      "article_count": 844,
+      "avg_tone": -1.4,
       "articles": [
         {
-          "title": "Teen kills father , injures mother ; says he was trying to break up fight",
-          "url": "https://www.koreaherald.com/article/10849118",
-          "tone": -11
+          "title": "3 dead in S . Korea paint materials factory fire - Xinhua",
+          "url": "https://english.news.cn/20260828/47e862647c6b42b5845ed07263f2e14c/c.html",
+          "tone": -4
         },
         {
-          "title": "Scholars , activists urge Japan to confront history at Tokyo event marking 1923 earthquake massacre",
-          "url": "http://www.bignewsnetwork.com/news/279257521/scholars-activists-urge-japan-to-confront-history-at-tokyo-event-marking-1923-earthquake-massacre",
-          "tone": -9
+          "title": "1st LD Writethru : 3 dead in S . Korea paint materials factory fire",
+          "url": "http://www.bignewsnetwork.com/news/279270569/1st-ld-writethru-3-dead-in-s-korea-paint-materials-factory-fire",
+          "tone": -4
         },
         {
-          "title": "South Korea sends trial container ship through Arctic route : ministry",
-          "url": "https://www.bssnews.net/international/417091",
-          "tone": -8
+          "title": "2nd LD Writethru : 3 dead , 2 injured in S . Korea fire at paint materials factory",
+          "url": "http://www.bignewsnetwork.com/news/279270693/2nd-ld-writethru-3-dead-2-injured-in-s-korea-fire-at-paint-materials-factory",
+          "tone": -4
         },
         {
-          "title": "Conservative icon detonates on Trump over baffling new fixation as world slides to brink",
-          "url": "https://www.rawstory.com/george-will-2677758819/",
-          "tone": -8
+          "title": "Vietnam urges Qualcomm , Samsung to deepen AI , chip investment as it seeks tech upgrade",
+          "url": "https://finance.yahoo.com/technology/ai/articles/vietnam-urges-qualcomm-samsung-deepen-035324366.html",
+          "tone": 1
         },
         {
-          "title": "ADF whistleblower McBride released : what now ? ",
-          "url": "https://cpa.org.au/guardian/issue-2203/adf-whistleblower-mcbride-released-what-now/",
-          "tone": -8
+          "title": "Acutaa step - down subsidiary inaugurates semiconductor chemicals plant at Gongju",
+          "url": "https://www.business-standard.com/markets/capital-market-news/acutaas-step-down-subsidiary-inaugurates-semiconductor-chemicals-plant-at-gongju-126082800139_1.html",
+          "tone": 2
         }
-      ]
+      ],
+      "has_relevant": true,
+      "fetched_at": "2026-08-31T02:00:05.294479+00:00"
     },
     "Austria": {
       "article_count": 201,
@@ -1924,6 +1926,39 @@
       ],
       "has_relevant": true,
       "fetched_at": "2026-08-30T15:39:11.026956+00:00"
+    },
+    "Netherlands": {
+      "article_count": 395,
+      "avg_tone": -1.5,
+      "articles": [
+        {
+          "title": "Patriot shortage said to be dire in Europe | Northwest Arkansas Democrat - Gazette",
+          "url": "https://www.nwaonline.com/news/2026/aug/28/patriot-shortage-said-to-be-dire-in-europe/",
+          "tone": -7
+        },
+        {
+          "title": "UK , Israel trade barbs over London possible Judea and Samaria sanctions",
+          "url": "https://www.clevelandjewishnews.com/jns/uk-israel-trade-barbs-over-londons-possible-judea-and-samaria-sanctions/article_8d2cbe28-974b-5279-accc-9abb10cf9a01.html",
+          "tone": -4
+        },
+        {
+          "title": "Nijmegen based chip manufacturer shows strong recovery figures after China - NL conflict",
+          "url": "https://nltimes.nl/2026/08/28/nijmegen-based-chip-manufacturer-shows-strong-recovery-figures-china-nl-conflict",
+          "tone": -1
+        },
+        {
+          "title": "261 foreign nationals unaccounted for after mudslide hits border port in China Xizang - Xinhua",
+          "url": "https://english.news.cn/20260830/2d256a70b30341868d35dc522cd20357/c.html",
+          "tone": -1
+        },
+        {
+          "title": "Update : 261 foreign nationals unaccounted for after mudslide hits border port in China Xizang",
+          "url": "http://www.shanghaisun.com/news/279273966/update-261-foreign-nationals-unaccounted-for-after-mudslide-hits-border-port-in-china-xizang",
+          "tone": -1
+        }
+      ],
+      "has_relevant": true,
+      "fetched_at": "2026-08-31T01:59:33.921629+00:00"
     }
   },
   "geopolitical_attempts": {
@@ -1940,9 +1975,9 @@
       "last_success": "2026-08-30T20:12:06.087546+00:00"
     },
     "Finland": {
-      "last_attempt": "2026-08-30T20:12:33.322564+00:00",
+      "last_attempt": "2026-08-31T02:01:57.114650+00:00",
       "last_status": "timeout",
-      "consecutive_failures": 2
+      "consecutive_failures": 3
     },
     "Germany": {
       "last_attempt": "2026-08-30T20:12:59.021203+00:00",
@@ -1961,9 +1996,10 @@
       "consecutive_failures": 2
     },
     "Netherlands": {
-      "last_attempt": "2026-08-30T10:53:05.849681+00:00",
-      "last_status": "timeout",
-      "consecutive_failures": 1
+      "last_attempt": "2026-08-31T01:59:33.922540+00:00",
+      "last_status": "ok",
+      "consecutive_failures": 0,
+      "last_success": "2026-08-31T01:59:33.921629+00:00"
     },
     "South Africa": {
       "last_attempt": "2026-08-30T10:53:37.691371+00:00",
@@ -1972,9 +2008,10 @@
       "consecutive_failures": 0
     },
     "South Korea": {
-      "last_attempt": "2026-08-30T15:38:31.909049+00:00",
-      "last_status": "timeout",
-      "consecutive_failures": 1
+      "last_attempt": "2026-08-31T02:00:05.295388+00:00",
+      "last_status": "ok",
+      "consecutive_failures": 0,
+      "last_success": "2026-08-31T02:00:05.294479+00:00"
     },
     "Sweden": {
       "last_attempt": "2026-08-30T15:39:11.027501+00:00",
@@ -1983,23 +2020,29 @@
       "consecutive_failures": 0
     },
     "Switzerland": {
-      "last_attempt": "2026-08-30T15:39:37.549007+00:00",
-      "last_status": "timeout",
-      "consecutive_failures": 1
+      "last_attempt": "2026-08-31T02:00:43.025521+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 2
     },
     "USA": {
-      "last_attempt": "2026-08-30T15:40:23.980253+00:00",
-      "last_status": "error",
-      "consecutive_failures": 1
+      "last_attempt": "2026-08-31T02:01:28.628370+00:00",
+      "last_status": "timeout",
+      "consecutive_failures": 2
     }
   },
   "harvest_stats": {
-    "total_errors": 0,
+    "total_errors": 1,
     "total_warnings": 0,
-    "total_successes": 12,
-    "errors": [],
+    "total_successes": 11,
+    "errors": [
+      {
+        "source": "cpsc_recalls",
+        "error": "503 Server Error: Service Unavailable for url: https://www.saferproducts.gov/RestWebServices/Recall?RecallDateStart=2026-06-02&format=json",
+        "time": "2026-08-31T01:57:49.635348+00:00"
+      }
+    ],
     "warnings": [],
-    "duration_seconds": 191.64381
+    "duration_seconds": 256.959186
   },
   "health": {
     "pillars": {
@@ -2007,7 +2050,7 @@
       "peers": "success",
       "suppliers": "success"
     },
-    "errors_count": 0,
+    "errors_count": 1,
     "warnings_count": 0,
     "circuit_breaker_state": "closed"
   }

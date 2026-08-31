@@ -156,7 +156,11 @@ export interface Supplier {
   counts_toward_rag?: boolean;
   bat_exposure: Exposure;
   segment: string;
+  /** Country of the site that supplies BAT — where a strike or border closure
+   *  would actually bite. Not necessarily the legal headquarters. */
   location: string;
+  /** Headquarters country, present only when it differs from the site. */
+  hq_country?: string | null;
   stock_ticker: string;
   // Geopolitical risk (null when no risk detected)
   geopolitical_risk: {
@@ -305,6 +309,11 @@ export interface IntelSnapshot {
       // negative country-level news available, not evidence of anything
       // supplier-specific. See fetch_gdelt_country_intel's has_relevant.
       has_relevant?: boolean;
+      // How the reading was taken: "mentions" is coverage naming the country,
+      // "domestic_press" is coverage published in it. The USA is read the
+      // second way — GDELT cannot answer a mention query that large. Two
+      // different measurements, so the page says which.
+      query_mode?: 'mentions' | 'domestic_press';
       // Per-country, not per-snapshot: GDELT rate-limits hard enough that
       // only some countries refresh on any given harvest, so this can lag
       // last_updated by several cycles for a given country. See

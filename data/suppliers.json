@@ -1,5 +1,5 @@
 {
-  "_comment": "Hand-maintained BAT supplier watchlist. Adding, removing or re-tiering a supplier is an edit here — no Python change needed. bat_exposure: Critical (tier 1) | High (tier 2) | Medium (tier 3). stock_ticker 'N/A' means unlisted; those suppliers are scanned via Google News instead of yfinance. location must match a country in country_risk.json to pick up a standing risk floor. category_keywords feeds news/GDELT relevance ranking only, never the RAG score.",
+  "_comment": "Hand-maintained BAT supplier watchlist. Adding, removing or re-tiering a supplier is an edit here — no Python change needed. bat_exposure: Critical (tier 1) | High (tier 2) | Medium (tier 3). stock_ticker 'N/A' means unlisted; those suppliers are scanned via Google News instead of yfinance. location is the country of the SITE that supplies BAT, not the country of the legal headquarters \u2014 a strike, a power cut or a border closure hits the plant, not the registered office. Where the two differ, hq_country records the headquarters so the fact isn't lost (Weener: plant in Weener, Germany, HQ in Ede, Netherlands since 2016; Cerdia: main acetate tow plant in Freiburg, Germany, HQ in Basel, Switzerland). location must match a country in country_risk.json to pick up a standing risk floor. category_keywords feeds news/GDELT relevance ranking only, never the RAG score.",
   "category_segments": {
     "Batteries": "New Categories (Vuse/Glo)",
     "Capsules": "Combustibles",
@@ -116,7 +116,8 @@
       "name": "Cerdia",
       "category": "Filter Materials",
       "bat_exposure": "Medium",
-      "location": "Switzerland",
+      "location": "Germany",
+      "hq_country": "Switzerland",
       "stock_ticker": "N/A"
     },
     {
@@ -215,7 +216,8 @@
       "name": "Weener",
       "category": "Mechanical",
       "bat_exposure": "Medium",
-      "location": "Netherlands",
+      "location": "Germany",
+      "hq_country": "Netherlands",
       "stock_ticker": "N/A"
     },
     {

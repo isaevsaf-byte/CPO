@@ -182,7 +182,8 @@ yfinance_circuit_breaker = CircuitBreaker(failure_threshold=5, reset_timeout=120
 # RETRY AND FETCH UTILITIES
 # ============================================================================
 
-def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None) -> requests.Response:
+def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None,
+                     timeout: int = None) -> requests.Response:
     """
     Fetch URL with exponential backoff retry logic.
 
@@ -190,6 +191,10 @@ def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None) ->
         url: URL to fetch
         max_retries: Maximum number of retry attempts (default from config)
         headers: Optional headers dict
+        timeout: Per-request timeout in seconds (default from config). GDELT
+            routinely takes 25-40s to answer a tonechart query, so it passes a
+            longer one — the shared 15-20s default was cutting off responses
+            that were on their way.
 
     Returns:
         requests.Response object
@@ -201,11 +206,13 @@ def fetch_with_retry(url: str, max_retries: int = None, headers: dict = None) ->
         max_retries = MAX_RETRIES
     if headers is None:
         headers = USER_AGENT
+    if timeout is None:
+        timeout = TIMEOUT
 
     last_exception = None
     for attempt in range(max_retries):
         try:
-            response = requests.get(url, headers=headers, timeout=TIMEOUT)
+            response = requests.get(url, headers=headers, timeout=timeout)
             response.raise_for_status()
             return response
         except requests.RequestException as e:
@@ -615,6 +622,60 @@ GDELT_SUPPLY_KEYWORDS = [
 ]
 
 
+# How each country is asked for. The default is mention-based: articles that
+# name the country. Two things made that impossible for the USA, which is the
+# joint-largest supplier country on the watchlist and had never once returned
+# a reading:
+#
+#   1. GDELT rejects a quoted phrase shorter than four characters outright.
+#      `"USA"` answers HTTP 200 with the plain-text line "The specified phrase
+#      is too short" — never JSON — so the attempt log recorded a generic
+#      "error" and the rotation kept retrying a query that could not succeed.
+#   2. `"United States"` is a valid phrase and still doesn't come back: the
+#      matching corpus is large enough that the tonechart request times out,
+#      verified at 60s against a control query for Germany that answers in
+#      under two.
+#
+# So the USA is read from the tone of US-published coverage instead
+# (`sourcecountry:US`), which does answer. That is a different measurement —
+# how the country's own press is writing, rather than how the world writes
+# about it — so the mode travels with the reading and the page labels it.
+GDELT_COUNTRY_QUERY = {
+    "USA": {"query": "sourcecountry:US", "mode": "domestic_press"},
+}
+
+
+def gdelt_query_spec(country: str) -> tuple:
+    """(query fragment, measurement mode) for one country."""
+    spec = GDELT_COUNTRY_QUERY.get(country)
+    if spec:
+        return spec["query"], spec["mode"]
+    return f'"{country}"', "mentions"
+
+# GDELT answers some rejections with HTTP 200 and a sentence of plain text
+# rather than an error status, so the body has to be read to tell what
+# happened. Mapped to short statuses the dashboard can explain to a reader.
+GDELT_TEXT_RESPONSES = (
+    ("too short", "query_rejected"),
+    ("limit requests", "rate_limited"),
+    ("timed out", "gdelt_timeout"),
+)
+
+# GDELT tonechart queries routinely take 25-40s. The shared 15-20s fetch
+# timeout was cutting off answers that were on their way, which is most of what
+# the attempt log recorded as "timeout".
+GDELT_REQUEST_TIMEOUT = 40
+
+
+def _gdelt_text_status(body: str) -> str | None:
+    """Classify a plain-text GDELT response, or None if it isn't one."""
+    lowered = body[:300].lower()
+    for marker, status in GDELT_TEXT_RESPONSES:
+        if marker in lowered:
+            return status
+    return None
+
+
 def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max_attempts: int = 2) -> dict | None:
     """
     Independent geopolitical signal from GDELT (free, no key, globally
@@ -657,7 +718,8 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
     cost the entire harvest job its timeout — see fetch_gdelt_intel).
     """
     try:
-        query = requests.utils.quote(f'"{country}" sourcelang:english')
+        query_fragment, query_mode = gdelt_query_spec(country)
+        query = requests.utils.quote(f'{query_fragment} sourcelang:english')
         url = (
             "https://api.gdeltproject.org/api/v2/doc/doc"
             f"?query={query}&mode=tonechart&timespan=3d&format=json"
@@ -665,7 +727,7 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
         response = None
         for attempt in range(max_attempts):
             try:
-                response = fetch_with_retry(url, max_retries=1)
+                response = fetch_with_retry(url, max_retries=1, timeout=GDELT_REQUEST_TIMEOUT)
                 break
             except requests.HTTPError as e:
                 is_last = attempt == max_attempts - 1
@@ -673,6 +735,14 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
                     time.sleep(5)
                     continue
                 raise
+
+        # A rejection can arrive as HTTP 200 with one sentence of plain text,
+        # in which case .json() raises and the real reason is lost. Read it.
+        text_status = _gdelt_text_status(response.text)
+        if text_status:
+            logger.warning(f"GDELT rejected the {country} query ({text_status}): {response.text[:120].strip()}")
+            return None, text_status
+
         bins = response.json().get("tonechart", [])
         if not bins:
             return None, "empty"
@@ -752,6 +822,10 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
             "avg_tone": round(weighted_tone_sum / total_count, 1) if total_count else None,
             "articles": articles_out,
             "has_relevant": has_relevant,
+            # "mentions" = coverage naming this country; "domestic_press" =
+            # coverage published in it. Carried so the page can say which,
+            # rather than presenting two different measurements as one.
+            "query_mode": query_mode,
             "fetched_at": utc_now_iso(),
         }, "ok"
     except Exception as e:
@@ -770,11 +844,11 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
         return None, status
 
 
-GDELT_TIME_BUDGET_SEC = 150  # hard cap on the whole phase — see fetch_gdelt_intel
+GDELT_TIME_BUDGET_SEC = 210  # hard cap on the whole phase — see fetch_gdelt_intel
 GDELT_CIRCUIT_BREAKER_FAILS = 3  # consecutive failures before bailing out early
 
 
-def order_gdelt_countries(countries: list, attempts: dict) -> list:
+def order_gdelt_countries(countries: list, attempts: dict, supplier_counts: dict = None) -> list:
     """Rotate which countries get the front of the budget.
 
     The order used to be a fixed priority pair followed by the rest
@@ -795,12 +869,21 @@ def order_gdelt_countries(countries: list, attempts: dict) -> list:
     reintroduce exactly the blockage this replaces — but they still get
     attempted whenever the budget reaches them.
     """
+    counts = supplier_counts or {}
+
     def sort_key(country):
         state = attempts.get(country, {})
         # Bucketed so a country is not shuffled to the back on one bad run;
         # 3+ consecutive failures is a pattern, 1-2 is noise.
         streak = min(state.get("consecutive_failures", 0) // 3, 3)
         last_success = state.get("last_success") or ""
+        # Then by how much of the watchlist sits there. The circuit breaker
+        # abandons the run after three consecutive failures, so position in
+        # this queue decides who actually gets attempted on a bad day — and
+        # spending that on Switzerland (one supplier) ahead of the USA (five)
+        # is the wrong trade. Countries that have never returned data all tie
+        # on last_success, and this is what separates them.
+        weight = -counts.get(country, 0)
         # Tie-break on when it was last *tried*. Without this, every country
         # that has never succeeded ties on last_success and falls through to
         # the alphabetical tie-break, so the same handful at the top of the
@@ -808,7 +891,7 @@ def order_gdelt_countries(countries: list, attempts: dict) -> list:
         # demotes them — the original blockage, one level down. Never
         # attempted sorts ahead of recently attempted.
         last_attempt = state.get("last_attempt") or ""
-        return (streak, last_success, last_attempt, country)
+        return (streak, last_success, weight, last_attempt, country)
 
     return sorted(countries, key=sort_key)
 
@@ -843,7 +926,10 @@ def fetch_gdelt_intel(countries: list, attempts: dict = None, suppliers_by_count
     result = {}
     attempts = dict(attempts or {})
     consecutive_fails = 0
-    countries = order_gdelt_countries(countries, attempts)
+    countries = order_gdelt_countries(
+        countries, attempts,
+        supplier_counts={c: len(v) for c, v in (suppliers_by_country or {}).items()},
+    )
     logger.info(f"GDELT order this cycle: {', '.join(countries)}")
     for i, country in enumerate(countries):
         elapsed = time.monotonic() - start
@@ -997,7 +1083,12 @@ def _load_watchlist(path: Path) -> tuple:
             # category rather than repeated (and eventually contradicted) on
             # every supplier row.
             "segment": entry.get("segment") or segments.get(category, "Combustibles"),
+            # The country of the site that supplies BAT — a strike or a border
+            # closure hits the plant, not the registered office. Where the legal
+            # headquarters sits elsewhere, hq_country keeps that fact visible
+            # rather than forcing one field to mean both.
             "location": entry.get("location", "Unknown"),
+            "hq_country": entry.get("hq_country"),
             "stock_ticker": entry.get("stock_ticker", "N/A"),
             "url": entry.get("url"),
         }
@@ -1696,6 +1787,7 @@ def get_supplier_deep_dive_data(supplier_name, category):
             "bat_exposure": "Medium",
             "segment": "Combustibles",
             "location": "Unknown",
+            "hq_country": None,
             "stock_ticker": "N/A",
             "url": None,
         }

@@ -25,6 +25,12 @@ to a fallback rather than failing the harvest.
 | Competitor filings | SEC EDGAR 8-K | — |
 | Supplier & country news | Google News RSS | — |
 | Country news tone | GDELT (experimental, `/geopolitical`) | — |
+
+GDELT is asked for each country by name. The USA is the exception: `"USA"` is
+rejected outright (GDELT will not match a quoted phrase under four characters)
+and `"United States"` matches a corpus too large to return before timing out,
+so the USA is read from the tone of US-published coverage (`sourcecountry:US`)
+instead. That is a different measurement, and the page labels it as one.
 | Executive summary | Claude (`claude-haiku-4-5`) | `ANTHROPIC_API_KEY` (skipped if unset) |
 | Daily brief / alerts | Slack or Telegram | `SLACK_WEBHOOK_URL` or `TELEGRAM_BOT_TOKEN` (silent if unset) |
 
@@ -102,9 +108,15 @@ re-tier a supplier, edit that file:
   Graphic Packaging (`GPK`), and `SAP` is SAP SE, not Sappi (`SAP.JO`). Both
   were live on this watchlist and fed another company's price and headlines
   into a supplier's risk score
-- `location` — must match a country in `data/country_risk.json` to pick up a
-  standing risk floor; a country absent from that file carries none, which is
-  the correct state for stable countries
+- `location` — the country of the **site that supplies BAT**, not the legal
+  headquarters: a strike, a power cut or a border closure hits the plant, not
+  the registered office. Where the headquarters sits elsewhere, record it as
+  `hq_country` so the fact isn't lost — Weener's plant is in Weener, Germany
+  while the group HQ moved to Ede, Netherlands in 2016; Cerdia's acetate tow
+  comes out of Freiburg, Germany while the company is registered in Basel.
+  Must match a country in `data/country_risk.json` to pick up a standing risk
+  floor; a country absent from that file carries none, which is the correct
+  state for stable countries
 - `category` — should have an entry in both `category_segments` and
   `category_keywords` in the same file; a missing entry logs a warning and
   falls back rather than failing the harvest

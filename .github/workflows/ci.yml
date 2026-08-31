@@ -54,6 +54,13 @@ jobs:
               if entry['category'] not in suppliers['category_segments']:
                   errors.append(f'{name}: category {entry["category"]!r} has no segment mapping')
 
+              if not entry.get('location'):
+                  errors.append(f'{name}: no location')
+              # location is the supplying site's country; hq_country only
+              # exists to record a headquarters that sits somewhere else.
+              if entry.get('hq_country') and entry['hq_country'] == entry.get('location'):
+                  errors.append(f'{name}: hq_country repeats location, drop it')
+
           for country, spec in countries.items():
               if spec.get('level') not in {'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'}:
                   errors.append(f'{country}: bad risk level {spec.get("level")!r}')

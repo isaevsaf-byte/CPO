@@ -181,3 +181,58 @@ def test_sanctions_screening_is_conservative(harvester):
     assert harvester.match_supplier_sanctions("Jabil", names) == ["JABIL SOMETHING LLC"]
     # Short names are too generic to screen on.
     assert harvester.match_supplier_sanctions("ITC", names) == []
+
+
+# ---------------------------------------------------------------------------
+# GDELT query construction
+# ---------------------------------------------------------------------------
+
+def test_usa_is_queried_by_source_country(harvester):
+    """"USA" is three characters and GDELT rejects quoted phrases that short;
+    "United States" is a valid phrase whose corpus is too large to return at
+    all. Reading US-published coverage is the only form that answers."""
+    query, mode = harvester.gdelt_query_spec("USA")
+    assert query == "sourcecountry:US"
+    assert mode == "domestic_press"
+
+
+def test_other_countries_keep_the_mention_query(harvester):
+    query, mode = harvester.gdelt_query_spec("Germany")
+    assert query == '"Germany"'
+    assert mode == "mentions"
+
+
+@pytest.mark.parametrize(
+    "body,expected",
+    [
+        ("The specified phrase is too short.", "query_rejected"),
+        ("Please limit requests to one every 5 seconds", "rate_limited"),
+        ('{"tonechart": []}', None),
+    ],
+)
+def test_plain_text_rejections_are_classified(harvester, body, expected):
+    """GDELT answers some rejections with HTTP 200 and one line of prose, so
+    .json() raises and the real reason is lost as a generic "error"."""
+    assert harvester._gdelt_text_status(body) == expected
+
+
+def test_gdelt_queue_favours_countries_with_more_suppliers(harvester):
+    """The circuit breaker gives up after three consecutive failures, so queue
+    position decides who is attempted at all on a bad day. Among countries that
+    have never returned data, the one holding five suppliers should go before
+    the one holding one."""
+    countries = ["Switzerland", "USA", "Sweden"]
+    attempts = {}  # none has ever succeeded
+    counts = {"USA": 5, "Switzerland": 2, "Sweden": 1}
+
+    assert harvester.order_gdelt_countries(countries, attempts, counts)[0] == "USA"
+
+
+def test_gdelt_queue_still_puts_staleness_first(harvester):
+    """Supplier weight only breaks ties — a country that just succeeded does
+    not jump the queue over one that has been waiting."""
+    countries = ["USA", "Sweden"]
+    attempts = {"USA": {"last_success": "2026-08-30T20:00:00+00:00"}}
+    counts = {"USA": 5, "Sweden": 1}
+
+    assert harvester.order_gdelt_countries(countries, attempts, counts)[0] == "Sweden"

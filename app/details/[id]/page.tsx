@@ -193,7 +193,15 @@ export default function CompanyDetailPage() {
                   <>
                     <Stat label="Category" value={supplier.category} />
                     <Stat label="BAT Exposure" value={supplier.bat_exposure} />
-                    <Stat label="Location" value={supplier.location || 'Unknown'} />
+                    <Stat
+                      label="Location"
+                      value={supplier.location || 'Unknown'}
+                      note={
+                        supplier.hq_country && supplier.hq_country !== supplier.location
+                          ? `Supplying site. Headquarters: ${supplier.hq_country}`
+                          : 'Supplying site'
+                      }
+                    />
                     <Stat label="Segment" value={supplier.segment || 'N/A'} />
                   </>
                 ) : (

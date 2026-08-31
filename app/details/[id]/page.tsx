@@ -145,6 +145,7 @@ export default function CompanyDetailPage() {
   const yahooFinanceUrl = hasTicker ? `https://finance.yahoo.com/quote/${ticker}` : null;
   const secFilingsUrl = `https://www.sec.gov/edgar/search/#/q=${encodeURIComponent(entityName)}`;
 
+  const displayedRisk = (supplier?.event_risk_level ?? company.risk_level) as typeof company.risk_level;
   const move = supplier?.daily_change_pct ?? peer?.daily_change_pct ?? null;
   const sigma = supplier?.daily_sigma_pct ?? peer?.daily_sigma_pct ?? null;
 
@@ -161,10 +162,13 @@ export default function CompanyDetailPage() {
               <h1 className="text-3xl font-bold text-gray-900">{entityName}</h1>
               <div className="flex items-center gap-3 mt-2 flex-wrap">
                 {hasTicker && <span className="text-sm text-gray-600 font-mono">{ticker}</span>}
+                {/* The event level, matching the watchlist: a standing country
+                    floor is shown separately under Active Signals rather than
+                    colouring this pill. */}
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold border ${getRiskColor(company.risk_level)}`}
+                  className={`px-3 py-1 rounded-full text-xs font-bold border ${getRiskColor(displayedRisk)}`}
                 >
-                  Risk: {company.risk_level}
+                  Risk: {displayedRisk}
                 </span>
                 {supplier && (
                   <>

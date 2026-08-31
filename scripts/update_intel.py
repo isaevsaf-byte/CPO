@@ -2431,8 +2431,10 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         # Used downstream to keep chronic ambient risk from permanently
         # pinning the pillar RAG to AMBER/RED — it's still shown per-supplier.
         geo_baseline_only = False
+        # The level this supplier reached on its own evidence, before any
+        # country floor was laid over it.
+        pre_geo_level = supplier_risk_level
         if RISK_PRIORITY.get(geo_risk_level, 0) > RISK_PRIORITY.get(supplier_risk_level, 0):
-            pre_geo_level = supplier_risk_level
             supplier_risk_level = geo_risk_level
             geo_escalated = True
             geo_baseline_only = not geo_data.get("escalated_by_live_news", False)
@@ -2453,6 +2455,15 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         # supplier's own card, just excluded from the rollup so the pillar
         # RAG isn't permanently pinned to AMBER/RED by geography alone.
         counts_toward_rag = not (geo_escalated and geo_baseline_only)
+
+        # Risk from something that happened, kept apart from risk from where a
+        # supplier sits. Nine of the twenty-four are in countries carrying a
+        # standing floor, so under a single level a third of the watchlist read
+        # as MEDIUM every day of the year — the same amber pill as a supplier
+        # that had a CVE published against it that morning. The floor is real
+        # and still shown, but it is a different fact, and the table now says
+        # which one it is looking at.
+        event_risk_level = pre_geo_level if (geo_escalated and geo_baseline_only) else supplier_risk_level
 
         # Build supplier data
         supplier_data = {
@@ -2476,6 +2487,9 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             "current_price": round(current_price, 2) if current_price is not None else None,
             "risk_analysis": risk_analysis,
             "risk_level": supplier_risk_level,
+            # Level excluding a standing country floor — what actually happened
+            # to this supplier. See the comment above event_risk_level.
+            "event_risk_level": event_risk_level,
             "last_signal": last_signal,
             "counts_toward_rag": counts_toward_rag,
             "price_move_only": price_move_only,

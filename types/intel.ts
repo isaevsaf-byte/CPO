@@ -151,7 +151,12 @@ export interface Supplier {
   /** True when the risk level reflects only an uncorroborated price move. */
   price_move_only?: boolean;
   risk_analysis: string;
+  /** Highest level from any layer, including the standing country floor. */
   risk_level: RiskLevel;
+  /** Level from what actually happened, with the country floor excluded.
+   *  Nine of twenty-four suppliers sit in countries carrying a floor, so
+   *  showing only risk_level made a third of the board permanently amber. */
+  event_risk_level?: RiskLevel;
   last_signal: string;
   counts_toward_rag?: boolean;
   bat_exposure: Exposure;

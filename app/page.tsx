@@ -94,6 +94,22 @@ function relativeAge(date: Date): string {
   return `${Math.round(hours / 24)}d ago`;
 }
 
+// What happened to this supplier, with the standing country floor set aside.
+// Nine of the twenty-four sit in a country carrying a floor, so reading the
+// combined level put a third of the watchlist at MEDIUM every day of the year —
+// the same amber pill as a supplier that had a CVE published that morning.
+// Older snapshots have no event_risk_level, so they fall back to the combined
+// one and simply keep the previous behaviour.
+function eventLevel(supplier: Supplier): string {
+  return (supplier as any).event_risk_level ?? supplier.risk_level;
+}
+
+// True when this supplier is only flagged because of where it operates.
+function isStructuralOnly(supplier: Supplier): boolean {
+  const geo = supplier.geopolitical_risk;
+  return !!geo?.escalated && geo?.baseline_only !== false;
+}
+
 const MACRO_REGIONS = [
   { key: 'us' as const, flag: '🇺🇸', label: 'US' },
   { key: 'eu' as const, flag: '🇪🇺', label: 'EU' },
@@ -414,14 +430,14 @@ export default function MorningCoffeeDashboard() {
       href: `/details/${encodeURIComponent(s.name)}`,
     }));
   suppliersList
-    .filter((s: any) => s.counts_toward_rag !== false && s.risk_level === 'CRITICAL' && !s.sanctions_hit)
+    .filter((s) => eventLevel(s) === 'CRITICAL' && !s.sanctions_hit)
     .forEach((s) => actionItems.push({ label: `${s.name}: ${s.last_signal}`, href: `/details/${encodeURIComponent(s.name)}` }));
   peerGroup
     .filter((p) => p.risk_level === 'CRITICAL')
     .forEach((p) => actionItems.push({ label: `${p.name}: ${p.last_signal}`, href: `/details/${encodeURIComponent(p.name)}` }));
   if (actionItems.length < 3) {
     suppliersList
-      .filter((s: any) => s.counts_toward_rag !== false && s.risk_level === 'HIGH')
+      .filter((s) => eventLevel(s) === 'HIGH')
       .forEach((s) => actionItems.push({ label: `${s.name}: ${s.last_signal}`, href: `/details/${encodeURIComponent(s.name)}` }));
   }
   const topActionItems = actionItems.slice(0, 3);
@@ -431,10 +447,9 @@ export default function MorningCoffeeDashboard() {
   // supplier in a flagged country. Same filter process_suppliers applies for
   // the pillar RAG rollup, recomputed here from the list itself so a headline
   // count can never disagree with the rows its filter reveals.
-  const isActionable = (supplier: Supplier) => (supplier as any).counts_toward_rag !== false;
-  const actionableCritical = suppliersList.filter((s) => isActionable(s) && s.risk_level === 'CRITICAL').length;
-  const actionableHigh = suppliersList.filter((s) => isActionable(s) && s.risk_level === 'HIGH').length;
-  const actionableMedium = suppliersList.filter((s) => isActionable(s) && s.risk_level === 'MEDIUM').length;
+  const actionableCritical = suppliersList.filter((s) => eventLevel(s) === 'CRITICAL').length;
+  const actionableHigh = suppliersList.filter((s) => eventLevel(s) === 'HIGH').length;
+  const actionableMedium = suppliersList.filter((s) => eventLevel(s) === 'MEDIUM').length;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -913,9 +928,9 @@ export default function MorningCoffeeDashboard() {
               // Severity filters mirror the actionable counts on the card
               // above; the geopolitical filter below is what surfaces the
               // structural-floor suppliers those counts exclude.
-              if (riskFilter === 'critical') return isActionable(supplier) && supplier.risk_level === 'CRITICAL';
-              if (riskFilter === 'high') return isActionable(supplier) && supplier.risk_level === 'HIGH';
-              if (riskFilter === 'medium') return isActionable(supplier) && supplier.risk_level === 'MEDIUM';
+              if (riskFilter === 'critical') return eventLevel(supplier) === 'CRITICAL';
+              if (riskFilter === 'high') return eventLevel(supplier) === 'HIGH';
+              if (riskFilter === 'medium') return eventLevel(supplier) === 'MEDIUM';
               if (riskFilter === 'sanctions') return (supplier as any).sanctions_hit;
               if (riskFilter === 'cyber') return supplier.cyber_risk;
               if (riskFilter === 'recall') return (supplier as any).recall_risk;
@@ -927,16 +942,16 @@ export default function MorningCoffeeDashboard() {
 
             const riskBadges = (supplier: Supplier) => (
               <>
-                {supplier.risk_level === 'CRITICAL' && (
+                {eventLevel(supplier) === 'CRITICAL' && (
                   <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">Critical</span>
                 )}
-                {supplier.risk_level === 'HIGH' && (
+                {eventLevel(supplier) === 'HIGH' && (
                   <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">High</span>
                 )}
-                {supplier.risk_level === 'MEDIUM' && (
+                {eventLevel(supplier) === 'MEDIUM' && (
                   <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-semibold">Medium</span>
                 )}
-                {(supplier.risk_level === 'LOW' || !supplier.risk_level) && (
+                {(eventLevel(supplier) === 'LOW' || !eventLevel(supplier)) && (
                   <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">Low</span>
                 )}
                 {supplier.sanctions_hit && (
@@ -952,7 +967,10 @@ export default function MorningCoffeeDashboard() {
                   <span className="px-1.5 py-0.5 bg-amber-600 text-white rounded text-xs" title="News-based risk">📰</span>
                 )}
                 {supplier.geopolitical_risk && (
-                  <span className="px-1.5 py-0.5 bg-orange-600 text-white rounded text-xs" title={supplier.geopolitical_risk?.reason || 'Geopolitical risk'}>🌍</span>
+                  <span
+                    className={`px-1.5 py-0.5 rounded text-xs ${isStructuralOnly(supplier) ? 'bg-gray-200 text-gray-700' : 'bg-orange-600 text-white'}`}
+                    title={`${isStructuralOnly(supplier) ? 'Standing country exposure — not a new development' : 'Live geopolitical escalation'}: ${supplier.geopolitical_risk?.reason || ''}`}
+                  >🌍</span>
                 )}
               </>
             );
@@ -986,12 +1004,12 @@ export default function MorningCoffeeDashboard() {
                       <div className="flex items-center gap-2 flex-wrap mt-2">
                         {riskBadges(supplier)}
                       </div>
-                      {supplier.risk_level && supplier.risk_level !== 'LOW' && supplier.last_signal && (
+                      {eventLevel(supplier) !== 'LOW' && supplier.last_signal && (
                         <div className="text-xs text-gray-600 mt-1.5">{supplier.last_signal}</div>
                       )}
-                      {supplier.geopolitical_risk?.reason && !supplier.geopolitical_risk?.escalated && (
-                        <div className="text-xs text-orange-700 mt-1">
-                          🌍 Also in a flagged region: {supplier.geopolitical_risk.reason}
+                      {supplier.geopolitical_risk?.reason && isStructuralOnly(supplier) && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Standing exposure: {supplier.geopolitical_risk.reason}
                         </div>
                       )}
                       <div className="text-xs text-gray-400 mt-1.5">{supplier.location || 'Unknown'}</div>
@@ -1053,22 +1071,22 @@ export default function MorningCoffeeDashboard() {
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
                             {/* Use risk_level as primary indicator */}
-                            {supplier.risk_level === 'CRITICAL' && (
+                            {eventLevel(supplier) === 'CRITICAL' && (
                               <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">
                                 Critical
                               </span>
                             )}
-                            {supplier.risk_level === 'HIGH' && (
+                            {eventLevel(supplier) === 'HIGH' && (
                               <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">
                                 High
                               </span>
                             )}
-                            {supplier.risk_level === 'MEDIUM' && (
+                            {eventLevel(supplier) === 'MEDIUM' && (
                               <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-semibold">
                                 Medium
                               </span>
                             )}
-                            {(supplier.risk_level === 'LOW' || !supplier.risk_level) && (
+                            {(eventLevel(supplier) === 'LOW' || !eventLevel(supplier)) && (
                               <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">
                                 Low
                               </span>
@@ -1095,24 +1113,26 @@ export default function MorningCoffeeDashboard() {
                               </span>
                             )}
                             {supplier.geopolitical_risk && (
-                              <span className="px-1.5 py-0.5 bg-orange-600 text-white rounded text-xs" title={supplier.geopolitical_risk?.reason || 'Geopolitical risk'}>
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-xs ${isStructuralOnly(supplier) ? 'bg-gray-200 text-gray-700' : 'bg-orange-600 text-white'}`}
+                                title={`${isStructuralOnly(supplier) ? 'Standing country exposure — not a new development' : 'Live geopolitical escalation'}: ${supplier.geopolitical_risk?.reason || ''}`}
+                              >
                                 🌍
                               </span>
                             )}
                           </div>
                           {/* Show risk reason for non-LOW risks */}
-                          {supplier.risk_level && supplier.risk_level !== 'LOW' && supplier.last_signal && (
+                          {eventLevel(supplier) !== 'LOW' && supplier.last_signal && (
                             <div className="text-xs text-gray-600 max-w-md" title={supplier.last_signal}>
                               {supplier.last_signal}
                             </div>
                           )}
-                          {/* Show geopolitical context as extra info only when it's NOT
-                              already the reason shown above — when escalated=true, the
-                              line above already says the same thing ("🌍 Geopolitical: X"),
-                              so repeating it here was pure duplication. */}
-                          {supplier.geopolitical_risk?.reason && !supplier.geopolitical_risk?.escalated && (
-                            <div className="text-xs text-orange-700 max-w-md" title={supplier.geopolitical_risk.reason}>
-                              🌍 Also in a flagged region: {supplier.geopolitical_risk.reason}
+                          {/* Where a supplier sits, kept visually separate from what
+                              happened to it: grey, below the level, and never the
+                              thing that colours the pill. */}
+                          {supplier.geopolitical_risk?.reason && isStructuralOnly(supplier) && (
+                            <div className="text-xs text-gray-500 max-w-md" title={supplier.geopolitical_risk.reason}>
+                              Standing exposure: {supplier.geopolitical_risk.reason}
                             </div>
                           )}
                         </div>
@@ -1223,11 +1243,13 @@ export default function MorningCoffeeDashboard() {
                   there for days.
                 </p>
                 <p className="text-gray-700 leading-relaxed mt-2">
-                  One thing worth knowing: some suppliers sit in countries with long-standing, ongoing
-                  tension (for example, general trade friction between the US and China) — that&apos;s shown
-                  on the supplier&apos;s own card so you have the context, but it no longer by itself turns the
-                  whole board red. Only a real, fresh development does that. This keeps the red light meaningful
-                  instead of being on all the time for reasons that never change.
+                  One thing worth knowing: about a third of the watchlist sits in countries with
+                  long-standing tension — general trade friction between the US and China, Finland&apos;s
+                  border with Russia. That is real, but it is true every single day, so it is kept
+                  apart from the risk level. A supplier&apos;s level answers &quot;what happened to this
+                  company?&quot;; where it operates appears beside it as a grey 🌍 marker reading
+                  <em> standing exposure</em>. Both are on the page, and only the first one can turn
+                  the board amber or red — which is what keeps those colours worth reacting to.
                 </p>
               </div>
 

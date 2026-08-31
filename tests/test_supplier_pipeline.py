@@ -139,3 +139,44 @@ def test_price_hysteresis_reads_the_previous_snapshot(one_supplier, monkeypatch)
     )["suppliers"][0]
     assert already["risk_level"] == "HIGH"
     assert already["price_move_only"] is True
+
+
+def test_country_floor_does_not_raise_the_event_level(one_supplier, monkeypatch):
+    """A standing country floor is where a supplier sits, not something that
+    happened to it. Nine of twenty-four suppliers carry one, so folding it into
+    a single level left a third of the board permanently amber."""
+    harvester = one_supplier
+    stub_price(monkeypatch, harvester, [])
+    stub_geo(monkeypatch, harvester)  # no live escalation; Germany floor applies
+
+    row = harvester.process_suppliers({"recent_vulnerabilities": []})["suppliers"][0]
+
+    assert row["risk_level"] == "MEDIUM"        # floor still recorded
+    assert row["event_risk_level"] == "LOW"     # nothing actually happened
+    assert row["counts_toward_rag"] is False
+    assert row["geopolitical_risk"]["baseline_only"] is True
+
+
+def test_live_escalation_does_raise_the_event_level(one_supplier, monkeypatch):
+    harvester = one_supplier
+    stub_price(monkeypatch, harvester, [])
+    stub_geo(monkeypatch, harvester, level="HIGH", reason="Border clash reported")
+
+    row = harvester.process_suppliers({"recent_vulnerabilities": []})["suppliers"][0]
+
+    assert row["risk_level"] == "HIGH"
+    assert row["event_risk_level"] == "HIGH"
+    assert row["counts_toward_rag"] is True
+
+
+def test_a_real_signal_keeps_its_level_under_a_floor(one_supplier, monkeypatch):
+    """The floor must not mask an actual event, only fail to create one."""
+    harvester = one_supplier
+    stub_price(monkeypatch, harvester,
+               ["Infineon halts production after plant fire at Dresden site"])
+    stub_geo(monkeypatch, harvester)
+
+    row = harvester.process_suppliers({"recent_vulnerabilities": []})["suppliers"][0]
+
+    assert row["risk_level"] == "CRITICAL"
+    assert row["event_risk_level"] == "CRITICAL"

@@ -43,14 +43,30 @@ export interface MacroData {
     china: MacroRegion;
   };
   volatility_pct: number | null;
+  /** Which regions' market moves produced the pillar score, if any. */
+  rag_drivers?: string[];
   last_fetched: string;
 }
 
+// Every field here is either measured or explicitly absent. `cpi` and `rate`
+// are null where no live feed is connected for that region (China has no free
+// source that still updates) — rendered as "not connected", never as a stale
+// number dressed up as this month's reading.
 export interface MacroEconomyRegion {
-  cpi: string;
-  rate: string;
+  cpi: string | null;
+  cpi_as_of: string | null;
+  rate: string | null;
+  rate_as_of: string | null;
+  rate_label: string;
+  /** The live market this region is read from, e.g. "S&P 500", "EUR/USD". */
+  market_label: string;
+  market_change_pct: number | null;
+  /** That market's own recent daily volatility — the yardstick for "unusual". */
+  market_sigma_pct: number | null;
+  market_severity: 'quiet' | 'notable' | 'severe';
   trend: Trend;
   summary: string;
+  sources: string[];
 }
 
 export interface MacroEconomy {
@@ -85,6 +101,7 @@ export interface PeerGroupItem {
   stock_move: string;
   current_price: number | null;
   daily_change_pct: number | null;
+  daily_sigma_pct?: number | null;
   risk_level: RiskLevel;
   last_signal: string;
   news_risk?: boolean;
@@ -127,7 +144,12 @@ export interface Supplier {
   stock_risk?: boolean;
   operational_risk?: boolean;
   daily_change_pct: number | null;
+  /** The listing's own recent daily volatility, so a move can be shown as
+   *  unusual *for this stock* rather than as a bare percentage. */
+  daily_sigma_pct?: number | null;
   current_price: number | null;
+  /** True when the risk level reflects only an uncorroborated price move. */
+  price_move_only?: boolean;
   risk_analysis: string;
   risk_level: RiskLevel;
   last_signal: string;

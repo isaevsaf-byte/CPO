@@ -107,6 +107,36 @@ jobs:
             git push
           fi
 
+      # Delivery is opt-in: with no SLACK_WEBHOOK_URL / TELEGRAM_BOT_TOKEN set,
+      # both steps print what they would have sent and exit 0.
+      - name: Alert on escalation
+        if: steps.harvest.outputs.exit_code == '0' || steps.harvest.outputs.exit_code == '2'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}
+        run: python scripts/send_digest.py --mode alert
+
+      # One brief a day, on the harvest that lands in the European morning.
+      # GitHub's scheduler drifts, so this accepts a window rather than an
+      # exact hour — and the harvest cadence (00/06/12/18 UTC) puts exactly
+      # one run inside it.
+      - name: Morning brief
+        if: steps.harvest.outputs.exit_code == '0' || steps.harvest.outputs.exit_code == '2'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}
+        run: |
+          hour=$(date -u +%H)
+          if [ "$hour" -ge 5 ] && [ "$hour" -le 8 ]; then
+            python scripts/send_digest.py --mode daily
+          else
+            echo "Not the morning window (${hour}:00 UTC) — no brief this cycle."
+          fi
+
       - name: Report harvest status
         if: always()
         run: |

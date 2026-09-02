@@ -180,6 +180,22 @@ notable move is AMBER, otherwise GREEN. Official statistics (CPI, policy rate)
 come from FRED and carry the month they were observed; a region with no live
 feed that still updates shows "not connected" rather than a stale number.
 
+### Where a supplier sits is not the same as what happened to it
+
+Nine of the twenty-four suppliers are in countries carrying a standing risk
+floor (China, Finland, India, South Korea, South Africa). Folded into one
+number, that put a third of the watchlist at MEDIUM every day of the year,
+wearing the same amber pill as a supplier with a CVE published against it that
+morning. Two levels are therefore recorded per supplier:
+
+- `risk_level` — the highest level from any layer, floor included
+- `event_risk_level` — the level from what actually happened, floor excluded
+
+The dashboard shows the event level, and the country floor appears beside it as
+a grey 🌍 marker reading *standing exposure*. Counts, filters and the action
+list all key off the event level, so a headline count and the rows its filter
+reveals cannot disagree. Only the event level moves the pillar RAG score.
+
 ### Geopolitical escalations are held for 48 hours
 Google News returns only the eight most recent matches for a country, and that
 set turns over within hours — so an escalation dropped out of view long before
@@ -224,9 +240,10 @@ python scripts/send_digest.py --mode daily --dry-run
 
 ## Tests and CI
 
-`tests/` covers the scoring rules that decide what the board shows — keyword
-matching, price-move classification, macro scoring, and what does and does not
-reach the change feed. No network, no yfinance required.
+`tests/` covers the rules that decide what the board shows — keyword matching,
+price-move classification, macro scoring, the split between event and
+structural risk, and what does and does not reach the change feed or the daily
+brief. No network, no yfinance required.
 
 ```bash
 pip install -r requirements-dev.txt && pytest tests/ -q

@@ -44,6 +44,9 @@ DASHBOARD_URL = os.getenv("DASHBOARD_URL", "")
 ALERT_KINDS = {"supplier_risk", "supplier_signal", "peer_risk", "overall_rag"}
 ALERT_LEVELS = ("CRITICAL", "HIGH", "RED")
 
+MAX_MESSAGE_CHARS = 3900
+TRUNCATION_NOTE = "\n…truncated. Full picture on the board."
+
 
 def parse_time(raw: str) -> datetime:
     stamp = datetime.fromisoformat(raw)
@@ -67,15 +70,32 @@ def entries_since(snapshot: dict, hours: float) -> list:
     return kept
 
 
+# compute_changes stamps every entry of a cycle with one timestamp taken
+# moments before last_updated, so "this cycle" is a short window ending at the
+# snapshot's own clock — not at the moment this script happens to run. Anchoring
+# to wall-clock time instead would silently drop the whole alert if the workflow
+# step were delayed, which is exactly when an alert matters.
+CYCLE_WINDOW_MINUTES = 15
+
+
 def entries_this_cycle(snapshot: dict) -> list:
     """Changes stamped with the harvest that just ran."""
     latest = snapshot.get("last_updated")
     if not latest:
         return []
-    # compute_changes stamps every entry of a cycle with one timestamp taken
-    # moments before last_updated, so match on the harvest window rather than
-    # on string equality.
-    return entries_since(snapshot, hours=0.25)
+    try:
+        cutoff = parse_time(latest) - timedelta(minutes=CYCLE_WINDOW_MINUTES)
+    except ValueError:
+        return []
+
+    kept = []
+    for entry in snapshot.get("change_log", []):
+        try:
+            if parse_time(entry["at"]) >= cutoff:
+                kept.append(entry)
+        except (KeyError, ValueError):
+            continue
+    return kept
 
 
 def is_escalation(entry: dict) -> bool:
@@ -115,7 +135,13 @@ def format_message(snapshot: dict, entries: list, mode: str) -> str:
     if DASHBOARD_URL:
         lines += ["", DASHBOARD_URL]
 
-    return "\n".join(lines)
+    message = "\n".join(lines)
+    # Telegram rejects a message over 4096 characters outright, so a long
+    # backlog would fail to send rather than send short.
+    if len(message) > MAX_MESSAGE_CHARS:
+        keep = MAX_MESSAGE_CHARS - len(TRUNCATION_NOTE)
+        message = message[:keep].rstrip() + TRUNCATION_NOTE
+    return message
 
 
 def post_json(url: str, payload: dict) -> bool:

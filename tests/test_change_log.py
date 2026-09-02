@@ -41,6 +41,7 @@ def previous_state(suppliers, **overrides):
         "peer_group": [],
         "macro_economy": {},
         "overall_rag": {"score": "GREEN", "pillar_scores": {}},
+        "change_log": [],
     }
     state.update(overrides)
     return state
@@ -48,7 +49,7 @@ def previous_state(suppliers, **overrides):
 
 def changes(harvester, before, after, **kwargs):
     return harvester.compute_changes(
-        previous_state(before),
+        previous_state(before, change_log=kwargs.get("previous_log", [])),
         {"suppliers": after},
         kwargs.get("peer_group", []),
         kwargs.get("macro_economy", {}),
@@ -78,6 +79,34 @@ def test_price_driven_move_is_not_reported_as_a_risk_change(harvester):
     # And it says what actually happened, with a yardstick.
     assert "-3.1%" in result[0]["headline"]
     assert "normal daily range" in result[0]["headline"]
+
+
+def test_a_price_rise_is_not_reported_as_a_change(harvester):
+    """A supplier's share price going up is not a supply risk, and "ITC +4.3%"
+    in a feed headed "what changed" is noise wearing a signal's clothes."""
+    before = [supplier(risk_level="LOW")]
+    after = [supplier(risk_level="MEDIUM", price_move_only=True,
+                      daily_change_pct=4.3, daily_sigma_pct=1.1)]
+    assert changes(harvester, before, after) == []
+
+
+def test_one_price_entry_per_supplier_per_day(harvester):
+    """ITC printed three entries in twenty-four hours on the live board —
+    the same stock breathing, reported as three separate events."""
+    from datetime import datetime, timedelta, timezone
+    recent = (datetime.now(timezone.utc) - timedelta(hours=6)).isoformat()
+    previous_log = [{"at": recent, "kind": "price_move", "entity": "Texas Instruments",
+                     "headline": "Texas Instruments -4.0%, no corroborating signal"}]
+
+    before = [supplier(risk_level="MEDIUM", price_move_only=True)]
+    after = [supplier(risk_level="MEDIUM", price_move_only=True,
+                      daily_change_pct=-4.1, daily_sigma_pct=1.1)]
+
+    assert changes(harvester, before, after, previous_log=previous_log) == []
+    # ...and the same move does produce an entry once the window has passed.
+    old = (datetime.now(timezone.utc) - timedelta(hours=30)).isoformat()
+    stale_log = [dict(previous_log[0], at=old)]
+    assert len(changes(harvester, before, after, previous_log=stale_log)) == 1
 
 
 def test_price_driven_recovery_is_silent(harvester):

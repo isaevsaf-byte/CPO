@@ -3137,6 +3137,33 @@ def _rag_direction(before: str, after: str) -> str:
     return "up" if order.get(after, 0) > order.get(before, 0) else "down"
 
 
+# A supplier whose price already produced an entry inside this window does not
+# produce another. ITC printed three in twenty-four hours on the live board
+# (-4.0%, +4.3%, -4.0%) — the same stock breathing, reported as three events.
+PRICE_MOVE_QUIET_HOURS = 24
+
+
+def _recent_price_move_entities(previous_log: list, now: datetime) -> set:
+    """Suppliers already reported for a price move inside the quiet window."""
+    cutoff = now - timedelta(hours=PRICE_MOVE_QUIET_HOURS)
+    seen = set()
+    for entry in previous_log or []:
+        if entry.get("kind") != "price_move":
+            continue
+        raw = entry.get("at")
+        if not raw:
+            continue
+        try:
+            stamp = datetime.fromisoformat(raw)
+        except ValueError:
+            continue
+        if stamp.tzinfo is None:
+            stamp = stamp.replace(tzinfo=timezone.utc)
+        if stamp >= cutoff and entry.get("entity"):
+            seen.add(entry["entity"])
+    return seen
+
+
 def compute_changes(previous_state: dict | None, suppliers_data: dict,
                     peer_group: list, macro_economy: dict,
                     pillar_rag_scores: dict, overall_rag: dict,
@@ -3162,6 +3189,31 @@ def compute_changes(previous_state: dict | None, suppliers_data: dict,
             "detail": detail,
             "href": href,
         })
+
+    recently_reported = _recent_price_move_entities(
+        previous_state.get("change_log"), datetime.now(timezone.utc)
+    )
+
+    def report_price_move(supplier, name, href):
+        """One entry per unexplained fall, at most one per supplier per day.
+
+        Two rules learned from the live feed. Only falls: a supplier's share
+        price rising is not a supply risk, and "ITC +4.3%" in a feed headed
+        "what changed" is noise wearing the clothes of a signal. And once a
+        day: ITC printed three entries in twenty-four hours (-4.0%, +4.3%,
+        -4.0%) — the same stock breathing, reported as three events.
+        """
+        move = supplier.get("daily_change_pct")
+        if not isinstance(move, (int, float)) or move >= 0:
+            return
+        if name in recently_reported:
+            return
+        recently_reported.add(name)
+        sigma = supplier.get("daily_sigma_pct")
+        yardstick = f" ({abs(move) / sigma:.1f}× its normal daily range)" if sigma else ""
+        add("price_move", "info", name,
+            f"{name} {move:+.1f}%{yardstick}, no corroborating signal",
+            f"BAT exposure: {supplier.get('bat_exposure')}. Cause unconfirmed.", href)
 
     # --- Overall and per-pillar RAG -------------------------------------
     prev_overall = (previous_state.get("overall_rag") or {}).get("score")
@@ -3218,13 +3270,8 @@ def compute_changes(previous_state: dict | None, suppliers_data: dict,
         ) and not (appeared or cleared)
 
         if price_driven:
-            move = supplier.get("daily_change_pct")
-            if supplier.get("price_move_only") and isinstance(move, (int, float)):
-                sigma = supplier.get("daily_sigma_pct")
-                yardstick = f" ({abs(move) / sigma:.1f}× its normal daily range)" if sigma else ""
-                add("price_move", "info", name,
-                    f"{name} {move:+.1f}%{yardstick}, no corroborating signal",
-                    f"BAT exposure: {supplier.get('bat_exposure')}. Cause unconfirmed.", href)
+            if supplier.get("price_move_only"):
+                report_price_move(supplier, name, href)
         elif old_level and new_level and old_level != new_level:
             direction = "up" if RISK_PRIORITY.get(new_level, 0) > RISK_PRIORITY.get(old_level, 0) else "down"
             detail = supplier.get("last_signal", "")
@@ -3244,17 +3291,15 @@ def compute_changes(previous_state: dict | None, suppliers_data: dict,
                 add("supplier_signal", "down", name,
                     f"{name}: {', '.join(cleared)} cleared", "", href)
         else:
-            # No risk change at all — report only an outsized, unexplained
-            # price move on a supplier that matters to BAT.
+            # No risk change at all — report only an outsized, unexplained fall
+            # on a supplier that matters here.
             move = supplier.get("daily_change_pct")
             if (
                 isinstance(move, (int, float))
-                and abs(move) >= PRICE_MOVE_REPORT_PCT
+                and move <= -PRICE_MOVE_REPORT_PCT
                 and supplier.get("bat_exposure") in ("Critical", "High")
             ):
-                add("price_move", "info", name,
-                    f"{name} {move:+.1f}% with no corroborating signal",
-                    f"BAT exposure: {supplier.get('bat_exposure')}. Cause unconfirmed.", href)
+                report_price_move(supplier, name, href)
 
     for name in prev_suppliers:
         if not any(s.get("name") == name for s in suppliers_data.get("suppliers", [])):

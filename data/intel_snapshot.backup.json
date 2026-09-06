@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-05T14:10:16.534816+00:00",
-  "version": "e022ed5c8e1a",
+  "last_updated": "2026-09-05T19:40:53.605275+00:00",
+  "version": "a4de88d6cdc7",
   "status": "healthy",
   "overall_rag": {
     "score": "GREEN",
@@ -16,18 +16,11 @@
     }
   },
   "executive_summary": {
-    "headline": "Volatile Asian supplier stocks (ITC, Smoore) are moving sharply without confirmed news, but macro and peer stabilization have brought overall status back to GREEN.",
-    "next_step": "Within 48 hours, confirm whether ITC's repeated 4% swings and Smoore's 5.5% drop reflect real supply/demand shifts or are noise; escalate if either correlates with production delays or order cancellations.",
-    "context": "ITC (high BAT exposure) has swung \u00b14% three times in the past week with no linked news; Smoore collapsed 5.5% in a single move. Both moves are unconfirmed and outside normal daily ranges. Meanwhile, EU stabilized, Imperial Brands' restructuring signals industry capacity adjustment rather than systematic disruption, and the suppliers pillar itself moved from RED back to GREEN \u2014 suggesting these price moves may be single-entity volatility rather than systemic stress, but the pattern and size warrant verification before they're dismissed."
+    "headline": "Multiple high-exposure suppliers posted unexplained stock moves over seven days; ITC and Smoore showed extreme volatility with no confirmed cause, now stabilized to GREEN but warrant monitoring.",
+    "next_step": "Pull a 30-minute call with operations and finance to map ITC and Smoore exposure by SKU and customer, and establish a trigger for escalation if either stock moves >3% again without news within the next two weeks.",
+    "context": "ITC (high BAT exposure) swung -4.0%, +4.3%, and -4.0% intra-week\u2014each move 3.7\u00d7 normal daily range\u2014while Smoore (critical BAT exposure) crashed -5.5%, all without corroborating signals or confirmed drivers. Texas Instruments and Jabil also drifted down ~3% unconfirmed. The cycle has now settled to GREEN across all pillars, but the pattern of large, unexplained moves in key suppliers over seven days suggests either coordinated sector stress worth investigating or isolated margin/liquidity pressure not yet visible in macro data."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-15T12:14:30.153948",
-      "macro": "GREEN",
-      "peers": "AMBER",
-      "suppliers": "GREEN",
-      "overall": "AMBER"
-    },
     {
       "timestamp": "2026-08-15T18:11:49.732358",
       "macro": "GREEN",
@@ -580,6 +573,13 @@
       "peers": "GREEN",
       "suppliers": "GREEN",
       "overall": "GREEN"
+    },
+    {
+      "timestamp": "2026-09-05T19:40:45.564363+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "GREEN",
+      "overall": "GREEN"
     }
   ],
   "change_log": [
@@ -931,7 +931,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-05T14:05:59.906742+00:00"
+        "last_fetched": "2026-09-05T19:38:36.894104+00:00"
       },
       "eu": {
         "status": "success",
@@ -942,7 +942,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1622",
-        "last_fetched": "2026-09-05T14:06:00.649202+00:00"
+        "last_fetched": "2026-09-05T19:38:37.761939+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -953,11 +953,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-05T14:06:00.650015+00:00"
+        "last_fetched": "2026-09-05T19:38:37.762640+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-05T14:06:00.650031+00:00"
+    "last_fetched": "2026-09-05T19:38:37.762656+00:00"
   },
   "peers": {
     "status": "success",
@@ -965,7 +965,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-05T14:06:03.347152+00:00"
+    "last_fetched": "2026-09-05T19:38:40.042460+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -1073,9 +1073,9 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
-            "Finland runs Europe\u2019s biggest civil defense exercise since the end of World War II - apnews.com",
-            "Finland hosts largest civil defence exercise in Europe since Cold War - European Interest",
-            "Finland ran Europe's largest civil defense drill since World War II inside a shelter carved under a sports arena - Euromaidan Press"
+            "Finland runs Europe\u2019s biggest civil defense exercise since the end of World War II - AP News",
+            "Ilmari Juutilainen: Finland\u2019s 94-Victory Ace Who Was Never Shot Down - MiGFlug",
+            "Finland hosts largest civil defence exercise in Europe since Cold War - European Interest"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1117,7 +1117,7 @@
           "headlines": [
             "China Isn\u2019t Scared of Trump\u2019s Squeeze on Iran - The Washington Institute",
             "China\u2019s support for Iran shows its limits as US ramps up pressure on Tehran - Al Jazeera",
-            "War on Earth could spill over to the moon, Chinese space scientists warn - South China Morning Post"
+            "Ukraine War Breaking Beyond Its Borders - China-US Focus"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1292,9 +1292,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "Korean War veteran, 95, receives letters of thanks from South Korean students through teen friendship in Omaha - 3newsnow.com",
             "South Korea mulls \u2018contributions\u2019 in Strait of Hormuz - Al Jazeera",
-            "U.S. 'Economic Outcast\u2019 operation gains momentum as EU joins sanctions; South Korea weighs military backing - cnbc.com"
+            "Donald Trump\u2019s Korea Diplomacy Is a Distraction Exercise - Jacobin",
+            "Korean War veteran, 95, receives letters of thanks from South Korean students through teen friendship in Omaha - KMTV 3 News Now"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1459,7 +1459,7 @@
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
             "Why Putin\u2019s Friends Are Now Confronting Him Over the War - WSJ",
-            "India news: Jaishankar offers help to end war in Ukraine - DW.com",
+            "India news: Jaishankar offers help to end war in Ukraine - dw.com",
             "India has a seat at both tables; can it help end the Ukraine war? - Firstpost"
           ],
           "escalated": true,
@@ -1502,7 +1502,7 @@
           "headlines": [
             "China Isn\u2019t Scared of Trump\u2019s Squeeze on Iran - The Washington Institute",
             "China\u2019s support for Iran shows its limits as US ramps up pressure on Tehran - Al Jazeera",
-            "War on Earth could spill over to the moon, Chinese space scientists warn - South China Morning Post"
+            "Ukraine War Breaking Beyond Its Borders - China-US Focus"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1575,7 +1575,7 @@
           "headlines": [
             "China Isn\u2019t Scared of Trump\u2019s Squeeze on Iran - The Washington Institute",
             "China\u2019s support for Iran shows its limits as US ramps up pressure on Tehran - Al Jazeera",
-            "War on Earth could spill over to the moon, Chinese space scientists warn - South China Morning Post"
+            "Ukraine War Breaking Beyond Its Borders - China-US Focus"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1617,7 +1617,7 @@
           "headlines": [
             "China Isn\u2019t Scared of Trump\u2019s Squeeze on Iran - The Washington Institute",
             "China\u2019s support for Iran shows its limits as US ramps up pressure on Tehran - Al Jazeera",
-            "War on Earth could spill over to the moon, Chinese space scientists warn - South China Morning Post"
+            "Ukraine War Breaking Beyond Its Borders - China-US Focus"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1659,7 +1659,7 @@
           "headlines": [
             "China Isn\u2019t Scared of Trump\u2019s Squeeze on Iran - The Washington Institute",
             "China\u2019s support for Iran shows its limits as US ramps up pressure on Tehran - Al Jazeera",
-            "War on Earth could spill over to the moon, Chinese space scientists warn - South China Morning Post"
+            "Ukraine War Breaking Beyond Its Borders - China-US Focus"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1829,7 +1829,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-05T14:07:08.173211+00:00"
+    "last_fetched": "2026-09-05T19:39:44.311164+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1873,11 +1873,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": -0.12,
-      "market_sigma_pct": 0.08,
+      "market_change_pct": -0.26,
+      "market_sigma_pct": 0.09,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY -0.12% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY -0.26% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -2258,9 +2258,9 @@
   },
   "geopolitical_attempts": {
     "Austria": {
-      "last_attempt": "2026-09-05T14:08:18.994356+00:00",
-      "last_status": "ok",
-      "consecutive_failures": 0,
+      "last_attempt": "2026-09-05T19:40:45.564177+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 1,
       "last_success": "2026-09-05T14:08:18.993520+00:00"
     },
     "China": {
@@ -2282,10 +2282,10 @@
       "last_success": "2026-09-03T10:17:02.770674+00:00"
     },
     "India": {
-      "last_attempt": "2026-09-05T14:07:52.237420+00:00",
+      "last_attempt": "2026-09-05T19:40:27.586469+00:00",
       "last_status": "http_429",
       "last_success": "2026-09-05T01:44:11.502148+00:00",
-      "consecutive_failures": 2
+      "consecutive_failures": 3
     },
     "Japan": {
       "last_attempt": "2026-09-05T14:08:37.312230+00:00",
@@ -2318,9 +2318,9 @@
       "last_success": "2026-09-05T14:08:59.320790+00:00"
     },
     "USA": {
-      "last_attempt": "2026-09-05T14:07:36.116776+00:00",
+      "last_attempt": "2026-09-05T19:40:09.808370+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 2,
+      "consecutive_failures": 3,
       "last_success": "2026-09-05T01:43:18.606854+00:00"
     }
   },
@@ -2330,7 +2330,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 263.460063
+    "duration_seconds": 142.64222
   },
   "health": {
     "pillars": {

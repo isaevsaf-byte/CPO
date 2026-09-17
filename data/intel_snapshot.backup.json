@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-16T20:34:35.468529+00:00",
-  "version": "18b01defa81f",
+  "last_updated": "2026-09-17T02:07:20.904416+00:00",
+  "version": "5e2732c43aa6",
   "status": "healthy",
   "overall_rag": {
     "score": "GREEN",
@@ -16,18 +16,11 @@
     }
   },
   "executive_summary": {
-    "headline": "Supply chain is back to baseline after a week of volatility; Infineon's unexplained 7.7% drop remains unresolved but has not triggered further deterioration.",
-    "next_step": "Verify Infineon's 7.7% decline by Friday\u2014check whether it reflects any operational, financial, or customer-demand signal that might affect BAT exposure, or whether it was a one-off market move.",
-    "context": "The supplier pillar flipped GREEN\u2194AMBER three times over the past seven days before settling GREEN. Infineon's sharp, uncorrelated price move (2.1\u00d7 normal daily volatility) with no corroborating news is the only concrete signal; it carries high BAT exposure but its cause remains unconfirmed. Macro and peer pillars show no distress, suggesting the earlier volatility has cleared."
+    "headline": "Supply chain settled after week of volatility; Infineon's unexplained 7.7% drop warrants monitoring despite current GREEN status.",
+    "next_step": "Check Infineon earnings calendar and recent analyst notes within 48 hours to rule out company-specific news; if none, flag for next cycle observation to confirm stability.",
+    "context": "Infineon swung sharply mid-week with no visible corroborating signal and high BAT exposure, triggering a temporary AMBER spike in the suppliers pillar. The move has since reversed and all pillars (macro, peers, suppliers) are back GREEN. The absence of confirmed news behind the price move makes it worth watching as a potential leading indicator rather than an immediate operational threat."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-26T19:31:27.802773+00:00",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "GREEN",
-      "overall": "GREEN"
-    },
     {
       "timestamp": "2026-08-27T05:28:50.508498+00:00",
       "macro": "GREEN",
@@ -580,6 +573,13 @@
       "peers": "GREEN",
       "suppliers": "GREEN",
       "overall": "GREEN"
+    },
+    {
+      "timestamp": "2026-09-17T02:07:17.083709+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "GREEN",
+      "overall": "GREEN"
     }
   ],
   "change_log": [
@@ -1003,7 +1003,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-16T20:32:22.775257+00:00"
+        "last_fetched": "2026-09-17T02:04:58.988505+00:00"
       },
       "eu": {
         "status": "success",
@@ -1014,7 +1014,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1537",
-        "last_fetched": "2026-09-16T20:32:23.750232+00:00"
+        "last_fetched": "2026-09-17T02:04:59.949688+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -1025,11 +1025,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-16T20:32:23.751035+00:00"
+        "last_fetched": "2026-09-17T02:04:59.950498+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-16T20:32:23.751049+00:00"
+    "last_fetched": "2026-09-17T02:04:59.950512+00:00"
   },
   "peers": {
     "status": "success",
@@ -1037,7 +1037,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-16T20:32:25.597843+00:00"
+    "last_fetched": "2026-09-17T02:05:07.770682+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -1069,13 +1069,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.15,
-        "daily_sigma_pct": 1.83,
-        "current_price": 41.97,
+        "daily_change_pct": 0.5,
+        "daily_sigma_pct": 1.84,
+        "current_price": 42.46,
         "risk_analysis": "No supply chain risks identified. AMCOR (Printed Packaging) operating normally. BAT exposure: Critical.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.2%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.5%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1131,9 +1131,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.06,
-        "daily_sigma_pct": 1.76,
-        "current_price": 10.47,
+        "daily_change_pct": 2.17,
+        "daily_sigma_pct": 1.77,
+        "current_price": 10.35,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1146,7 +1146,7 @@
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
             "Art Notes: New novel follows Cold War romance between NH man and Finnish woman - Valley News",
-            "Finland Expands Military Support to Ukraine With New \u20ac290 Million Assistance - UNITED24 Media",
+            "Finland Expands Military Support to Ukraine With New \u20ac290 Million Assistance - united24media.com",
             "Archbishop Elia of Finland visits Lithuania, discusses war in Ukraine and Russian influence - Orthodox Times"
           ],
           "escalated": true,
@@ -1187,7 +1187,7 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | China and the U.S. aren\u2019t in a cold war - The Washington Post",
+            "Opinion | Conventional wisdom about the U.S. and China is no longer accurate - The Washington Post",
             "Strategic Stability and the Rebuilding of Xi\u2019s Military - War on the Rocks",
             "China would face a \u201chellscape\u201d in a war over Taiwan - The Economist"
           ],
@@ -1215,9 +1215,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 3.45,
-        "daily_sigma_pct": 4.07,
-        "current_price": 1350.0,
+        "daily_change_pct": 1.95,
+        "daily_sigma_pct": 4.09,
+        "current_price": 1305.0,
         "risk_analysis": "Geopolitical risk in South Africa: Economic instability, infrastructure challenges, energy crisis. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1229,7 +1229,7 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "Trump administration hits South Africa with new sanctions over alleged discrimination against whites - citizensvoice.com",
+            "Trump administration sanctions South Africa over anti-white bias claims - spectrumlocalnews.com",
             "U.S. and China soften trade war as Trump and Xi discuss tariff cuts on 2 crucial sectors, while Africa takes a different path - Business Insider Africa",
             "South Africa: Xenophobia and the Street War Against Black Immigrants - \u793e\u6703\u4e3b\u7fa9\u884c\u52d5"
           ],
@@ -1364,9 +1364,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "How this teen honored a Korean War veteran with letters from South Korea - KSNB",
-            "Trump should meet Kim Jong Un and make a deal to end the Korean War - The Hill",
-            "Trump Scales Back U.S.-South Korean Military Exercises - Arms Control Association"
+            "How this teen honored a Korean War veteran with letters from South Korea - WHSV",
+            "Trump Scales Back U.S.-South Korean Military Exercises - Arms Control Association",
+            "Iran war is draining US military resources from Pacific and Asia - The Christian Science Monitor"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1516,9 +1516,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.71,
-        "daily_sigma_pct": 1.11,
-        "current_price": 258.0,
+        "daily_change_pct": 2.38,
+        "daily_sigma_pct": 1.15,
+        "current_price": 264.15,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1530,9 +1530,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "Only China, India, and Russia Can End the Iran War - Quincy Institute for Responsible Statecraft",
-            "What are China and India seeking from Russia in the context of the war? - Tomorrow's Affairs",
-            "$38 billion and counting: Trump\u2019s Iran war becomes a US election issue as India watches Hormuz - Open Magazine"
+            "Only China, India, and Russia Can End the Iran War - quincyinst.org",
+            "India could face up to 100% US tariffs over Russian oil - DW.com",
+            "What are China and India seeking from Russia in the context of the war? - Tomorrow's Affairs"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1572,7 +1572,7 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | China and the U.S. aren\u2019t in a cold war - The Washington Post",
+            "Opinion | Conventional wisdom about the U.S. and China is no longer accurate - The Washington Post",
             "Strategic Stability and the Rebuilding of Xi\u2019s Military - War on the Rocks",
             "China would face a \u201chellscape\u201d in a war over Taiwan - The Economist"
           ],
@@ -1645,7 +1645,7 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | China and the U.S. aren\u2019t in a cold war - The Washington Post",
+            "Opinion | Conventional wisdom about the U.S. and China is no longer accurate - The Washington Post",
             "Strategic Stability and the Rebuilding of Xi\u2019s Military - War on the Rocks",
             "China would face a \u201chellscape\u201d in a war over Taiwan - The Economist"
           ],
@@ -1673,9 +1673,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.48,
-        "daily_sigma_pct": 3.22,
-        "current_price": 9.31,
+        "daily_change_pct": -0.16,
+        "daily_sigma_pct": 3.13,
+        "current_price": 9.3,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1687,7 +1687,7 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | China and the U.S. aren\u2019t in a cold war - The Washington Post",
+            "Opinion | Conventional wisdom about the U.S. and China is no longer accurate - The Washington Post",
             "Strategic Stability and the Rebuilding of Xi\u2019s Military - War on the Rocks",
             "China would face a \u201chellscape\u201d in a war over Taiwan - The Economist"
           ],
@@ -1715,9 +1715,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.62,
+        "daily_change_pct": -0.47,
         "daily_sigma_pct": 2.36,
-        "current_price": 48.43,
+        "current_price": 48.2,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1729,7 +1729,7 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | China and the U.S. aren\u2019t in a cold war - The Washington Post",
+            "Opinion | Conventional wisdom about the U.S. and China is no longer accurate - The Washington Post",
             "Strategic Stability and the Rebuilding of Xi\u2019s Military - War on the Rocks",
             "China would face a \u201chellscape\u201d in a war over Taiwan - The Economist"
           ],
@@ -1788,13 +1788,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.23,
-        "daily_sigma_pct": 3.7,
-        "current_price": 55.0,
+        "daily_change_pct": 0.54,
+        "daily_sigma_pct": 3.72,
+        "current_price": 54.33,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.2%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.5%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1901,7 +1901,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-16T20:33:30.028211+00:00"
+    "last_fetched": "2026-09-17T02:06:13.359571+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1928,11 +1928,11 @@
       "rate_as_of": "Sep 2026",
       "rate_label": "ECB deposit facility rate",
       "market_label": "EUR/USD",
-      "market_change_pct": -0.7,
+      "market_change_pct": -0.64,
       "market_sigma_pct": 0.3,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "EUR/USD -0.70% today, inside its normal daily range of \u00b10.3%. CPI 2.9% YoY (Jul 2026) ECB deposit facility rate 2.50% (Sep 2026).",
+      "summary": "EUR/USD -0.64% today, inside its normal daily range of \u00b10.3%. CPI 2.9% YoY (Jul 2026) ECB deposit facility rate 2.50% (Sep 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -1945,11 +1945,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": -0.15,
+      "market_change_pct": -0.01,
       "market_sigma_pct": 0.08,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY -0.15% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY -0.01% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -1997,13 +1997,13 @@
       "ticker": "IMB.L",
       "region": "UK",
       "sentiment": "Negative",
-      "latest_headline": "Imperial Brands cutting thousands of jobs in U.S. and Europe",
-      "stock_move": "-1.03%",
-      "current_price": 2490.0,
-      "daily_change_pct": -1.03,
+      "latest_headline": "Imperial Brands (LSE:IMB) Stock Sees Modest Fair Value Cut As Analysts Debate Upside",
+      "stock_move": "-1.45%",
+      "current_price": 2516.0,
+      "daily_change_pct": -1.45,
       "daily_sigma_pct": 1.4,
       "risk_level": "LOW",
-      "last_signal": "\ud83d\udcf0 Imperial Brands cutting thousands of jobs in U.S. and Europe",
+      "last_signal": "\ud83d\udcf0 Imperial Brands (LSE:IMB) Stock Sees Modest Fair Value Cut As Analysts Debate Upside",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -2014,11 +2014,11 @@
       "name": "Japan Tobacco",
       "ticker": "2914.T",
       "region": "Japan",
-      "sentiment": "Neutral",
+      "sentiment": "Positive",
       "latest_headline": "Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
-      "stock_move": "-0.10%",
-      "current_price": 6773.0,
-      "daily_change_pct": -0.1,
+      "stock_move": "+1.42%",
+      "current_price": 6869.0,
+      "daily_change_pct": 1.42,
       "daily_sigma_pct": 1.51,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
@@ -2262,15 +2262,15 @@
       "last_success": "2026-09-10T15:23:16.775091+00:00"
     },
     "Finland": {
-      "last_attempt": "2026-09-16T20:34:13.945607+00:00",
+      "last_attempt": "2026-09-17T02:07:17.083611+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 3,
+      "consecutive_failures": 4,
       "last_success": "2026-09-16T02:04:13.459447+00:00"
     },
     "Germany": {
-      "last_attempt": "2026-09-16T10:25:13.886487+00:00",
+      "last_attempt": "2026-09-17T02:06:41.515445+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 3,
+      "consecutive_failures": 4,
       "last_success": "2026-09-15T15:50:24.022185+00:00"
     },
     "India": {
@@ -2298,10 +2298,10 @@
       "last_success": "2026-09-01T15:42:05.141889+00:00"
     },
     "Sweden": {
-      "last_attempt": "2026-09-16T20:33:56.044269+00:00",
+      "last_attempt": "2026-09-17T02:07:00.017953+00:00",
       "last_status": "http_429",
       "last_success": "2026-09-16T02:03:20.933520+00:00",
-      "consecutive_failures": 3
+      "consecutive_failures": 4
     },
     "Switzerland": {
       "last_attempt": "2026-09-15T15:50:41.888776+00:00",
@@ -2322,7 +2322,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 137.862525
+    "duration_seconds": 147.128902
   },
   "health": {
     "pillars": {

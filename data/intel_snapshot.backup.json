@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-17T15:49:00.781062+00:00",
-  "version": "bbac8c2e04a4",
+  "last_updated": "2026-09-17T20:41:43.949896+00:00",
+  "version": "5bfa113f3642",
   "status": "healthy",
   "overall_rag": {
     "score": "GREEN",
@@ -16,18 +16,11 @@
     }
   },
   "executive_summary": {
-    "headline": "Supply chain stabilized after brief Infineon volatility; all pillars now GREEN with no changes this cycle.",
-    "next_step": "Monitor Infineon stock for repeated moves >2\u00d7 normal range or corroborating news; if pattern continues, request clarification from supplier on operational/financial drivers.",
-    "context": "Infineon declined 7.7% over the past week with no confirmed cause despite high BAT exposure, but this isolated price move did not persist or cascade into wider supplier signals. All macro and peer indicators remain stable; the oscillation between AMBER and GREEN over the past seven days has fully resolved."
+    "headline": "Infineon's sharp unconfirmed stock drop (7.7%, 2.1\u00d7 normal volatility) on high BAT exposure warrants urgent clarification despite all pillars now reading GREEN.",
+    "next_step": "Within 24 hours, contact Infineon IR and BAT supply chain leads to confirm whether the price move reflects actual disruption, demand shock, or trading noise; escalate if root cause is confirmed.",
+    "context": "Infineon has moved three times in the past seven days with the suppliers pillar cycling AMBER twice, each time paired with the same unexplained -7.7% price move but no corroborating news or disclosed event. The pattern suggests either a single unresolved signal being re-surfaced or repeated volatility in a supplier carrying material exposure to your BAT customer base."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-28T01:53:13.662287+00:00",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "GREEN",
-      "overall": "GREEN"
-    },
     {
       "timestamp": "2026-08-28T17:50:47.928340+00:00",
       "macro": "AMBER",
@@ -580,36 +573,16 @@
       "peers": "GREEN",
       "suppliers": "GREEN",
       "overall": "GREEN"
+    },
+    {
+      "timestamp": "2026-09-17T20:41:39.698519+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "GREEN",
+      "overall": "GREEN"
     }
   ],
   "change_log": [
-    {
-      "at": "2026-08-27T17:00:51.171138+00:00",
-      "kind": "overall_rag",
-      "direction": "down",
-      "entity": "Overall status",
-      "headline": "Overall status AMBER \u2192 GREEN",
-      "detail": "Driven by: macro, peers, suppliers",
-      "href": null
-    },
-    {
-      "at": "2026-08-27T17:00:51.171138+00:00",
-      "kind": "pillar_rag",
-      "direction": "down",
-      "entity": "Suppliers",
-      "headline": "Suppliers pillar AMBER \u2192 GREEN",
-      "detail": "",
-      "href": null
-    },
-    {
-      "at": "2026-08-27T17:00:51.171138+00:00",
-      "kind": "macro_trend",
-      "direction": "down",
-      "entity": "US",
-      "headline": "US outlook Stable \u2192 Growing",
-      "detail": "",
-      "href": "/macro/us"
-    },
     {
       "at": "2026-08-28T17:50:47.928346+00:00",
       "kind": "overall_rag",
@@ -985,7 +958,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-17T15:46:17.185219+00:00"
+        "last_fetched": "2026-09-17T20:39:27.348714+00:00"
       },
       "eu": {
         "status": "success",
@@ -996,7 +969,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1481",
-        "last_fetched": "2026-09-17T15:46:17.976646+00:00"
+        "last_fetched": "2026-09-17T20:39:27.821248+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -1007,11 +980,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-17T15:46:17.977429+00:00"
+        "last_fetched": "2026-09-17T20:39:27.822101+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-17T15:46:17.977444+00:00"
+    "last_fetched": "2026-09-17T20:39:27.822117+00:00"
   },
   "peers": {
     "status": "success",
@@ -1019,7 +992,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-17T15:46:33.941075+00:00"
+    "last_fetched": "2026-09-17T20:39:34.591430+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -1051,13 +1024,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.88,
-        "daily_sigma_pct": 1.82,
-        "current_price": 42.34,
+        "daily_change_pct": 0.98,
+        "daily_sigma_pct": 1.83,
+        "current_price": 42.38,
         "risk_analysis": "No supply chain risks identified. AMCOR (Printed Packaging) operating normally. BAT exposure: Critical.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +0.9%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.0%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1082,13 +1055,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 2.23,
-        "daily_sigma_pct": 2.64,
-        "current_price": 9.88,
+        "daily_change_pct": 1.86,
+        "daily_sigma_pct": 2.66,
+        "current_price": 9.84,
         "risk_analysis": "No supply chain risks identified. GPI (Printed Packaging) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +2.2%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.9%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1127,9 +1100,9 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
-            "Finland Expands Military Support to Ukraine With New \u20ac290 Million Assistance - UNITED24 Media",
             "Art Notes: New novel follows Cold War romance between NH man and Finnish woman - Valley News",
-            "Archbishop Elia of Finland visits Lithuania, discusses war in Ukraine and Russian influence - orthodoxtimes.com"
+            "Finland Expands Military Support to Ukraine With New \u20ac290 Million Assistance - UNITED24 Media",
+            "Visiting Pechenga, war propagandist Yevgeny Poddubny praises the naval infantry - The Barents Observer"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1169,9 +1142,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "EXCLUSIVE: China presses Iran to help rein in Houthis after Saudi appeal, sources say - Reuters",
-            "China would face a \u201chellscape\u201d in a war over Taiwan - The Economist",
-            "Opinion | Conventional wisdom about the U.S. and China is no longer accurate - The Washington Post"
+            "EXCLUSIVE: China presses Iran to help rein in Houthis after Saudi appeal, sources say - reuters.com",
+            "China Stockpiled Oil, and Now It Could Dominate the Energy Landscape - The New York Times",
+            "Strategic Stability and the Rebuilding of Xi\u2019s Military - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1213,7 +1186,7 @@
           "headlines": [
             "Atlas Cheetah: The Fighter South Africa Built Because Nobody Would Sell It One - MiGFlug",
             "Trump administration sanctions South Africa over anti-white bias claims - spectrumlocalnews.com",
-            "Trump administration hits South Africa with new sanctions over alleged discrimination against whites - Colorado Politics"
+            "U.S. and China soften trade war as Trump and Xi discuss tariff cuts on 2 crucial sectors, while Africa takes a different path - Business Insider Africa"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1270,13 +1243,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.67,
-        "daily_sigma_pct": 1.76,
-        "current_price": 66.16,
+        "daily_change_pct": 1.8,
+        "daily_sigma_pct": 1.77,
+        "current_price": 66.24,
         "risk_analysis": "No supply chain risks identified. Eastman (Filter Materials) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.7%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.8%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1405,13 +1378,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.42,
-        "daily_sigma_pct": 3.84,
-        "current_price": 12.09,
+        "daily_change_pct": 0.83,
+        "daily_sigma_pct": 3.87,
+        "current_price": 12.14,
         "risk_analysis": "No supply chain risks identified. SWM (Mativ) (Fine Papers) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +0.4%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.8%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1498,9 +1471,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.78,
+        "daily_change_pct": 2.38,
         "daily_sigma_pct": 1.16,
-        "current_price": 266.2,
+        "current_price": 264.15,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1514,7 +1487,7 @@
           "headlines": [
             "India-Pakistan navy ship collision sparks alarm over unintended escalation - Al Jazeera",
             "India faces 100% tariff threat over Russian oil after US House vote - BBC",
-            "India could face up to 100% US tariffs over Russian oil - DW.com"
+            "The Iran war is driving clean energy development. It's not enough to help the planet, yet - WKMG"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1554,9 +1527,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "EXCLUSIVE: China presses Iran to help rein in Houthis after Saudi appeal, sources say - Reuters",
-            "China would face a \u201chellscape\u201d in a war over Taiwan - The Economist",
-            "Opinion | Conventional wisdom about the U.S. and China is no longer accurate - The Washington Post"
+            "EXCLUSIVE: China presses Iran to help rein in Houthis after Saudi appeal, sources say - reuters.com",
+            "China Stockpiled Oil, and Now It Could Dominate the Energy Landscape - The New York Times",
+            "Strategic Stability and the Rebuilding of Xi\u2019s Military - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1627,9 +1600,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "EXCLUSIVE: China presses Iran to help rein in Houthis after Saudi appeal, sources say - Reuters",
-            "China would face a \u201chellscape\u201d in a war over Taiwan - The Economist",
-            "Opinion | Conventional wisdom about the U.S. and China is no longer accurate - The Washington Post"
+            "EXCLUSIVE: China presses Iran to help rein in Houthis after Saudi appeal, sources say - reuters.com",
+            "China Stockpiled Oil, and Now It Could Dominate the Energy Landscape - The New York Times",
+            "Strategic Stability and the Rebuilding of Xi\u2019s Military - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1669,9 +1642,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "EXCLUSIVE: China presses Iran to help rein in Houthis after Saudi appeal, sources say - Reuters",
-            "China would face a \u201chellscape\u201d in a war over Taiwan - The Economist",
-            "Opinion | Conventional wisdom about the U.S. and China is no longer accurate - The Washington Post"
+            "EXCLUSIVE: China presses Iran to help rein in Houthis after Saudi appeal, sources say - reuters.com",
+            "China Stockpiled Oil, and Now It Could Dominate the Energy Landscape - The New York Times",
+            "Strategic Stability and the Rebuilding of Xi\u2019s Military - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1711,9 +1684,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "EXCLUSIVE: China presses Iran to help rein in Houthis after Saudi appeal, sources say - Reuters",
-            "China would face a \u201chellscape\u201d in a war over Taiwan - The Economist",
-            "Opinion | Conventional wisdom about the U.S. and China is no longer accurate - The Washington Post"
+            "EXCLUSIVE: China presses Iran to help rein in Houthis after Saudi appeal, sources say - reuters.com",
+            "China Stockpiled Oil, and Now It Could Dominate the Energy Landscape - The New York Times",
+            "Strategic Stability and the Rebuilding of Xi\u2019s Military - War on the Rocks"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1739,9 +1712,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.98,
-        "daily_sigma_pct": 2.76,
-        "current_price": 258.12,
+        "daily_change_pct": -0.97,
+        "daily_sigma_pct": 2.63,
+        "current_price": 258.14,
         "risk_analysis": "No supply chain risks identified. Texas Instruments (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
@@ -1770,13 +1743,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.62,
+        "daily_change_pct": -1.09,
         "daily_sigma_pct": 3.69,
-        "current_price": 54.66,
+        "current_price": 54.4,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.6%",
+        "last_signal": "\u2713 Normal operations. Stock: -1.1%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1863,13 +1836,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.59,
-        "daily_sigma_pct": 3.2,
-        "current_price": 298.99,
+        "daily_change_pct": -0.44,
+        "daily_sigma_pct": 3.22,
+        "current_price": 295.94,
         "risk_analysis": "No supply chain risks identified. Jabil (Mechanical) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +0.6%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.4%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1883,7 +1856,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-17T15:47:39.739540+00:00"
+    "last_fetched": "2026-09-17T20:40:39.184231+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1893,11 +1866,11 @@
       "rate_as_of": "Aug 2026",
       "rate_label": "Fed funds rate",
       "market_label": "S&P 500",
-      "market_change_pct": 1.09,
+      "market_change_pct": 1.14,
       "market_sigma_pct": 0.71,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "S&P 500 +1.09% today, inside its normal daily range of \u00b10.7%. CPI 3.4% YoY (Aug 2026) Fed funds rate 3.63% (Aug 2026).",
+      "summary": "S&P 500 +1.14% today, inside its normal daily range of \u00b10.7%. CPI 3.4% YoY (Aug 2026) Fed funds rate 3.63% (Aug 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -1927,11 +1900,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": -0.24,
+      "market_change_pct": -0.06,
       "market_sigma_pct": 0.08,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY -0.24% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY -0.06% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -1944,10 +1917,10 @@
       "region": "Global/US ADR",
       "sentiment": "Neutral",
       "latest_headline": "British American Tobacco (LSE:BATS) Following Cash Flow And Buyback Hopes While Fair Value Stays Higher",
-      "stock_move": "-0.37%",
-      "current_price": 55.8849983215332,
-      "daily_change_pct": -0.37,
-      "daily_sigma_pct": 1.78,
+      "stock_move": "-0.12%",
+      "current_price": 56.02000045776367,
+      "daily_change_pct": -0.12,
+      "daily_sigma_pct": 1.79,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 British American Tobacco (LSE:BATS) Following Cash Flow And Buyback Hopes While Fair Value Stays Hig",
       "news_risk": false,
@@ -1960,12 +1933,12 @@
       "name": "Philip Morris Int.",
       "ticker": "PM",
       "region": "US",
-      "sentiment": "Negative",
+      "sentiment": "Neutral",
       "latest_headline": "Q2 Earnings Highlights: Philip Morris (NYSE:PM) Vs The Rest Of The Beverages, Alcohol, and Tobacco Stocks",
-      "stock_move": "-1.13%",
-      "current_price": 189.53500366210938,
-      "daily_change_pct": -1.13,
-      "daily_sigma_pct": 1.75,
+      "stock_move": "-0.64%",
+      "current_price": 190.47999572753906,
+      "daily_change_pct": -0.64,
+      "daily_sigma_pct": 1.76,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Q2 Earnings Highlights: Philip Morris (NYSE:PM) Vs The Rest Of The Beverages, Alcohol, and Tobacco S",
       "news_risk": false,
@@ -1980,9 +1953,9 @@
       "region": "UK",
       "sentiment": "Neutral",
       "latest_headline": "Imperial Brands (LSE:IMB) Stock Sees Modest Fair Value Cut As Analysts Debate Upside",
-      "stock_move": "+0.56%",
-      "current_price": 2504.0,
-      "daily_change_pct": 0.56,
+      "stock_move": "+0.24%",
+      "current_price": 2496.0,
+      "daily_change_pct": 0.24,
       "daily_sigma_pct": 1.39,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Imperial Brands (LSE:IMB) Stock Sees Modest Fair Value Cut As Analysts Debate Upside",
@@ -1996,11 +1969,11 @@
       "name": "Japan Tobacco",
       "ticker": "2914.T",
       "region": "Japan",
-      "sentiment": "Neutral",
+      "sentiment": "Positive",
       "latest_headline": "Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
-      "stock_move": "-0.10%",
-      "current_price": 6773.0,
-      "daily_change_pct": -0.1,
+      "stock_move": "+2.11%",
+      "current_price": 6916.0,
+      "daily_change_pct": 2.11,
       "daily_sigma_pct": 1.52,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
@@ -2238,9 +2211,9 @@
       "last_success": "2026-09-14T17:10:33.574644+00:00"
     },
     "China": {
-      "last_attempt": "2026-09-16T02:04:31.374463+00:00",
+      "last_attempt": "2026-09-17T20:41:08.008995+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 8,
+      "consecutive_failures": 9,
       "last_success": "2026-09-10T15:23:16.775091+00:00"
     },
     "Finland": {
@@ -2268,10 +2241,10 @@
       "last_success": "2026-09-14T17:11:38.449461+00:00"
     },
     "South Africa": {
-      "last_attempt": "2026-09-16T02:05:13.471481+00:00",
+      "last_attempt": "2026-09-17T20:41:39.698394+00:00",
       "last_status": "http_429",
       "last_success": "2026-09-11T01:49:51.564407+00:00",
-      "consecutive_failures": 7
+      "consecutive_failures": 8
     },
     "South Korea": {
       "last_attempt": "2026-09-12T09:46:19.702533+00:00",
@@ -2292,9 +2265,9 @@
       "last_success": "2026-09-12T19:47:54.176850+00:00"
     },
     "USA": {
-      "last_attempt": "2026-09-16T02:04:55.414592+00:00",
-      "last_status": "empty",
-      "consecutive_failures": 8,
+      "last_attempt": "2026-09-17T20:41:24.189695+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 9,
       "last_success": "2026-09-10T15:23:58.951328+00:00"
     }
   },
@@ -2304,7 +2277,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 169.621216
+    "duration_seconds": 141.29458
   },
   "health": {
     "pillars": {

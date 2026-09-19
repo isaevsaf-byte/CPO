@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-19T01:59:29.481128+00:00",
-  "version": "e963955a6507",
+  "last_updated": "2026-09-19T09:52:40.605546+00:00",
+  "version": "48a6101cee7b",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -14,18 +14,11 @@
     }
   },
   "executive_summary": {
-    "headline": "High-exposure packaging supplier GPI fell 5.4% with no news; Infineon saw similar unconfirmed moves in prior week\u2014worth confirming whether these are sector-wide or supplier-specific.",
-    "next_step": "Contact GPI and your semiconductor contacts within 24 hours to confirm whether the stock moves reflect genuine operational stress or market noise; escalate if either reports margin pressure or demand weakness.",
-    "context": "GPI (printed packaging, high BAT exposure) dropped 2\u00d7 normal volatility today without corroborating news. The pattern echoes Infineon's -7.7% move earlier this week, also unexplained. Both are in your critical supply chain; unconfirmed stock moves of this size, even if sector-wide, warrant rapid verification to rule out hidden stress signals."
+    "headline": "Suppliers pillar swung AMBER three times in seven days, driven by unexplained stock moves in high-exposure components; current AMBER reflects unconfirmed volatility in GPI and Infineon.",
+    "next_step": "Contact GPI and Infineon supply chain leads within 24 hours to confirm operational status and rule out financial distress or delivery disruptions; cross-check their customer advisories and payment terms for any signs of stress.",
+    "context": "GPI (Printed Packaging, USA) and Infineon both posted sharp single-day declines (\u22125.4% and \u22127.7% respectively, each 2.1\u00d7 normal daily range) with no corroborating news, and both carry high BAT exposure. The Suppliers pillar has oscillated between GREEN and AMBER across the past week, suggesting these stock moves\u2014rather than fundamental supplier weakness\u2014are the primary driver of current AMBER status. Macro and peers remain GREEN, isolating the risk to supplier-level signals that remain unconfirmed."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-30T02:04:30.895093+00:00",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "AMBER",
-      "overall": "AMBER"
-    },
     {
       "timestamp": "2026-08-30T10:53:39.373313+00:00",
       "macro": "AMBER",
@@ -578,6 +571,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-09-19T09:52:35.045317+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "change_log": [
@@ -911,7 +911,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-19T01:57:11.796908+00:00"
+        "last_fetched": "2026-09-19T09:50:25.924480+00:00"
       },
       "eu": {
         "status": "success",
@@ -922,7 +922,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.146",
-        "last_fetched": "2026-09-19T01:57:13.006994+00:00"
+        "last_fetched": "2026-09-19T09:50:27.241313+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -933,11 +933,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-19T01:57:13.007837+00:00"
+        "last_fetched": "2026-09-19T09:50:27.241954+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-19T01:57:13.007853+00:00"
+    "last_fetched": "2026-09-19T09:50:27.241964+00:00"
   },
   "peers": {
     "status": "success",
@@ -945,7 +945,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-19T01:57:15.297748+00:00"
+    "last_fetched": "2026-09-19T09:50:30.258664+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -977,13 +977,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.98,
-        "daily_sigma_pct": 1.84,
-        "current_price": 42.38,
+        "daily_change_pct": -1.13,
+        "daily_sigma_pct": 1.83,
+        "current_price": 41.9,
         "risk_analysis": "No supply chain risks identified. AMCOR (Printed Packaging) operating normally. BAT exposure: Critical.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.0%",
+        "last_signal": "\u2713 Normal operations. Stock: -1.1%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1039,9 +1039,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.06,
-        "daily_sigma_pct": 1.75,
-        "current_price": 10.47,
+        "daily_change_pct": -0.14,
+        "daily_sigma_pct": 1.74,
+        "current_price": 10.45,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1055,7 +1055,7 @@
           "headlines": [
             "War may be coming. Are we psychologically ready? - BBC",
             "Finland Expands Military Support to Ukraine With New \u20ac290 Million Assistance - UNITED24 Media",
-            "Ilmari Juutilainen: Finland\u2019s 94-Victory Ace Who Was Never Shot Down - MiGFlug"
+            "Stubb warns Finns to prepare for Russian drones - tvpworld.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1097,7 +1097,7 @@
           "headlines": [
             "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
             "AI Almost Led The US Military To Start A War With China, Report Says - Engadget",
-            "The Military\u2019s Bogus AI \u2018Almost Started a War\u2019 With China: Report - Rolling Stone"
+            "Pentagon Pete\u2019s AI Strategy Almost Started War With China - The Daily Beast"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1123,9 +1123,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.22,
-        "daily_sigma_pct": 4.08,
-        "current_price": 1320.0,
+        "daily_change_pct": 0.53,
+        "daily_sigma_pct": 4.05,
+        "current_price": 1327.0,
         "risk_analysis": "Geopolitical risk in South Africa: Economic instability, infrastructure challenges, energy crisis. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1137,7 +1137,7 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "\u2018This is a war\u2019: South Africa battles femicide as women\u2019s bodies pile up - Al Jazeera",
+            "\u2018This is a war\u2019: South Africa battles femicide as women\u2019s bodies pile up - aljazeera.com",
             "U.S. and China soften trade war as Trump and Xi discuss tariff cuts on 2 crucial sectors, while Africa takes a different path - Business Insider Africa",
             "Trump administration sanctions South Africa over anti-white bias claims - spectrumlocalnews.com"
           ],
@@ -1272,9 +1272,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
+            "South Korean Leader Says He Will Not Send Troops to Iran, Despite Trump\u2019s Call - The New York Times",
             "South Korea will not send military to support US war on Iran, defying Trump pressure - The Guardian",
-            "Rejecting Trump, South Korean Leader Says He Will Not Send Troops to Iran - The New York Times",
-            "South Korean president rules out military involvement in Middle East conflict - NBC News"
+            "\u2018No deployment for war\u2019: South Korea rejects US request for Iran support - South China Morning Post"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1438,9 +1438,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "\u2018My children did not attack Iran\u2019: 2bn South Asians suffer from distant war - Al Jazeera",
-            "Tata's quiet man is staying amid 'all-out war' at Indian conglomerate - Reuters",
-            "Trump Signs Russia Sanctions Bill, Clears Way For 100% Tariffs On India, China - NDTV"
+            "Trump Signs Russia Sanctions Bill, Clears Way For 100% Tariffs On India, China - NDTV",
+            "India-Pakistan navy ship collision sparks alarm over unintended escalation - aljazeera.com",
+            "Iran war costs US $45.1 billion; fatalities possibly higher than 18 reported by Pentagon - The Times of India"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1482,7 +1482,7 @@
           "headlines": [
             "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
             "AI Almost Led The US Military To Start A War With China, Report Says - Engadget",
-            "The Military\u2019s Bogus AI \u2018Almost Started a War\u2019 With China: Report - Rolling Stone"
+            "Pentagon Pete\u2019s AI Strategy Almost Started War With China - The Daily Beast"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1555,7 +1555,7 @@
           "headlines": [
             "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
             "AI Almost Led The US Military To Start A War With China, Report Says - Engadget",
-            "The Military\u2019s Bogus AI \u2018Almost Started a War\u2019 With China: Report - Rolling Stone"
+            "Pentagon Pete\u2019s AI Strategy Almost Started War With China - The Daily Beast"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1597,7 +1597,7 @@
           "headlines": [
             "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
             "AI Almost Led The US Military To Start A War With China, Report Says - Engadget",
-            "The Military\u2019s Bogus AI \u2018Almost Started a War\u2019 With China: Report - Rolling Stone"
+            "Pentagon Pete\u2019s AI Strategy Almost Started War With China - The Daily Beast"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1639,7 +1639,7 @@
           "headlines": [
             "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
             "AI Almost Led The US Military To Start A War With China, Report Says - Engadget",
-            "The Military\u2019s Bogus AI \u2018Almost Started a War\u2019 With China: Report - Rolling Stone"
+            "Pentagon Pete\u2019s AI Strategy Almost Started War With China - The Daily Beast"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1696,13 +1696,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.23,
-        "daily_sigma_pct": 3.73,
-        "current_price": 55.0,
+        "daily_change_pct": 1.56,
+        "daily_sigma_pct": 3.71,
+        "current_price": 55.86,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.2%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.6%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1811,7 +1811,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-19T01:58:19.924244+00:00"
+    "last_fetched": "2026-09-19T09:51:35.114309+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1855,11 +1855,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": -0.13,
+      "market_change_pct": -0.15,
       "market_sigma_pct": 0.08,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY -0.13% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY -0.15% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -1908,10 +1908,10 @@
       "region": "UK",
       "sentiment": "Neutral",
       "latest_headline": "Are Investors Undervaluing Imperial Tobacco Group (IMBBY) Right Now?",
-      "stock_move": "+0.24%",
-      "current_price": 2496.0,
-      "daily_change_pct": 0.24,
-      "daily_sigma_pct": 1.4,
+      "stock_move": "-0.16%",
+      "current_price": 2492.0,
+      "daily_change_pct": -0.16,
+      "daily_sigma_pct": 1.39,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Are Investors Undervaluing Imperial Tobacco Group (IMBBY) Right Now?",
       "news_risk": false,
@@ -2178,9 +2178,9 @@
       "last_success": "2026-09-16T02:04:13.459447+00:00"
     },
     "Germany": {
-      "last_attempt": "2026-09-19T01:59:08.201082+00:00",
-      "last_status": "empty",
-      "consecutive_failures": 8,
+      "last_attempt": "2026-09-19T09:52:17.777718+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 9,
       "last_success": "2026-09-15T15:50:24.022185+00:00"
     },
     "India": {
@@ -2190,9 +2190,9 @@
       "consecutive_failures": 9
     },
     "Japan": {
-      "last_attempt": "2026-09-19T01:58:43.397703+00:00",
+      "last_attempt": "2026-09-19T09:52:01.145358+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 8,
+      "consecutive_failures": 9,
       "last_success": "2026-09-14T17:11:38.449461+00:00"
     },
     "South Africa": {
@@ -2208,10 +2208,10 @@
       "last_success": "2026-09-01T15:42:05.141889+00:00"
     },
     "Sweden": {
-      "last_attempt": "2026-09-19T01:59:25.292508+00:00",
+      "last_attempt": "2026-09-19T09:52:35.045054+00:00",
       "last_status": "empty",
       "last_success": "2026-09-16T02:03:20.933520+00:00",
-      "consecutive_failures": 7
+      "consecutive_failures": 8
     },
     "Switzerland": {
       "last_attempt": "2026-09-18T15:20:32.521716+00:00",
@@ -2232,7 +2232,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 142.42419
+    "duration_seconds": 139.578423
   },
   "health": {
     "pillars": {

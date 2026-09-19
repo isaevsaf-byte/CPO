@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-19T09:52:40.605546+00:00",
-  "version": "48a6101cee7b",
+  "last_updated": "2026-09-19T14:59:03.006051+00:00",
+  "version": "3d284f3b4440",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -14,18 +14,11 @@
     }
   },
   "executive_summary": {
-    "headline": "Suppliers pillar swung AMBER three times in seven days, driven by unexplained stock moves in high-exposure components; current AMBER reflects unconfirmed volatility in GPI and Infineon.",
-    "next_step": "Contact GPI and Infineon supply chain leads within 24 hours to confirm operational status and rule out financial distress or delivery disruptions; cross-check their customer advisories and payment terms for any signs of stress.",
-    "context": "GPI (Printed Packaging, USA) and Infineon both posted sharp single-day declines (\u22125.4% and \u22127.7% respectively, each 2.1\u00d7 normal daily range) with no corroborating news, and both carry high BAT exposure. The Suppliers pillar has oscillated between GREEN and AMBER across the past week, suggesting these stock moves\u2014rather than fundamental supplier weakness\u2014are the primary driver of current AMBER status. Macro and peers remain GREEN, isolating the risk to supplier-level signals that remain unconfirmed."
+    "headline": "High-exposure packaging supplier GPI dropped 5.4% without corroborating news; cause unconfirmed but worth verifying.",
+    "next_step": "Check GPI's investor relations and earnings calendar within 24 hours; confirm whether the move is sector-wide or company-specific before escalating to sourcing.",
+    "context": "GPI (printed packaging, USA, high BAT exposure) posted an unusual single-day drop 2.0\u00d7 its normal range with no negative news identified. The change history shows Infineon posted a similar unexplained move earlier in the week; worth checking whether both are part of a broader supplier stress pattern or isolated market noise."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-30T10:53:39.373313+00:00",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-08-30T15:40:53.965867+00:00",
       "macro": "AMBER",
@@ -578,27 +571,16 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-09-19T14:58:59.408694+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "change_log": [
-    {
-      "at": "2026-08-29T11:56:27.355290+00:00",
-      "kind": "supplier_risk",
-      "direction": "down",
-      "entity": "Texas Instruments",
-      "headline": "Texas Instruments: MEDIUM \u2192 LOW",
-      "detail": "\u2713 Normal operations. No risk signals.",
-      "href": "/details/Texas Instruments"
-    },
-    {
-      "at": "2026-08-29T11:56:27.355290+00:00",
-      "kind": "supplier_risk",
-      "direction": "down",
-      "entity": "Jabil",
-      "headline": "Jabil: MEDIUM \u2192 LOW",
-      "detail": "\u2713 Normal operations. No risk signals.",
-      "href": "/details/Jabil"
-    },
     {
       "at": "2026-08-29T20:07:15.045871+00:00",
       "kind": "supplier_risk",
@@ -911,7 +893,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-19T09:50:25.924480+00:00"
+        "last_fetched": "2026-09-19T14:56:51.906958+00:00"
       },
       "eu": {
         "status": "success",
@@ -922,7 +904,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.146",
-        "last_fetched": "2026-09-19T09:50:27.241313+00:00"
+        "last_fetched": "2026-09-19T14:56:52.627667+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -933,11 +915,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-19T09:50:27.241954+00:00"
+        "last_fetched": "2026-09-19T14:56:52.628539+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-19T09:50:27.241964+00:00"
+    "last_fetched": "2026-09-19T14:56:52.628560+00:00"
   },
   "peers": {
     "status": "success",
@@ -945,7 +927,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-19T09:50:30.258664+00:00"
+    "last_fetched": "2026-09-19T14:56:56.007469+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -1055,7 +1037,7 @@
           "headlines": [
             "War may be coming. Are we psychologically ready? - BBC",
             "Finland Expands Military Support to Ukraine With New \u20ac290 Million Assistance - UNITED24 Media",
-            "Stubb warns Finns to prepare for Russian drones - tvpworld.com"
+            "Stubb warns Finns to prepare for Russian drones - TVP World"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1137,9 +1119,9 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "\u2018This is a war\u2019: South Africa battles femicide as women\u2019s bodies pile up - aljazeera.com",
-            "U.S. and China soften trade war as Trump and Xi discuss tariff cuts on 2 crucial sectors, while Africa takes a different path - Business Insider Africa",
-            "Trump administration sanctions South Africa over anti-white bias claims - spectrumlocalnews.com"
+            "\u2018This is a war\u2019: South Africa battles femicide as women\u2019s bodies pile up - Al Jazeera",
+            "The South West African Campaign of WWI That Shaped the Region - TheCollector",
+            "U.S. and China soften trade war as Trump and Xi discuss tariff cuts on 2 crucial sectors, while Africa takes a different path - Business Insider Africa"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1438,9 +1420,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "Trump Signs Russia Sanctions Bill, Clears Way For 100% Tariffs On India, China - NDTV",
-            "India-Pakistan navy ship collision sparks alarm over unintended escalation - aljazeera.com",
-            "Iran war costs US $45.1 billion; fatalities possibly higher than 18 reported by Pentagon - The Times of India"
+            "India-Pakistan navy ship collision sparks alarm over unintended escalation - Al Jazeera",
+            "India faces 100% tariff threat over Russian oil after US House vote - BBC",
+            "Trump Signs Russia Sanctions Bill, Clears Way For 100% Tariffs On India, China - NDTV"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1696,13 +1678,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.56,
-        "daily_sigma_pct": 3.71,
-        "current_price": 55.86,
+        "daily_change_pct": 1.23,
+        "daily_sigma_pct": 3.73,
+        "current_price": 55.0,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.6%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.2%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1769,7 +1751,7 @@
         "price_move_only": false,
         "geopolitical_risk": null,
         "google_news_headlines": [
-          "Rosti Group highlights cutting-edge medical solutions at Medical Fair Asia 2026 - bastillepost.com"
+          "Rosti Group highlights cutting-edge medical solutions at Medical Fair Asia 2026 - \u5df4\u58eb\u7684\u5831"
         ],
         "bat_exposure": "Medium",
         "segment": "New Categories (Vuse/Glo)",
@@ -1811,7 +1793,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-19T09:51:35.114309+00:00"
+    "last_fetched": "2026-09-19T14:58:01.972074+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1838,11 +1820,11 @@
       "rate_as_of": "Sep 2026",
       "rate_label": "ECB deposit facility rate",
       "market_label": "EUR/USD",
-      "market_change_pct": 0.17,
+      "market_change_pct": 0.18,
       "market_sigma_pct": 0.28,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "EUR/USD +0.17% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
+      "summary": "EUR/USD +0.18% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -2172,9 +2154,9 @@
       "last_success": "2026-09-10T15:23:16.775091+00:00"
     },
     "Finland": {
-      "last_attempt": "2026-09-17T15:48:56.580365+00:00",
-      "last_status": "http_429",
-      "consecutive_failures": 6,
+      "last_attempt": "2026-09-19T14:58:38.741476+00:00",
+      "last_status": "empty",
+      "consecutive_failures": 7,
       "last_success": "2026-09-16T02:04:13.459447+00:00"
     },
     "Germany": {
@@ -2202,16 +2184,16 @@
       "consecutive_failures": 9
     },
     "South Korea": {
-      "last_attempt": "2026-09-12T09:46:19.702533+00:00",
-      "last_status": "http_429",
-      "consecutive_failures": 10,
+      "last_attempt": "2026-09-19T14:58:59.408375+00:00",
+      "last_status": "empty",
+      "consecutive_failures": 11,
       "last_success": "2026-09-01T15:42:05.141889+00:00"
     },
     "Sweden": {
-      "last_attempt": "2026-09-19T09:52:35.045054+00:00",
-      "last_status": "empty",
+      "last_attempt": "2026-09-19T14:58:24.655170+00:00",
+      "last_status": "http_429",
       "last_success": "2026-09-16T02:03:20.933520+00:00",
-      "consecutive_failures": 8
+      "consecutive_failures": 9
     },
     "Switzerland": {
       "last_attempt": "2026-09-18T15:20:32.521716+00:00",
@@ -2232,7 +2214,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 139.578423
+    "duration_seconds": 137.659545
   },
   "health": {
     "pillars": {

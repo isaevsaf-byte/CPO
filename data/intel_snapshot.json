@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-20T02:04:21.101514+00:00",
-  "version": "c527bbda8ee6",
+  "last_updated": "2026-09-20T10:14:31.472599+00:00",
+  "version": "9dce609ff0cd",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -14,18 +14,11 @@
     }
   },
   "executive_summary": {
-    "headline": "GPI and Infineon both posted outsized stock declines this week with no confirmed cause, raising questions about whether a broader supplier or sector stress is emerging.",
-    "next_step": "Within 24 hours, contact GPI and Infineon directly to rule out company-specific news (guidance, restructuring, customer loss) and confirm whether moves are market-driven; if both deny material news, escalate to sector analysts to check for packaging or semiconductor supply warnings.",
-    "context": "GPI (printed packaging, high BAT exposure) fell 5.4% today and 5.5% earlier this week; Infineon fell 7.7% twice in the same period. All three moves are 2\u20132.1\u00d7 normal daily volatility with no corroborating news. The repetition across both suppliers and the persistence over seven days suggests this is worth investigating rather than dismissing as noise."
+    "headline": "Suppliers pillar flickering on unexplained stock drops in high-exposure names; pattern suggests market noise rather than fundamental stress.",
+    "next_step": "In 24 hours, check whether Infineon and GPI have stabilized and whether sector-wide volatility (packaging, semiconductors) is elevated\u2014if moves reverse or no corroborating news surfaces, downgrade to GREEN.",
+    "context": "Both Infineon and GPI have posted sharp single-day declines (\u22127.7% and \u22125.4% respectively) at 2\u00d7+ normal volatility with no news attached and high BAT exposure. The repeat oscillation between AMBER and GREEN across the 7-day window suggests these are temporary market swings rather than supplier fundamentals degrading; macro and peers remain GREEN."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-31T02:01:58.225545+00:00",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "AMBER",
-      "overall": "AMBER"
-    },
     {
       "timestamp": "2026-08-31T12:02:56.562710+00:00",
       "macro": "GREEN",
@@ -578,6 +571,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-09-20T10:14:26.979908+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "change_log": [
@@ -884,7 +884,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-20T02:00:43.532542+00:00"
+        "last_fetched": "2026-09-20T10:12:22.086822+00:00"
       },
       "eu": {
         "status": "success",
@@ -895,7 +895,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.146",
-        "last_fetched": "2026-09-20T02:00:44.339345+00:00"
+        "last_fetched": "2026-09-20T10:12:22.806104+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -906,11 +906,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-20T02:00:44.340234+00:00"
+        "last_fetched": "2026-09-20T10:12:22.806934+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-20T02:00:44.340250+00:00"
+    "last_fetched": "2026-09-20T10:12:22.806949+00:00"
   },
   "peers": {
     "status": "success",
@@ -918,7 +918,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-20T02:00:46.166242+00:00"
+    "last_fetched": "2026-09-20T10:12:24.693972+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -1070,7 +1070,7 @@
           "headlines": [
             "Beyond trade diversion: How the US-China trade war reshaped global production - CEPR",
             "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
-            "Pentagon Pete\u2019s AI Strategy Almost Started War With China - thedailybeast.com"
+            "AI Almost Led The US Military To Start A War With China, Report Says - Engadget"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1110,9 +1110,9 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "\u2018This is a war\u2019: South Africa battles femicide as women\u2019s bodies pile up - aljazeera.com",
-            "Taiwan women continue tug-of-war dominance - Taipei Times",
-            "U.S. and China soften trade war as Trump and Xi discuss tariff cuts on 2 crucial sectors, while Africa takes a different path - Business Insider Africa"
+            "\u2018This is a war\u2019: South Africa battles femicide as women\u2019s bodies pile up - Al Jazeera",
+            "Trump administration sanctions South Africa over anti-white bias claims - spectrumlocalnews.com",
+            "U.S. and China soften trade war as Trump and Xi discuss tariff cuts on 2 crucial sectors, while Africa takes a different path - africa.businessinsider.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1245,9 +1245,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "South Korean Leader Says He Will Not Send Troops to Iran, Despite Trump\u2019s Call - The New York Times",
             "South Korea will not send military to support US war on Iran, defying Trump pressure - The Guardian",
-            "South Korean president rules out military involvement in Middle East conflict - NBC News"
+            "South Korea says US-North Korea talks possible, rules out Hormuz deployment - Al Jazeera",
+            "\u2018No deployment for war\u2019: South Korea rejects US request for Iran support - scmp.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1412,8 +1412,8 @@
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
             "India Is Again Squeezed Between the Threat of Trump Tariffs and Russian Oil - The New York Times",
-            "'Negotiate or face decisive war': Iran conveys terms to US for restarting talks, sets 7 conditions - The Times of India",
-            "India faces 100% tariff threat over Russian oil after US House vote - BBC"
+            "India faces 100% tariff threat over Russian oil after US House vote - BBC",
+            "Trump signs sweeping Russia sanctions over Ukraine war - Al Jazeera"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1455,7 +1455,7 @@
           "headlines": [
             "Beyond trade diversion: How the US-China trade war reshaped global production - CEPR",
             "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
-            "Pentagon Pete\u2019s AI Strategy Almost Started War With China - thedailybeast.com"
+            "AI Almost Led The US Military To Start A War With China, Report Says - Engadget"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1528,7 +1528,7 @@
           "headlines": [
             "Beyond trade diversion: How the US-China trade war reshaped global production - CEPR",
             "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
-            "Pentagon Pete\u2019s AI Strategy Almost Started War With China - thedailybeast.com"
+            "AI Almost Led The US Military To Start A War With China, Report Says - Engadget"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1570,7 +1570,7 @@
           "headlines": [
             "Beyond trade diversion: How the US-China trade war reshaped global production - CEPR",
             "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
-            "Pentagon Pete\u2019s AI Strategy Almost Started War With China - thedailybeast.com"
+            "AI Almost Led The US Military To Start A War With China, Report Says - Engadget"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1612,7 +1612,7 @@
           "headlines": [
             "Beyond trade diversion: How the US-China trade war reshaped global production - CEPR",
             "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
-            "Pentagon Pete\u2019s AI Strategy Almost Started War With China - thedailybeast.com"
+            "AI Almost Led The US Military To Start A War With China, Report Says - Engadget"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1742,7 +1742,7 @@
         "price_move_only": false,
         "geopolitical_risk": null,
         "google_news_headlines": [
-          "Rosti Group highlights cutting-edge medical solutions at Medical Fair Asia 2026 - \u5df4\u58eb\u7684\u5831"
+          "Rosti Group highlights cutting-edge medical solutions at Medical Fair Asia 2026 - bastillepost.com"
         ],
         "bat_exposure": "Medium",
         "segment": "New Categories (Vuse/Glo)",
@@ -1784,7 +1784,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-20T02:01:50.405357+00:00"
+    "last_fetched": "2026-09-20T10:13:29.061135+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1805,8 +1805,8 @@
       ]
     },
     "eu": {
-      "cpi": null,
-      "cpi_as_of": null,
+      "cpi": "3.2%",
+      "cpi_as_of": "Aug 2026",
       "rate": "2.50%",
       "rate_as_of": "Sep 2026",
       "rate_label": "ECB deposit facility rate",
@@ -1815,7 +1815,7 @@
       "market_sigma_pct": 0.28,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "EUR/USD +0.18% today, inside its normal daily range of \u00b10.3%. ECB deposit facility rate 2.50% (Sep 2026).",
+      "summary": "EUR/USD +0.18% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -1828,11 +1828,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": -0.28,
-      "market_sigma_pct": 0.09,
+      "market_change_pct": -0.15,
+      "market_sigma_pct": 0.08,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY -0.28% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY -0.15% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -2128,15 +2128,15 @@
       "last_success": "2026-09-14T17:10:33.574644+00:00"
     },
     "China": {
-      "last_attempt": "2026-09-20T02:03:04.651104+00:00",
-      "last_status": "ok",
-      "consecutive_failures": 0,
+      "last_attempt": "2026-09-20T10:14:11.065589+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 1,
       "last_success": "2026-09-20T02:03:04.650281+00:00"
     },
     "Finland": {
-      "last_attempt": "2026-09-20T02:02:21.242636+00:00",
-      "last_status": "ok",
-      "consecutive_failures": 0,
+      "last_attempt": "2026-09-20T10:13:54.253188+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 1,
       "last_success": "2026-09-20T02:02:21.242621+00:00"
     },
     "Germany": {
@@ -2182,9 +2182,9 @@
       "last_success": "2026-09-12T19:47:54.176850+00:00"
     },
     "USA": {
-      "last_attempt": "2026-09-20T02:03:25.689820+00:00",
-      "last_status": "ok",
-      "consecutive_failures": 0,
+      "last_attempt": "2026-09-20T10:14:26.979797+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 1,
       "last_success": "2026-09-20T02:03:25.688941+00:00"
     }
   },
@@ -2194,7 +2194,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 245.655517
+    "duration_seconds": 134.165699
   },
   "health": {
     "pillars": {

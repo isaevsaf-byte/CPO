@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-19T14:59:03.006051+00:00",
-  "version": "3d284f3b4440",
+  "last_updated": "2026-09-19T19:43:56.715328+00:00",
+  "version": "93d1e4ed83bd",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -14,18 +14,11 @@
     }
   },
   "executive_summary": {
-    "headline": "High-exposure packaging supplier GPI dropped 5.4% without corroborating news; cause unconfirmed but worth verifying.",
-    "next_step": "Check GPI's investor relations and earnings calendar within 24 hours; confirm whether the move is sector-wide or company-specific before escalating to sourcing.",
-    "context": "GPI (printed packaging, USA, high BAT exposure) posted an unusual single-day drop 2.0\u00d7 its normal range with no negative news identified. The change history shows Infineon posted a similar unexplained move earlier in the week; worth checking whether both are part of a broader supplier stress pattern or isolated market noise."
+    "headline": "Supplier stock volatility without confirmed news \u2014 GPI and Infineon both down 5\u20138% in recent days with no corroborating signals, creating opacity on root cause.",
+    "next_step": "Within 24 hours, check GPI and Infineon investor relations and supply-chain forums for any unannounced operational or demand signals; if none emerges, treat as sector-wide pricing correction rather than company-specific stress.",
+    "context": "Both GPI (printed packaging, USA) and Infineon (semiconductors) recorded unexplained drops 2\u20132.1\u00d7 their normal daily range with no news attached. Your BAT exposure to both is High. The pattern repeats across the 7-day window, suggesting either a sector tremor or data lag rather than isolated events \u2014 worth confirming whether macro or peer-level headwinds are showing up in their earnings calendars."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-08-30T15:40:53.965867+00:00",
-      "macro": "AMBER",
-      "peers": "GREEN",
-      "suppliers": "RED",
-      "overall": "RED"
-    },
     {
       "timestamp": "2026-08-30T20:13:33.702851+00:00",
       "macro": "AMBER",
@@ -578,6 +571,13 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-09-19T19:43:52.119198+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "change_log": [
@@ -893,7 +893,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-19T14:56:51.906958+00:00"
+        "last_fetched": "2026-09-19T19:41:50.343780+00:00"
       },
       "eu": {
         "status": "success",
@@ -904,7 +904,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.146",
-        "last_fetched": "2026-09-19T14:56:52.627667+00:00"
+        "last_fetched": "2026-09-19T19:41:51.132660+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -915,11 +915,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-19T14:56:52.628539+00:00"
+        "last_fetched": "2026-09-19T19:41:51.133573+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-19T14:56:52.628560+00:00"
+    "last_fetched": "2026-09-19T19:41:51.133591+00:00"
   },
   "peers": {
     "status": "success",
@@ -927,7 +927,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-19T14:56:56.007469+00:00"
+    "last_fetched": "2026-09-19T19:41:54.101146+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -1037,7 +1037,7 @@
           "headlines": [
             "War may be coming. Are we psychologically ready? - BBC",
             "Finland Expands Military Support to Ukraine With New \u20ac290 Million Assistance - UNITED24 Media",
-            "Stubb warns Finns to prepare for Russian drones - TVP World"
+            "Stubb warns Finns to prepare for Russian drones - tvpworld.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1120,8 +1120,8 @@
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
             "\u2018This is a war\u2019: South Africa battles femicide as women\u2019s bodies pile up - Al Jazeera",
-            "The South West African Campaign of WWI That Shaped the Region - TheCollector",
-            "U.S. and China soften trade war as Trump and Xi discuss tariff cuts on 2 crucial sectors, while Africa takes a different path - Business Insider Africa"
+            "Taiwan women continue tug-of-war dominance - Taipei Times",
+            "The South West African Campaign of WWI That Shaped the Region - TheCollector"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1256,7 +1256,7 @@
           "headlines": [
             "South Korean Leader Says He Will Not Send Troops to Iran, Despite Trump\u2019s Call - The New York Times",
             "South Korea will not send military to support US war on Iran, defying Trump pressure - The Guardian",
-            "\u2018No deployment for war\u2019: South Korea rejects US request for Iran support - South China Morning Post"
+            "South Korean president rules out military involvement in Middle East conflict - NBC News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1292,7 +1292,9 @@
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
-        "google_news_headlines": [],
+        "google_news_headlines": [
+          "Japan to charge unprepared Mount Fuji climbers $51 every 5 minutes - wionews.com"
+        ],
         "bat_exposure": "Medium",
         "segment": "Combustibles",
         "location": "Japan",
@@ -1678,13 +1680,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.23,
-        "daily_sigma_pct": 3.73,
-        "current_price": 55.0,
+        "daily_change_pct": 1.56,
+        "daily_sigma_pct": 3.71,
+        "current_price": 55.86,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.2%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.6%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1793,7 +1795,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-19T14:58:01.972074+00:00"
+    "last_fetched": "2026-09-19T19:42:59.653541+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1837,11 +1839,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": -0.15,
-      "market_sigma_pct": 0.08,
+      "market_change_pct": -0.28,
+      "market_sigma_pct": 0.09,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY -0.15% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY -0.28% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -2148,15 +2150,15 @@
       "last_success": "2026-09-14T17:10:33.574644+00:00"
     },
     "China": {
-      "last_attempt": "2026-09-17T20:41:08.008995+00:00",
+      "last_attempt": "2026-09-19T19:43:52.119082+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 9,
+      "consecutive_failures": 10,
       "last_success": "2026-09-10T15:23:16.775091+00:00"
     },
     "Finland": {
-      "last_attempt": "2026-09-19T14:58:38.741476+00:00",
-      "last_status": "empty",
-      "consecutive_failures": 7,
+      "last_attempt": "2026-09-19T19:43:23.369136+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 8,
       "last_success": "2026-09-16T02:04:13.459447+00:00"
     },
     "Germany": {
@@ -2184,9 +2186,9 @@
       "consecutive_failures": 9
     },
     "South Korea": {
-      "last_attempt": "2026-09-19T14:58:59.408375+00:00",
-      "last_status": "empty",
-      "consecutive_failures": 11,
+      "last_attempt": "2026-09-19T19:43:38.281091+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 12,
       "last_success": "2026-09-01T15:42:05.141889+00:00"
     },
     "Sweden": {
@@ -2214,7 +2216,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 137.659545
+    "duration_seconds": 131.798603
   },
   "health": {
     "pillars": {

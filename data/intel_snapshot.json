@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-20T19:56:12.732697+00:00",
-  "version": "9129c9faba17",
+  "last_updated": "2026-09-21T02:05:34.852274+00:00",
+  "version": "c3df403d1a15",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -14,18 +14,11 @@
     }
   },
   "executive_summary": {
-    "headline": "Unexplained stock drops in high-BAT suppliers, chiefly GPI, with no corroborating news\u2014pattern worth investigating.",
-    "next_step": "Within 2 hours, check GPI earnings calendar, sector news (printed packaging), and any supply disruption chatter; if no cause surfaces, escalate to category lead and GPI directly to rule out operational issues.",
-    "context": "GPI (USA, Printed Packaging) has dropped 5.4% today at 2.0\u00d7 normal volatility with zero identified news driver. Infineon showed a similar -7.7% unexplained move earlier in the 7-day window. Both carry high BAT exposure, and neither move is yet corroborated by public signals\u2014worth checking whether a single sector or macro event is driving both, or if these are isolated liquidity events."
+    "headline": "GPI stock down 5.4% with no confirmed cause\u2014a repeated pattern over 7 days affecting high-BAT exposure packaging supply.",
+    "next_step": "Contact GPI within 24 hours to confirm operational status and any unannounced developments; parallelize a spot check of alternative packaging capacity in case this signals deeper stress.",
+    "context": "GPI (USA, Printed Packaging, High BAT exposure) has posted three unexplained drops of ~5\u20135.5% each over the past week, all 2\u00d7 normal daily volatility with no corroborating news. The pattern suggests either sector-wide headwinds or GPI-specific trouble not yet public; macro and peers pillars remain GREEN, ruling out broad economic or competitive shocks."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-09-01T02:23:03.783184+00:00",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "GREEN",
-      "overall": "GREEN"
-    },
     {
       "timestamp": "2026-09-01T10:43:04.380601+00:00",
       "macro": "GREEN",
@@ -578,36 +571,16 @@
       "peers": "GREEN",
       "suppliers": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-09-21T02:05:30.677527+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "change_log": [
-    {
-      "at": "2026-08-30T20:13:33.702856+00:00",
-      "kind": "overall_rag",
-      "direction": "down",
-      "entity": "Overall status",
-      "headline": "Overall status RED \u2192 AMBER",
-      "detail": "Driven by: macro, suppliers",
-      "href": null
-    },
-    {
-      "at": "2026-08-30T20:13:33.702856+00:00",
-      "kind": "pillar_rag",
-      "direction": "down",
-      "entity": "Suppliers",
-      "headline": "Suppliers pillar RED \u2192 AMBER",
-      "detail": "",
-      "href": null
-    },
-    {
-      "at": "2026-08-30T20:13:33.702856+00:00",
-      "kind": "supplier_risk",
-      "direction": "down",
-      "entity": "ITC",
-      "headline": "ITC: HIGH \u2192 MEDIUM",
-      "detail": "\ud83c\udf0d Geopolitical: Border tensions with China and Pakistan",
-      "href": "/details/ITC"
-    },
     {
       "at": "2026-08-31T12:02:56.562716+00:00",
       "kind": "pillar_rag",
@@ -841,6 +814,15 @@
       "headline": "GPI -5.4% (2.0\u00d7 its normal daily range), no corroborating signal",
       "detail": "BAT exposure: High. Cause unconfirmed.",
       "href": "/details/GPI"
+    },
+    {
+      "at": "2026-09-21T02:05:30.677538+00:00",
+      "kind": "price_move",
+      "direction": "info",
+      "entity": "GPI",
+      "headline": "GPI -5.4% (2.0\u00d7 its normal daily range), no corroborating signal",
+      "detail": "BAT exposure: High. Cause unconfirmed.",
+      "href": "/details/GPI"
     }
   ],
   "macro": {
@@ -857,7 +839,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-20T19:53:58.595802+00:00"
+        "last_fetched": "2026-09-21T02:01:27.318437+00:00"
       },
       "eu": {
         "status": "success",
@@ -868,7 +850,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.146",
-        "last_fetched": "2026-09-20T19:53:59.091196+00:00"
+        "last_fetched": "2026-09-21T02:01:28.155829+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -879,11 +861,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-20T19:53:59.091922+00:00"
+        "last_fetched": "2026-09-21T02:01:28.156768+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-20T19:53:59.091938+00:00"
+    "last_fetched": "2026-09-21T02:01:28.156784+00:00"
   },
   "peers": {
     "status": "success",
@@ -891,7 +873,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-20T19:54:02.455167+00:00"
+    "last_fetched": "2026-09-21T02:01:30.626914+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -985,9 +967,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.14,
-        "daily_sigma_pct": 1.74,
-        "current_price": 10.45,
+        "daily_change_pct": 1.06,
+        "daily_sigma_pct": 1.75,
+        "current_price": 10.47,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1000,7 +982,7 @@
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
             "War may be coming. Are we psychologically ready? - BBC",
-            "Stubb warns Finns to prepare for Russian drones - TVP World",
+            "Stubb warns Finns to prepare for Russian drones - tvpworld.com",
             "Ilmari Juutilainen: Finland\u2019s 94-Victory Ace Who Was Never Shot Down - MiGFlug"
           ],
           "escalated": true,
@@ -1042,8 +1024,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Will China play a role in ending Iran war? - Arab News",
-            "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
-            "Beyond trade diversion: How the US-China trade war reshaped global production - CEPR"
+            "Xi prepares China \u2018for battle\u2019 as expert warns of grave danger facing US ahead of DC summit - Yahoo",
+            "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1084,8 +1066,8 @@
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
             "\u2018This is a war\u2019: South Africa battles femicide as women\u2019s bodies pile up - Al Jazeera",
-            "Taiwan win four golds at tug-of-war championship - Taipei Times",
-            "U.S. and China soften trade war as Trump and Xi discuss tariff cuts on 2 crucial sectors, while Africa takes a different path - Business Insider Africa"
+            "Ukraine's health system is adapting as 70% of citizens report anxiety or stress. - Psychology Today",
+            "Taiwan win four golds at tug-of-war championship - Taipei Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1386,8 +1368,8 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
+            "India Is Again Squeezed Between the Threat of Trump Tariffs and Russian Oil - The New York Times",
             "\u2018When do I blow entire nation up?' Trump's ultimatum after Iran warns of 'decisive war' - The Times of India",
-            "India Is Again Squeezed Between the Threat of Trump Tariffs and Russian Oil - nytimes.com",
             "India faces 100% tariff threat over Russian oil after US House vote - BBC"
           ],
           "escalated": true,
@@ -1429,8 +1411,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Will China play a role in ending Iran war? - Arab News",
-            "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
-            "Beyond trade diversion: How the US-China trade war reshaped global production - CEPR"
+            "Xi prepares China \u2018for battle\u2019 as expert warns of grave danger facing US ahead of DC summit - Yahoo",
+            "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1502,8 +1484,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Will China play a role in ending Iran war? - Arab News",
-            "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
-            "Beyond trade diversion: How the US-China trade war reshaped global production - CEPR"
+            "Xi prepares China \u2018for battle\u2019 as expert warns of grave danger facing US ahead of DC summit - Yahoo",
+            "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1529,9 +1511,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.97,
-        "daily_sigma_pct": 3.18,
-        "current_price": 9.69,
+        "daily_change_pct": 0.46,
+        "daily_sigma_pct": 3.17,
+        "current_price": 9.73,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1544,8 +1526,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Will China play a role in ending Iran war? - Arab News",
-            "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
-            "Beyond trade diversion: How the US-China trade war reshaped global production - CEPR"
+            "Xi prepares China \u2018for battle\u2019 as expert warns of grave danger facing US ahead of DC summit - Yahoo",
+            "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1571,9 +1553,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 6.9,
-        "daily_sigma_pct": 2.53,
-        "current_price": 51.56,
+        "daily_change_pct": -1.63,
+        "daily_sigma_pct": 2.43,
+        "current_price": 50.72,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1586,8 +1568,8 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "Will China play a role in ending Iran war? - Arab News",
-            "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN",
-            "Beyond trade diversion: How the US-China trade war reshaped global production - CEPR"
+            "Xi prepares China \u2018for battle\u2019 as expert warns of grave danger facing US ahead of DC summit - Yahoo",
+            "Exclusive: US military had close call after using AI for false intelligence report, sources say - CNN"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1644,13 +1626,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.56,
-        "daily_sigma_pct": 3.71,
-        "current_price": 55.86,
+        "daily_change_pct": 1.23,
+        "daily_sigma_pct": 3.73,
+        "current_price": 55.0,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.6%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.2%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1717,7 +1699,7 @@
         "price_move_only": false,
         "geopolitical_risk": null,
         "google_news_headlines": [
-          "Rosti Group highlights cutting-edge medical solutions at Medical Fair Asia 2026 - bastillepost.com"
+          "Rosti Group highlights cutting-edge medical solutions at Medical Fair Asia 2026 - \u5df4\u58eb\u7684\u5831"
         ],
         "bat_exposure": "Medium",
         "segment": "New Categories (Vuse/Glo)",
@@ -1759,7 +1741,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-20T19:55:06.959349+00:00"
+    "last_fetched": "2026-09-21T02:02:35.960117+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1786,11 +1768,11 @@
       "rate_as_of": "Sep 2026",
       "rate_label": "ECB deposit facility rate",
       "market_label": "EUR/USD",
-      "market_change_pct": 0.12,
+      "market_change_pct": 0.09,
       "market_sigma_pct": 0.27,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "EUR/USD +0.12% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
+      "summary": "EUR/USD +0.09% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -1803,11 +1785,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": -0.16,
+      "market_change_pct": -0.19,
       "market_sigma_pct": 0.08,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY -0.16% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY -0.19% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -2051,13 +2033,29 @@
       "fetched_at": "2026-09-16T02:03:20.933520+00:00"
     },
     "USA": {
-      "article_count": 745,
-      "avg_tone": -1.6,
-      "articles": [],
-      "has_relevant": false,
+      "article_count": 13581,
+      "avg_tone": -0.8,
+      "articles": [
+        {
+          "title": "DTF vs . DTG Printing : How to Choose the Right Ink System for Modern",
+          "url": "https://www.openpr.com/news/4636909/dtf-vs-dtg-printing-how-to-choose-the-right-ink-system-for-modern",
+          "tone": 8
+        },
+        {
+          "title": "RIGHT SPEAK : 188 C - Clashes in F - Line : 18 in Kostiantynivka Dir , 15 in Pokrovsk Dir , 7 in Lyman Dir ; US Advances $2 . 7B Arms Sale to UKR ; UN : RU Troop Barbaric Rape Campaign in UKR Includes 4yr - Old Girl ; RU Claims : UKR targets 16 RU Regs Amid Elections ; Z Approves New L - Range Ops in Response to RU Strikes ; New Advances in Op - Vivaldi in N . Donetsk ; UKR HITS : $100M Nebo - U Radar Station ; Dagestan Attacked , Explosions Heard Near Port of Kaspiysk , LIVE UPDATES , DETAILS ,",
+          "url": "http://www.rightspeak.net/2026/09/188-c-clashes-in-f-line-18-in.html",
+          "tone": -9
+        },
+        {
+          "title": "Jacob Sullum : Why Section 301 tariffs are illegal",
+          "url": "http://www.thedailytimes.com/opinion/jacob-sullum-why-section-301-tariffs-are-illegal/article_201ad0ae-e011-4899-ba22-f462cf005a83.html",
+          "tone": -4
+        }
+      ],
+      "has_relevant": true,
       "query_mode": "domestic_press",
       "window": "1d",
-      "fetched_at": "2026-09-20T02:03:25.688941+00:00"
+      "fetched_at": "2026-09-21T02:03:42.436654+00:00"
     },
     "Japan": {
       "article_count": 716,
@@ -2075,43 +2073,32 @@
       "fetched_at": "2026-09-14T17:11:38.449461+00:00"
     },
     "Switzerland": {
-      "article_count": 641,
-      "avg_tone": -1.2,
-      "articles": [
-        {
-          "title": "Swiss firms may see $2 billion in US tariff refunds , UBS says",
-          "url": "https://www.moneycontrol.com/world/swiss-firms-may-see-2-billion-in-us-tariff-refunds-ubs-says-article-14027226.html",
-          "tone": -1
-        },
-        {
-          "title": "Skills : Understanding the train driver shortage",
-          "url": "https://www.railwaygazette.com/research-training-skills/2026/09/12/skills-understanding-the-train-driver-shortage/",
-          "tone": -1
-        }
-      ],
-      "has_relevant": true,
+      "article_count": 91,
+      "avg_tone": -0.8,
+      "articles": [],
+      "has_relevant": false,
       "query_mode": "mentions",
       "window": "3d",
-      "fetched_at": "2026-09-12T19:47:54.176850+00:00"
+      "fetched_at": "2026-09-21T02:04:37.959440+00:00"
     }
   },
   "geopolitical_attempts": {
     "Austria": {
-      "last_attempt": "2026-09-18T20:05:59.643197+00:00",
+      "last_attempt": "2026-09-21T02:05:12.968077+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 9,
+      "consecutive_failures": 10,
       "last_success": "2026-09-14T17:10:33.574644+00:00"
     },
     "China": {
-      "last_attempt": "2026-09-20T19:55:51.858464+00:00",
+      "last_attempt": "2026-09-21T02:03:22.524011+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 3,
+      "consecutive_failures": 4,
       "last_success": "2026-09-20T02:03:04.650281+00:00"
     },
     "Finland": {
-      "last_attempt": "2026-09-20T19:55:35.113924+00:00",
+      "last_attempt": "2026-09-21T02:03:05.442641+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 3,
+      "consecutive_failures": 4,
       "last_success": "2026-09-20T02:02:21.242621+00:00"
     },
     "Germany": {
@@ -2121,27 +2108,27 @@
       "last_success": "2026-09-15T15:50:24.022185+00:00"
     },
     "India": {
-      "last_attempt": "2026-09-20T02:04:16.623255+00:00",
+      "last_attempt": "2026-09-21T02:04:55.509529+00:00",
       "last_status": "http_429",
       "last_success": "2026-09-14T11:07:38.393157+00:00",
-      "consecutive_failures": 10
+      "consecutive_failures": 11
     },
     "Japan": {
-      "last_attempt": "2026-09-19T09:52:01.145358+00:00",
+      "last_attempt": "2026-09-21T02:05:30.677379+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 9,
+      "consecutive_failures": 10,
       "last_success": "2026-09-14T17:11:38.449461+00:00"
     },
     "South Africa": {
-      "last_attempt": "2026-09-20T02:03:43.016714+00:00",
+      "last_attempt": "2026-09-21T02:04:18.040769+00:00",
       "last_status": "http_429",
       "last_success": "2026-09-11T01:49:51.564407+00:00",
-      "consecutive_failures": 10
+      "consecutive_failures": 11
     },
     "South Korea": {
-      "last_attempt": "2026-09-20T02:02:38.238502+00:00",
+      "last_attempt": "2026-09-21T02:03:59.863210+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 13,
+      "consecutive_failures": 14,
       "last_success": "2026-09-01T15:42:05.141889+00:00"
     },
     "Sweden": {
@@ -2151,16 +2138,16 @@
       "consecutive_failures": 9
     },
     "Switzerland": {
-      "last_attempt": "2026-09-20T02:03:59.810345+00:00",
-      "last_status": "http_429",
-      "consecutive_failures": 10,
-      "last_success": "2026-09-12T19:47:54.176850+00:00"
+      "last_attempt": "2026-09-21T02:04:37.960379+00:00",
+      "last_status": "ok",
+      "consecutive_failures": 0,
+      "last_success": "2026-09-21T02:04:37.959440+00:00"
     },
     "USA": {
-      "last_attempt": "2026-09-20T19:56:08.241943+00:00",
-      "last_status": "http_429",
-      "consecutive_failures": 3,
-      "last_success": "2026-09-20T02:03:25.688941+00:00"
+      "last_attempt": "2026-09-21T02:03:42.437746+00:00",
+      "last_status": "ok",
+      "consecutive_failures": 0,
+      "last_success": "2026-09-21T02:03:42.436654+00:00"
     }
   },
   "harvest_stats": {
@@ -2169,7 +2156,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 138.691739
+    "duration_seconds": 262.11065
   },
   "health": {
     "pillars": {

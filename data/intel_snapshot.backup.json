@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-21T17:22:08.889875+00:00",
-  "version": "b194f548836f",
+  "last_updated": "2026-09-21T21:20:47.563740+00:00",
+  "version": "fede1052af37",
   "status": "healthy",
   "overall_rag": {
     "score": "GREEN",
@@ -16,18 +16,11 @@
     }
   },
   "executive_summary": {
-    "headline": "Supply chain risk has stabilized after volatile supplier signals; GPI and Infineon showed unconfirmed sharp price moves but no material operational impact yet.",
-    "next_step": "Monitor GPI and Infineon daily for the next 3 days; confirm whether their stock moves correlate with earnings, guidance, or other disclosed events, or if they reverse. If neither happens, escalate to your BAT sourcing lead to verify their financial health directly.",
-    "context": "Both GPI and Infineon registered 2\u20132.1\u00d7 normal daily volatility with no accompanying news in the past 7 days, and GPI moved three times in that window. Macro and peers both remain green; the suppliers pillar bounced back to green this cycle after earlier AMBER readings, so this appears contained rather than systemic. Worth checking whether inventory corrections or sector-wide margin pressure are shared drivers."
+    "headline": "Supply chain risk has stabilized across all pillars; monitor two unexplained stock moves in BAT-exposed suppliers for emerging signals.",
+    "next_step": "In 24\u201348 hours, check Infineon and GPI earnings calendars, regulatory filings, or sector news to confirm whether the recent price declines reflect company-specific or sector-wide pressure; if no news emerges, prepare brief escalation path to those suppliers.",
+    "context": "GPI has fallen three times in the past week (\u22125.4% to \u22125.5%, each 2\u20133\u00d7 normal daily volatility) with no public news attached, while Infineon dropped \u22127.7% in a single unconfirmed move. Both carry high BAT exposure and the lack of corroborating signals across macro, peers, or sector data suggests these may be isolated liquidity or technical moves\u2014worth verifying before assuming operational risk."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-09-01T20:20:08.970490+00:00",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "GREEN",
-      "overall": "GREEN"
-    },
     {
       "timestamp": "2026-09-02T01:47:36.923178+00:00",
       "macro": "GREEN",
@@ -580,36 +573,16 @@
       "peers": "GREEN",
       "suppliers": "GREEN",
       "overall": "GREEN"
+    },
+    {
+      "timestamp": "2026-09-21T21:20:42.623822+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "GREEN",
+      "overall": "GREEN"
     }
   ],
   "change_log": [
-    {
-      "at": "2026-08-31T18:52:20.123621+00:00",
-      "kind": "overall_rag",
-      "direction": "down",
-      "entity": "Overall status",
-      "headline": "Overall status AMBER \u2192 GREEN",
-      "detail": "Driven by: macro, peers, suppliers",
-      "href": null
-    },
-    {
-      "at": "2026-08-31T18:52:20.123621+00:00",
-      "kind": "pillar_rag",
-      "direction": "down",
-      "entity": "Suppliers",
-      "headline": "Suppliers pillar AMBER \u2192 GREEN",
-      "detail": "",
-      "href": null
-    },
-    {
-      "at": "2026-08-31T18:52:20.123621+00:00",
-      "kind": "peer_risk",
-      "direction": "down",
-      "entity": "Imperial Brands",
-      "headline": "Imperial Brands: MEDIUM \u2192 LOW",
-      "detail": "\ud83d\udcf0 Imperial Brands cutting thousands of jobs in U.S. and Europe",
-      "href": "/details/Imperial%20Brands"
-    },
     {
       "at": "2026-09-01T02:23:03.783203+00:00",
       "kind": "price_move",
@@ -823,7 +796,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-21T17:18:09.642360+00:00"
+        "last_fetched": "2026-09-21T21:18:24.928114+00:00"
       },
       "eu": {
         "status": "success",
@@ -834,7 +807,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.149",
-        "last_fetched": "2026-09-21T17:18:11.159665+00:00"
+        "last_fetched": "2026-09-21T21:18:25.688754+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -845,11 +818,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-21T17:18:11.160585+00:00"
+        "last_fetched": "2026-09-21T21:18:25.689577+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-21T17:18:11.160601+00:00"
+    "last_fetched": "2026-09-21T21:18:25.689593+00:00"
   },
   "peers": {
     "status": "success",
@@ -857,7 +830,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-21T17:18:14.373893+00:00"
+    "last_fetched": "2026-09-21T21:18:28.344784+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -889,13 +862,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.26,
+        "daily_change_pct": 0.6,
         "daily_sigma_pct": 1.82,
-        "current_price": 42.43,
+        "current_price": 42.15,
         "risk_analysis": "No supply chain risks identified. AMCOR (Printed Packaging) operating normally. BAT exposure: Critical.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.3%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.6%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -920,13 +893,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 2.42,
-        "daily_sigma_pct": 2.65,
-        "current_price": 9.53,
+        "daily_change_pct": -0.64,
+        "daily_sigma_pct": 2.63,
+        "current_price": 9.25,
         "risk_analysis": "No supply chain risks identified. GPI (Printed Packaging) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +2.4%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.6%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -951,9 +924,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.2,
-        "daily_sigma_pct": 1.75,
-        "current_price": 10.57,
+        "daily_change_pct": -1.79,
+        "daily_sigma_pct": 1.76,
+        "current_price": 10.45,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1006,9 +979,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | America Is Blundering Toward War With China - The New York Times",
+            "Opinion | America Is Blundering Toward War With China - nytimes.com",
             "How Trump and Xi went from tariff war to trade truce - Reuters",
-            "Can the US win the AI cold war with China? - Al Jazeera"
+            "Report: AI-Generated \u201cIntel\u201d Nearly Sparked US War With China - Truthout"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1049,8 +1022,8 @@
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
             "\u2018This is a war\u2019: South Africa battles femicide as women\u2019s bodies pile up - Al Jazeera",
-            "So close yet so far: Army ladies finish bittersweet fourth place at World Tug-of-War Championships - Forces News",
-            "South Africa strikes gold with nine gold medals at Tug-of-War World Championships in Mossel Bay - Zawya"
+            "Catholic Church Leaders in African Countries Scarred by War Unite in Call for Peace - aciafrica.org",
+            "Nigeria and South Korea help keep Europe flying as Iran war creates 510,000-barrel daily jet fuel gap - Business Insider Africa"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1107,13 +1080,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.53,
+        "daily_change_pct": -0.91,
         "daily_sigma_pct": 1.76,
-        "current_price": 65.34,
+        "current_price": 65.09,
         "risk_analysis": "No supply chain risks identified. Eastman (Filter Materials) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.5%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.9%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1183,9 +1156,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "Explosion injures 3 South Korean military officers in border area with North Korea - ABC News - Breaking News, Latest News and Videos",
+            "Explosion injures 3 South Korean military officers inside DMZ bordering North Korea - ABC News - Breaking News, Latest News and Videos",
             "South Korea will not send military to support US war on Iran, defying Trump pressure - The Guardian",
-            "North Korea launches 2 ballistic missiles toward the sea and dials up pressure on the U.S. - pbs.org"
+            "North Korea launches 2 ballistic missiles toward the sea and dials up pressure on the U.S. - PBS"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1242,13 +1215,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.33,
+        "daily_change_pct": 1.75,
         "daily_sigma_pct": 3.84,
-        "current_price": 12.15,
+        "current_price": 12.2,
         "risk_analysis": "No supply chain risks identified. SWM (Mativ) (Fine Papers) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +1.3%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.8%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1335,9 +1308,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.79,
-        "daily_sigma_pct": 1.2,
-        "current_price": 267.0,
+        "daily_change_pct": -1.47,
+        "daily_sigma_pct": 1.18,
+        "current_price": 262.3,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1350,8 +1323,8 @@
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
             "Opinion | 'Blackmail' Diplomacy: Why India Can't Be A Pawn In US' War On Russia - NDTV",
-            "India Is Again Squeezed Between the Threat of Trump Tariffs and Russian Oil - The New York Times",
-            "Iran warns US of wider war as tanker is hit near Strait of Hormuz - India Today"
+            "India Is Again Squeezed Between the Threat of Trump Tariffs and Russian Oil - nytimes.com",
+            "Accept 7 conditions for talks or face \u2018decisive war\u2019, Iran tells US - The Tribune"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1391,9 +1364,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | America Is Blundering Toward War With China - The New York Times",
+            "Opinion | America Is Blundering Toward War With China - nytimes.com",
             "How Trump and Xi went from tariff war to trade truce - Reuters",
-            "Can the US win the AI cold war with China? - Al Jazeera"
+            "Report: AI-Generated \u201cIntel\u201d Nearly Sparked US War With China - Truthout"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1464,9 +1437,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | America Is Blundering Toward War With China - The New York Times",
+            "Opinion | America Is Blundering Toward War With China - nytimes.com",
             "How Trump and Xi went from tariff war to trade truce - Reuters",
-            "Can the US win the AI cold war with China? - Al Jazeera"
+            "Report: AI-Generated \u201cIntel\u201d Nearly Sparked US War With China - Truthout"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1492,9 +1465,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.97,
-        "daily_sigma_pct": 3.2,
-        "current_price": 9.69,
+        "daily_change_pct": -3.1,
+        "daily_sigma_pct": 3.21,
+        "current_price": 9.39,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1506,9 +1479,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | America Is Blundering Toward War With China - The New York Times",
+            "Opinion | America Is Blundering Toward War With China - nytimes.com",
             "How Trump and Xi went from tariff war to trade truce - Reuters",
-            "Can the US win the AI cold war with China? - Al Jazeera"
+            "Report: AI-Generated \u201cIntel\u201d Nearly Sparked US War With China - Truthout"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1534,9 +1507,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 6.9,
+        "daily_change_pct": -3.08,
         "daily_sigma_pct": 2.44,
-        "current_price": 51.56,
+        "current_price": 49.97,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1548,9 +1521,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | America Is Blundering Toward War With China - The New York Times",
+            "Opinion | America Is Blundering Toward War With China - nytimes.com",
             "How Trump and Xi went from tariff war to trade truce - Reuters",
-            "Can the US win the AI cold war with China? - Al Jazeera"
+            "Report: AI-Generated \u201cIntel\u201d Nearly Sparked US War With China - Truthout"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1576,13 +1549,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.92,
-        "daily_sigma_pct": 2.62,
-        "current_price": 269.1,
+        "daily_change_pct": 1.59,
+        "daily_sigma_pct": 2.63,
+        "current_price": 270.87,
         "risk_analysis": "No supply chain risks identified. Texas Instruments (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +0.9%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.6%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1702,13 +1675,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.39,
-        "daily_sigma_pct": 3.19,
-        "current_price": 300.75,
+        "daily_change_pct": 1.37,
+        "daily_sigma_pct": 3.2,
+        "current_price": 303.67,
         "risk_analysis": "No supply chain risks identified. Jabil (Mechanical) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +0.4%",
+        "last_signal": "\u2713 Normal operations. Stock: +1.4%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1722,7 +1695,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-21T17:19:19.156205+00:00"
+    "last_fetched": "2026-09-21T21:19:33.648089+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1732,11 +1705,11 @@
       "rate_as_of": "Aug 2026",
       "rate_label": "Fed funds rate",
       "market_label": "S&P 500",
-      "market_change_pct": 1.39,
+      "market_change_pct": 1.49,
       "market_sigma_pct": 0.72,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "S&P 500 +1.39% today, inside its normal daily range of \u00b10.7%. CPI 3.4% YoY (Aug 2026) Fed funds rate 3.63% (Aug 2026).",
+      "summary": "S&P 500 +1.49% today, inside its normal daily range of \u00b10.7%. CPI 3.4% YoY (Aug 2026) Fed funds rate 3.63% (Aug 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -1766,11 +1739,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": -0.36,
-      "market_sigma_pct": 0.09,
+      "market_change_pct": -0.19,
+      "market_sigma_pct": 0.08,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY -0.36% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY -0.19% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -1783,9 +1756,9 @@
       "region": "Global/US ADR",
       "sentiment": "Neutral",
       "latest_headline": "British American Tobacco (LSE:BATS) Following Cash Flow And Buyback Hopes While Fair Value Stays Higher",
-      "stock_move": "+0.05%",
-      "current_price": 55.86000061035156,
-      "daily_change_pct": 0.05,
+      "stock_move": "-0.14%",
+      "current_price": 55.75,
+      "daily_change_pct": -0.14,
       "daily_sigma_pct": 1.78,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 British American Tobacco (LSE:BATS) Following Cash Flow And Buyback Hopes While Fair Value Stays Hig",
@@ -1801,9 +1774,9 @@
       "region": "US",
       "sentiment": "Neutral",
       "latest_headline": "Philip Morris Raises Dividend, Reinforces Growth Strategy",
-      "stock_move": "-0.16%",
-      "current_price": 188.32000732421875,
-      "daily_change_pct": -0.16,
+      "stock_move": "-0.60%",
+      "current_price": 187.47999572753906,
+      "daily_change_pct": -0.6,
       "daily_sigma_pct": 1.71,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Philip Morris Raises Dividend, Reinforces Growth Strategy",
@@ -2089,9 +2062,9 @@
       "last_success": "2026-09-20T02:03:04.650281+00:00"
     },
     "Finland": {
-      "last_attempt": "2026-09-21T17:20:30.216239+00:00",
-      "last_status": "ok",
-      "consecutive_failures": 0,
+      "last_attempt": "2026-09-21T21:20:42.623657+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 1,
       "last_success": "2026-09-21T17:20:30.215444+00:00"
     },
     "Germany": {
@@ -2131,15 +2104,15 @@
       "consecutive_failures": 9
     },
     "Switzerland": {
-      "last_attempt": "2026-09-21T17:19:50.390072+00:00",
-      "last_status": "ok",
-      "consecutive_failures": 0,
+      "last_attempt": "2026-09-21T21:20:24.942688+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 1,
       "last_success": "2026-09-21T17:19:50.390049+00:00"
     },
     "USA": {
-      "last_attempt": "2026-09-21T17:20:07.041082+00:00",
+      "last_attempt": "2026-09-21T21:20:03.956961+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 1,
+      "consecutive_failures": 2,
       "last_success": "2026-09-21T11:17:17.505421+00:00"
     }
   },
@@ -2149,7 +2122,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 244.129511
+    "duration_seconds": 146.991913
   },
   "health": {
     "pillars": {

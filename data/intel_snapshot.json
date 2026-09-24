@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-24T16:04:29.110820+00:00",
-  "version": "d837b07ad774",
+  "last_updated": "2026-09-24T20:54:51.689449+00:00",
+  "version": "a64509e16083",
   "status": "healthy",
   "overall_rag": {
     "score": "GREEN",
@@ -16,18 +16,11 @@
     }
   },
   "executive_summary": {
-    "headline": "GPI has fallen 4\u20135% on four consecutive days with no confirmed cause, creating pattern risk despite overall portfolio GREEN status.",
-    "next_step": "Within 24 hours, contact GPI counterparty and BAT procurement to isolate whether the moves reflect liquidity stress, margin call, demand shock, or unrelated market noise; escalate if cause remains unclear.",
-    "context": "GPI has posted four outsized daily moves (2.0\u20132.1\u00d7 normal range) over the past week, unacknowledged by news flow. High BAT exposure amplifies the impact of any sustained deterioration. The supplier pillar recovered to GREEN only recently; this pattern warrants verification that the reset was genuine and not masked by delayed signals."
+    "headline": "GPI has moved 4\u20135.5% below normal daily range four times in seven days with no confirmed cause, despite overall status returning to GREEN.",
+    "next_step": "Within 2 business days, confirm whether GPI's moves correlate with BAT demand/supply announcements or broader tobacco sector repricing; if unconfirmed after that window, escalate to BAT relationship manager to validate supplier stability.",
+    "context": "GPI price declines are material and patterned (four moves >1.6\u00d7 volatility in one week), yet no news or supplier signal explains them. This warrants urgent verification because high BAT exposure means unexplained weakness in a critical input supplier is a silent risk\u2014pattern repetition over 7 days rules out one-off noise."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-09-04T20:01:23.744184+00:00",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "GREEN",
-      "overall": "GREEN"
-    },
     {
       "timestamp": "2026-09-05T01:44:59.239256+00:00",
       "macro": "GREEN",
@@ -580,6 +573,13 @@
       "peers": "GREEN",
       "suppliers": "GREEN",
       "overall": "GREEN"
+    },
+    {
+      "timestamp": "2026-09-24T20:54:47.241021+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "GREEN",
+      "overall": "GREEN"
     }
   ],
   "change_log": [
@@ -769,7 +769,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-24T16:01:48.967504+00:00"
+        "last_fetched": "2026-09-24T20:51:46.998758+00:00"
       },
       "eu": {
         "status": "success",
@@ -780,7 +780,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1367",
-        "last_fetched": "2026-09-24T16:01:49.655796+00:00"
+        "last_fetched": "2026-09-24T20:51:47.669209+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -791,11 +791,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-24T16:01:49.656621+00:00"
+        "last_fetched": "2026-09-24T20:51:47.669948+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-24T16:01:49.656638+00:00"
+    "last_fetched": "2026-09-24T20:51:47.669961+00:00"
   },
   "peers": {
     "status": "success",
@@ -803,7 +803,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-24T16:02:00.921954+00:00"
+    "last_fetched": "2026-09-24T20:51:50.895494+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -835,13 +835,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.68,
-        "daily_sigma_pct": 1.82,
-        "current_price": 41.65,
+        "daily_change_pct": -1.64,
+        "daily_sigma_pct": 1.78,
+        "current_price": 42.1,
         "risk_analysis": "No supply chain risks identified. AMCOR (Printed Packaging) operating normally. BAT exposure: Critical.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -2.7%",
+        "last_signal": "\u2713 Normal operations. Stock: -1.6%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -866,13 +866,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -4.35,
-        "daily_sigma_pct": 2.66,
-        "current_price": 9.24,
+        "daily_change_pct": -3.31,
+        "daily_sigma_pct": 2.65,
+        "current_price": 9.34,
         "risk_analysis": "No supply chain risks identified. GPI (Printed Packaging) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -4.3%",
+        "last_signal": "\u2713 Normal operations. Stock: -3.3%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -911,7 +911,6 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
-            "Bunker mentality: the Nordics\u2019 cold war shelters being given a new lease of life - The Guardian",
             "Watch Finland President Stubb on Russia-Ukraine War and AI - Bloomberg.com"
           ],
           "escalated": true,
@@ -952,9 +951,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Exclusive: The Admiral Who Must Prevent War With China - Time Magazine",
-            "U.S. and China Agree to Extend Trade Truce by 2 Months, Bessent Says - The New York Times",
-            "US, China to extend trade war truce by 2 months - Yahoo Finance"
+            "US, China to extend trade war truce by 2 months - Supply Chain Dive",
+            "\u2018Hostile, but hooked\u2019: What\u2019s behind the US-China trade truce extension? - Al Jazeera",
+            "Exclusive: The Admiral Who Must Prevent War With China - time.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -994,8 +993,8 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
+            "Ethiopia\u2019s last civil war killed over half a million. Another could be starting. - The Washington Post",
             "Renewed fighting in northern Ethiopia effectively shatters peace deal that ended 2022 war - ABC News - Breaking News, Latest News and Videos",
-            "Tigrayan leaders say new war with Ethiopian govt has begun - France 24",
             "South Africa raises interest rate, citing Iran war price shocks - CLUB OF MOZAMBIQUE"
           ],
           "escalated": true,
@@ -1053,13 +1052,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.16,
+        "daily_change_pct": -0.91,
         "daily_sigma_pct": 1.75,
-        "current_price": 65.36,
+        "current_price": 66.19,
         "risk_analysis": "No supply chain risks identified. Eastman (Filter Materials) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -2.2%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.9%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1131,7 +1130,7 @@
           "headlines": [
             "Zelenskyy says Ukraine sent two North Korean POWs to South Korea - Al Jazeera",
             "Zelenskyy says Ukraine sent 2 North Korean prisoners of war to South Korea - AP News",
-            "Ukraine sent two captured North Korean soldiers to South Korea, Zelenskiy says - Reuters"
+            "\u200bUkraine Sent Two North Korean P.O.W.s to South Korea, Zelensky Says - nytimes.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1188,13 +1187,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.03,
-        "daily_sigma_pct": 3.84,
-        "current_price": 12.04,
+        "daily_change_pct": -0.98,
+        "daily_sigma_pct": 3.86,
+        "current_price": 12.17,
         "risk_analysis": "No supply chain risks identified. SWM (Mativ) (Fine Papers) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -2.0%",
+        "last_signal": "\u2713 Normal operations. Stock: -1.0%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1281,9 +1280,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.8,
-        "daily_sigma_pct": 1.21,
-        "current_price": 268.0,
+        "daily_change_pct": 1.64,
+        "daily_sigma_pct": 1.22,
+        "current_price": 270.15,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1297,7 +1296,7 @@
           "headlines": [
             "The Iran War Is Starving India - Yahoo",
             "Tata goes to war with itself - The Economist",
-            "Iran Threatens To Expand War To Indian Ocean If US Strikes Again - NDTV"
+            "Any terror attack originating from Pakistan to be considered act of war: India\u2019s Rajnath - The Business Standard"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1337,9 +1336,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Exclusive: The Admiral Who Must Prevent War With China - Time Magazine",
-            "U.S. and China Agree to Extend Trade Truce by 2 Months, Bessent Says - The New York Times",
-            "US, China to extend trade war truce by 2 months - Yahoo Finance"
+            "US, China to extend trade war truce by 2 months - Supply Chain Dive",
+            "\u2018Hostile, but hooked\u2019: What\u2019s behind the US-China trade truce extension? - Al Jazeera",
+            "Exclusive: The Admiral Who Must Prevent War With China - time.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1410,9 +1409,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Exclusive: The Admiral Who Must Prevent War With China - Time Magazine",
-            "U.S. and China Agree to Extend Trade Truce by 2 Months, Bessent Says - The New York Times",
-            "US, China to extend trade war truce by 2 months - Yahoo Finance"
+            "US, China to extend trade war truce by 2 months - Supply Chain Dive",
+            "\u2018Hostile, but hooked\u2019: What\u2019s behind the US-China trade truce extension? - Al Jazeera",
+            "Exclusive: The Admiral Who Must Prevent War With China - time.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1438,9 +1437,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.8,
-        "daily_sigma_pct": 3.2,
-        "current_price": 9.27,
+        "daily_change_pct": 0.16,
+        "daily_sigma_pct": 3.17,
+        "current_price": 9.28,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1452,9 +1451,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Exclusive: The Admiral Who Must Prevent War With China - Time Magazine",
-            "U.S. and China Agree to Extend Trade Truce by 2 Months, Bessent Says - The New York Times",
-            "US, China to extend trade war truce by 2 months - Yahoo Finance"
+            "US, China to extend trade war truce by 2 months - Supply Chain Dive",
+            "\u2018Hostile, but hooked\u2019: What\u2019s behind the US-China trade truce extension? - Al Jazeera",
+            "Exclusive: The Admiral Who Must Prevent War With China - time.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1480,9 +1479,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.03,
-        "daily_sigma_pct": 2.41,
-        "current_price": 50.03,
+        "daily_change_pct": -2.24,
+        "daily_sigma_pct": 2.4,
+        "current_price": 48.91,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1494,9 +1493,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Exclusive: The Admiral Who Must Prevent War With China - Time Magazine",
-            "U.S. and China Agree to Extend Trade Truce by 2 Months, Bessent Says - The New York Times",
-            "US, China to extend trade war truce by 2 months - Yahoo Finance"
+            "US, China to extend trade war truce by 2 months - Supply Chain Dive",
+            "\u2018Hostile, but hooked\u2019: What\u2019s behind the US-China trade truce extension? - Al Jazeera",
+            "Exclusive: The Admiral Who Must Prevent War With China - time.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1522,13 +1521,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.48,
-        "daily_sigma_pct": 2.42,
-        "current_price": 268.59,
+        "daily_change_pct": -0.72,
+        "daily_sigma_pct": 2.4,
+        "current_price": 270.65,
         "risk_analysis": "No supply chain risks identified. Texas Instruments (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.5%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.7%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1646,13 +1645,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.96,
-        "daily_sigma_pct": 3.21,
-        "current_price": 305.8,
+        "daily_change_pct": 0.63,
+        "daily_sigma_pct": 3.23,
+        "current_price": 310.69,
         "risk_analysis": "No supply chain risks identified. Jabil (Mechanical) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.0%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.6%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1666,7 +1665,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-24T16:03:06.973261+00:00"
+    "last_fetched": "2026-09-24T20:52:56.350889+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1676,11 +1675,11 @@
       "rate_as_of": "Aug 2026",
       "rate_label": "Fed funds rate",
       "market_label": "S&P 500",
-      "market_change_pct": -0.5,
+      "market_change_pct": -0.02,
       "market_sigma_pct": 0.71,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "S&P 500 -0.50% today, inside its normal daily range of \u00b10.7%. CPI 3.4% YoY (Aug 2026) Fed funds rate 3.63% (Aug 2026).",
+      "summary": "S&P 500 -0.02% today, inside its normal daily range of \u00b10.7%. CPI 3.4% YoY (Aug 2026) Fed funds rate 3.63% (Aug 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -1693,11 +1692,11 @@
       "rate_as_of": "Sep 2026",
       "rate_label": "ECB deposit facility rate",
       "market_label": "EUR/USD",
-      "market_change_pct": -0.65,
-      "market_sigma_pct": 0.28,
+      "market_change_pct": -0.58,
+      "market_sigma_pct": 0.27,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "EUR/USD -0.65% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
+      "summary": "EUR/USD -0.58% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -1710,11 +1709,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": 0.07,
-      "market_sigma_pct": 0.07,
+      "market_change_pct": 0.19,
+      "market_sigma_pct": 0.08,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY +0.07% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY +0.19% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -1727,9 +1726,9 @@
       "region": "Global/US ADR",
       "sentiment": "Neutral",
       "latest_headline": "British American Tobacco (LSE:BATS) Following Cash Flow And Buyback Hopes While Fair Value Stays Higher",
-      "stock_move": "+0.39%",
-      "current_price": 56.06999969482422,
-      "daily_change_pct": 0.39,
+      "stock_move": "+0.30%",
+      "current_price": 56.02000045776367,
+      "daily_change_pct": 0.3,
       "daily_sigma_pct": 1.73,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 British American Tobacco (LSE:BATS) Following Cash Flow And Buyback Hopes While Fair Value Stays Hig",
@@ -1744,13 +1743,13 @@
       "ticker": "PM",
       "region": "US",
       "sentiment": "Neutral",
-      "latest_headline": "Philip Morris International (PM) Lifts Quarterly Dividend 8.8% To $6.40 Annualized",
-      "stock_move": "+0.73%",
-      "current_price": 192.22999572753906,
-      "daily_change_pct": 0.73,
-      "daily_sigma_pct": 1.68,
+      "latest_headline": "3 Reasons Growth Investors Will Love Philip Morris (PM)",
+      "stock_move": "+0.35%",
+      "current_price": 191.5,
+      "daily_change_pct": 0.35,
+      "daily_sigma_pct": 1.69,
       "risk_level": "LOW",
-      "last_signal": "\ud83d\udcf0 Philip Morris International (PM) Lifts Quarterly Dividend 8.8% To $6.40 Annualized",
+      "last_signal": "\ud83d\udcf0 3 Reasons Growth Investors Will Love Philip Morris (PM)",
       "news_risk": false,
       "stock_risk": false,
       "sec_red_signals": 0,
@@ -1984,18 +1983,18 @@
       "fetched_at": "2026-09-24T16:03:29.713994+00:00"
     },
     "Japan": {
-      "article_count": 2739,
-      "avg_tone": -0.6,
+      "article_count": 2782,
+      "avg_tone": -0.4,
       "articles": [
         {
-          "title": "Mount Fuji Eruption Searches Spike But Japan Says There Is No Sign of an Eruption",
-          "url": "https://www.rustourismnews.com/2026/09/21/mount-fuji-eruption-searches-spike-but-japan-says-there-is-no-sign-of-an-eruption/",
-          "tone": -5
+          "title": "China position on safeguarding industrial , supply chains of critical minerals unchanged : spokesperson",
+          "url": "http://en.people.cn/n3/2026/0922/c90000-20502501.html",
+          "tone": -2
         },
         {
-          "title": "Tag : immigration _ and _ customs _ enforcement",
-          "url": "https://newsroomamerica.com/tag/immigration_and_customs_enforcement",
-          "tone": -8
+          "title": "Vi\u1ec7t Nam , Japan promote cooperation in semiconductor sector",
+          "url": "https://vietnamnews.vn/Sci-Tech/1800237/viet-nam-japan-promote-cooperation-in-semiconductor-sector.html",
+          "tone": 3
         },
         {
           "title": "Tata Electronics , Sumitomo Chemical to boost India chip supply chain",
@@ -2006,7 +2005,7 @@
       "has_relevant": true,
       "query_mode": "mentions",
       "window": "3d",
-      "fetched_at": "2026-09-24T01:58:35.461244+00:00"
+      "fetched_at": "2026-09-24T20:53:57.367221+00:00"
     },
     "Switzerland": {
       "article_count": 444,
@@ -2053,9 +2052,9 @@
       "last_success": "2026-09-20T02:03:04.650281+00:00"
     },
     "Finland": {
-      "last_attempt": "2026-09-24T01:57:03.530895+00:00",
+      "last_attempt": "2026-09-24T20:54:30.757221+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 5,
+      "consecutive_failures": 6,
       "last_success": "2026-09-22T10:29:06.431767+00:00"
     },
     "Germany": {
@@ -2065,27 +2064,27 @@
       "last_success": "2026-09-15T15:50:24.022185+00:00"
     },
     "India": {
-      "last_attempt": "2026-09-24T16:04:06.101266+00:00",
+      "last_attempt": "2026-09-24T20:53:37.343165+00:00",
       "last_status": "http_429",
       "last_success": "2026-09-24T01:57:39.413926+00:00",
-      "consecutive_failures": 2
+      "consecutive_failures": 3
     },
     "Japan": {
-      "last_attempt": "2026-09-24T16:04:25.121718+00:00",
-      "last_status": "http_429",
-      "consecutive_failures": 1,
-      "last_success": "2026-09-24T01:58:35.461244+00:00"
+      "last_attempt": "2026-09-24T20:53:57.367949+00:00",
+      "last_status": "ok",
+      "consecutive_failures": 0,
+      "last_success": "2026-09-24T20:53:57.367221+00:00"
     },
     "South Africa": {
-      "last_attempt": "2026-09-24T01:57:20.940642+00:00",
+      "last_attempt": "2026-09-24T20:54:47.240931+00:00",
       "last_status": "http_429",
       "last_success": "2026-09-22T10:31:07.309502+00:00",
-      "consecutive_failures": 4
+      "consecutive_failures": 5
     },
     "South Korea": {
-      "last_attempt": "2026-09-24T16:03:48.715348+00:00",
+      "last_attempt": "2026-09-24T20:53:21.100096+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 2,
+      "consecutive_failures": 3,
       "last_success": "2026-09-24T01:56:49.350012+00:00"
     },
     "Sweden": {
@@ -2101,9 +2100,9 @@
       "last_success": "2026-09-23T02:09:12.617804+00:00"
     },
     "USA": {
-      "last_attempt": "2026-09-24T16:03:29.715025+00:00",
-      "last_status": "ok",
-      "consecutive_failures": 0,
+      "last_attempt": "2026-09-24T20:54:14.780475+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 1,
       "last_success": "2026-09-24T16:03:29.713994+00:00"
     }
   },
@@ -2113,7 +2112,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 207.387293
+    "duration_seconds": 189.404529
   },
   "health": {
     "pillars": {

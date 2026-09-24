@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-24T01:59:11.155344+00:00",
-  "version": "3159e8f8f02b",
+  "last_updated": "2026-09-24T10:41:32.346297+00:00",
+  "version": "dd0bebc99951",
   "status": "healthy",
   "overall_rag": {
     "score": "GREEN",
@@ -16,18 +16,11 @@
     }
   },
   "executive_summary": {
-    "headline": "GPI has declined 5.4\u20135.5% three times in seven days with no confirmed driver, though overall risk has settled back to GREEN after a brief AMBER spike.",
-    "next_step": "Confirm GPI's three consecutive price moves within 7 days: check with the supplier directly and BAT counterparts on whether market, credit, or operational events explain the pattern, or treat as market noise if no corroboration surfaces by end of week.",
-    "context": "GPI moves are 2.0\u20132.1\u00d7 normal daily volatility and carry high BAT exposure, but lack corroborating news signals. The overall status recovered to GREEN across all pillars (macro, peers, suppliers) after fluctuating AMBER last week, so the price action appears isolated rather than systemic; clarifying its cause will either confirm a localized issue or allow deprioritization."
+    "headline": "GPI has fallen 5%+ three times in a week with no confirmed cause, but all pillars now show GREEN after recent volatility.",
+    "next_step": "Confirm whether GPI's repeated moves share a root cause (demand, liquidity, or BAT-specific news); if pattern continues, escalate within 48 hours.",
+    "context": "GPI posted three outsized daily drops (2.0\u20132.1\u00d7 normal volatility) over the past 7 days, each unconfirmed and with high BAT exposure. The overall score moved AMBER\u2192GREEN this cycle as macro and peer signals stabilized, but GPI's unexplained price action warrants monitoring to rule out emerging counterparty or sector stress."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-09-04T10:06:27.659698+00:00",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "GREEN",
-      "overall": "GREEN"
-    },
     {
       "timestamp": "2026-09-04T15:21:05.115280+00:00",
       "macro": "GREEN",
@@ -580,6 +573,13 @@
       "peers": "GREEN",
       "suppliers": "GREEN",
       "overall": "GREEN"
+    },
+    {
+      "timestamp": "2026-09-24T10:41:27.754175+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "GREEN",
+      "overall": "GREEN"
     }
   ],
   "change_log": [
@@ -760,7 +760,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-24T01:54:32.038287+00:00"
+        "last_fetched": "2026-09-24T10:38:48.610367+00:00"
       },
       "eu": {
         "status": "success",
@@ -771,7 +771,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.1411",
-        "last_fetched": "2026-09-24T01:54:32.766838+00:00"
+        "last_fetched": "2026-09-24T10:38:49.589104+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -782,11 +782,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-24T01:54:32.767777+00:00"
+        "last_fetched": "2026-09-24T10:38:49.589941+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-24T01:54:32.767793+00:00"
+    "last_fetched": "2026-09-24T10:38:49.589961+00:00"
   },
   "peers": {
     "status": "success",
@@ -794,7 +794,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-24T01:54:37.809133+00:00"
+    "last_fetched": "2026-09-24T10:39:01.717885+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -888,9 +888,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 3.26,
-        "daily_sigma_pct": 1.76,
-        "current_price": 10.92,
+        "daily_change_pct": -0.19,
+        "daily_sigma_pct": 1.77,
+        "current_price": 10.58,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -904,7 +904,7 @@
           "headlines": [
             "Bunker mentality: the Nordics\u2019 cold war shelters being given a new lease of life - theguardian.com",
             "Watch Finland President Stubb on Russia-Ukraine War and AI - Bloomberg.com",
-            "War may be coming. Are we psychologically ready? - BBC"
+            "Finland\u2019s Stubb warns Europe not to \u2018overreact\u2019 to Russian threats and sabotage - politico.eu"
           ],
           "escalated": true,
           "baseline_only": true
@@ -944,9 +944,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | America Is Blundering Toward War With China - The New York Times",
-            "China's purges of top military commanders spur questions about war-waging ability - Reuters",
-            "The US Is Badly Losing Its Trade War With China - Bloomberg.com"
+            "Opinion | America Is Blundering Toward War With China - nytimes.com",
+            "As Xi meets Trump, who\u2019s winning their trade war? - Al Jazeera",
+            "China's purges of top military commanders spur questions about war-waging ability - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -972,9 +972,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 4.12,
-        "daily_sigma_pct": 4.14,
-        "current_price": 1289.0,
+        "daily_change_pct": -0.7,
+        "daily_sigma_pct": 4.11,
+        "current_price": 1280.0,
         "risk_analysis": "Geopolitical risk in South Africa: Economic instability, infrastructure challenges, energy crisis. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -986,8 +986,8 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "South Africa raises interest rate, citing Iran war price shocks - Reuters",
             "Ethiopia and Tigray accuse each of launching offensives, fuelling fears of new war - BBC",
+            "South Africa raises interest rate, citing Iran war price shocks - CLUB OF MOZAMBIQUE",
             "South Africa Central Bank Hikes Rates as War Fans Inflation - Bloomberg.com"
           ],
           "escalated": true,
@@ -1122,8 +1122,8 @@
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
             "Ukraine sent two captured North Korean soldiers to South Korea, Zelenskiy says - Reuters",
-            "South Korea\u2019s Deliberate Strategic Ambiguity on Taiwan - War on the Rocks",
-            "Ukraine transfers captured North Korean soldiers to South Korea - The Jerusalem Post"
+            "Zelenskyy says Ukraine sent two North Korean POWs to South Korea - Al Jazeera",
+            "Zelenskyy says Ukraine sent 2 North Korean prisoners of war to South Korea - AP News"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1273,9 +1273,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 1.64,
+        "daily_change_pct": -0.8,
         "daily_sigma_pct": 1.21,
-        "current_price": 270.15,
+        "current_price": 268.0,
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1287,9 +1287,9 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "The Iran war is driving clean energy development. It\u2019s not enough to help the planet, yet - Los Angeles Times",
+            "Iran Threatens To Expand War To Indian Ocean If US Strikes Again - NDTV",
             "Zelensky accuses Putin of using nationals of 47 countries to fight Ukraine war - France 24",
-            "The 1965 India-Pakistan war: What happened, who won and what changed? - The Hindu"
+            "Iran may extend war to Indian Ocean if US attacks again: Khamenei's adviser | World News - Hindustan Times"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1329,9 +1329,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | America Is Blundering Toward War With China - The New York Times",
-            "China's purges of top military commanders spur questions about war-waging ability - Reuters",
-            "The US Is Badly Losing Its Trade War With China - Bloomberg.com"
+            "Opinion | America Is Blundering Toward War With China - nytimes.com",
+            "As Xi meets Trump, who\u2019s winning their trade war? - Al Jazeera",
+            "China's purges of top military commanders spur questions about war-waging ability - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1402,9 +1402,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | America Is Blundering Toward War With China - The New York Times",
-            "China's purges of top military commanders spur questions about war-waging ability - Reuters",
-            "The US Is Badly Losing Its Trade War With China - Bloomberg.com"
+            "Opinion | America Is Blundering Toward War With China - nytimes.com",
+            "As Xi meets Trump, who\u2019s winning their trade war? - Al Jazeera",
+            "China's purges of top military commanders spur questions about war-waging ability - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1430,9 +1430,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.49,
+        "daily_change_pct": 0.16,
         "daily_sigma_pct": 3.17,
-        "current_price": 9.22,
+        "current_price": 9.28,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1444,9 +1444,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | America Is Blundering Toward War With China - The New York Times",
-            "China's purges of top military commanders spur questions about war-waging ability - Reuters",
-            "The US Is Badly Losing Its Trade War With China - Bloomberg.com"
+            "Opinion | America Is Blundering Toward War With China - nytimes.com",
+            "As Xi meets Trump, who\u2019s winning their trade war? - Al Jazeera",
+            "China's purges of top military commanders spur questions about war-waging ability - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1472,9 +1472,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.94,
-        "daily_sigma_pct": 2.39,
-        "current_price": 49.56,
+        "daily_change_pct": -2.24,
+        "daily_sigma_pct": 2.4,
+        "current_price": 48.91,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. BAT exposure: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1486,9 +1486,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Opinion | America Is Blundering Toward War With China - The New York Times",
-            "China's purges of top military commanders spur questions about war-waging ability - Reuters",
-            "The US Is Badly Losing Its Trade War With China - Bloomberg.com"
+            "Opinion | America Is Blundering Toward War With China - nytimes.com",
+            "As Xi meets Trump, who\u2019s winning their trade war? - Al Jazeera",
+            "China's purges of top military commanders spur questions about war-waging ability - Reuters"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1545,13 +1545,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 3.16,
-        "daily_sigma_pct": 3.67,
-        "current_price": 60.13,
+        "daily_change_pct": -3.94,
+        "daily_sigma_pct": 3.68,
+        "current_price": 56.26,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +3.2%",
+        "last_signal": "\u2713 Normal operations. Stock: -3.9%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1658,7 +1658,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-24T01:55:42.208343+00:00"
+    "last_fetched": "2026-09-24T10:40:06.392854+00:00"
   },
   "macro_economy": {
     "us": {
@@ -1685,11 +1685,11 @@
       "rate_as_of": "Sep 2026",
       "rate_label": "ECB deposit facility rate",
       "market_label": "EUR/USD",
-      "market_change_pct": -0.57,
+      "market_change_pct": -0.63,
       "market_sigma_pct": 0.27,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "EUR/USD -0.57% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
+      "summary": "EUR/USD -0.63% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -1702,11 +1702,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": 0.25,
+      "market_change_pct": 0.19,
       "market_sigma_pct": 0.08,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY +0.25% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY +0.19% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -1753,11 +1753,11 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Negative",
+      "sentiment": "Positive",
       "latest_headline": "Are Investors Undervaluing Imperial Tobacco Group (IMBBY) Right Now?",
-      "stock_move": "-1.17%",
-      "current_price": 2448.0,
-      "daily_change_pct": -1.17,
+      "stock_move": "+1.22%",
+      "current_price": 2497.0,
+      "daily_change_pct": 1.22,
       "daily_sigma_pct": 1.4,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Are Investors Undervaluing Imperial Tobacco Group (IMBBY) Right Now?",
@@ -1773,10 +1773,10 @@
       "region": "Japan",
       "sentiment": "Neutral",
       "latest_headline": "Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
-      "stock_move": "-0.33%",
-      "current_price": 6863.0,
-      "daily_change_pct": -0.33,
-      "daily_sigma_pct": 1.54,
+      "stock_move": "-0.20%",
+      "current_price": 6872.0,
+      "daily_change_pct": -0.2,
+      "daily_sigma_pct": 1.53,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
       "news_risk": false,
@@ -2072,10 +2072,10 @@
       "last_success": "2026-09-15T15:50:24.022185+00:00"
     },
     "India": {
-      "last_attempt": "2026-09-24T01:57:39.414854+00:00",
-      "last_status": "ok",
+      "last_attempt": "2026-09-24T10:41:27.754044+00:00",
+      "last_status": "http_429",
       "last_success": "2026-09-24T01:57:39.413926+00:00",
-      "consecutive_failures": 0
+      "consecutive_failures": 1
     },
     "Japan": {
       "last_attempt": "2026-09-24T01:58:35.462203+00:00",
@@ -2090,9 +2090,9 @@
       "consecutive_failures": 4
     },
     "South Korea": {
-      "last_attempt": "2026-09-24T01:56:49.351070+00:00",
-      "last_status": "ok",
-      "consecutive_failures": 0,
+      "last_attempt": "2026-09-24T10:41:06.093242+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 1,
       "last_success": "2026-09-24T01:56:49.350012+00:00"
     },
     "Sweden": {
@@ -2108,9 +2108,9 @@
       "last_success": "2026-09-23T02:09:12.617804+00:00"
     },
     "USA": {
-      "last_attempt": "2026-09-24T01:56:31.072522+00:00",
-      "last_status": "ok",
-      "consecutive_failures": 0,
+      "last_attempt": "2026-09-24T10:40:36.541523+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 1,
       "last_success": "2026-09-24T01:56:31.071510+00:00"
     }
   },
@@ -2120,7 +2120,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 283.993497
+    "duration_seconds": 169.435687
   },
   "health": {
     "pillars": {

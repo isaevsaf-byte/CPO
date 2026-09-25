@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-09-25T10:45:45.766567+00:00",
-  "version": "9267475a4da5",
+  "last_updated": "2026-09-25T16:05:29.905985+00:00",
+  "version": "200e86839b32",
   "status": "healthy",
   "overall_rag": {
     "score": "GREEN",
@@ -16,18 +16,11 @@
     }
   },
   "executive_summary": {
-    "headline": "GPI has posted four unexplained drops of 1.6\u20132.1\u00d7 normal daily range within seven days, all with high BAT exposure; root cause remains unconfirmed despite supplier pillar now stable.",
-    "next_step": "Contact GPI counterparty within 24 hours to confirm operational or financial status; request any scheduled disclosures or regulatory filings that might explain the price moves.",
-    "context": "GPI's repeated moves (\u22124.3% to \u22125.5% over four days last week) are outliers relative to normal volatility and coincide with a brief suppliers pillar amber episode that has since cleared. The moves themselves are real and worth verifying, though no corroborating news or peer/macro trigger has surfaced yet\u2014worth checking whether an undisclosed supply or credit event at GPI is driving the pattern."
+    "headline": "GPI has posted four unexplained price declines of 4\u20135.5% over the past week, each 1.6\u20132.1\u00d7 normal daily volatility, with no corroborating news yet identified.",
+    "next_step": "Within 24 hours, contact GPI directly and your BAT team to confirm whether operational, financial, or market-driven factors are behind these moves; escalate if cause remains opaque after that call.",
+    "context": "All four GPI price moves remain unconfirmed against public signals, but the pattern\u2014consistent magnitude, compressed timeframe, high BAT exposure\u2014warrants rapid root-cause verification. No supplier or macro news has yet explained the decline, so internal data gaps or real but unreported events are both possible."
   },
   "rag_history": [
-    {
-      "timestamp": "2026-09-05T14:10:09.316801+00:00",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "GREEN",
-      "overall": "GREEN"
-    },
     {
       "timestamp": "2026-09-05T19:40:45.564363+00:00",
       "macro": "GREEN",
@@ -580,6 +573,13 @@
       "peers": "GREEN",
       "suppliers": "GREEN",
       "overall": "GREEN"
+    },
+    {
+      "timestamp": "2026-09-25T16:05:24.718685+00:00",
+      "macro": "GREEN",
+      "peers": "GREEN",
+      "suppliers": "GREEN",
+      "overall": "GREEN"
     }
   ],
   "change_log": [
@@ -769,18 +769,18 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-25T10:42:13.010621+00:00"
+        "last_fetched": "2026-09-25T16:02:22.679835+00:00"
       },
       "eu": {
         "status": "success",
         "region": "EU",
         "indicators": {
-          "fx_rate": 1.1367,
+          "fx_rate": 1.1403,
           "inflation": "Placeholder - HICP data",
           "policy": "Placeholder - ECB policy updates"
         },
-        "summary": "EU economic indicators - EUR/USD: 1.1367",
-        "last_fetched": "2026-09-25T10:42:13.770620+00:00"
+        "summary": "EU economic indicators - EUR/USD: 1.1403",
+        "last_fetched": "2026-09-25T16:02:23.520455+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -791,11 +791,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-09-25T10:42:13.771660+00:00"
+        "last_fetched": "2026-09-25T16:02:23.521331+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-09-25T10:42:13.771683+00:00"
+    "last_fetched": "2026-09-25T16:02:23.521351+00:00"
   },
   "peers": {
     "status": "success",
@@ -803,7 +803,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-09-25T10:42:36.884045+00:00"
+    "last_fetched": "2026-09-25T16:02:25.946087+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -835,13 +835,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.64,
-        "daily_sigma_pct": 1.78,
-        "current_price": 42.1,
+        "daily_change_pct": 0.51,
+        "daily_sigma_pct": 1.77,
+        "current_price": 42.31,
         "risk_analysis": "No supply chain risks identified. AMCOR (Printed Packaging) operating normally. BAT exposure: Critical.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.6%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.5%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -866,13 +866,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -3.31,
-        "daily_sigma_pct": 2.65,
-        "current_price": 9.34,
+        "daily_change_pct": 0.32,
+        "daily_sigma_pct": 2.59,
+        "current_price": 9.37,
         "risk_analysis": "No supply chain risks identified. GPI (Printed Packaging) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -3.3%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.3%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -897,9 +897,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.19,
+        "daily_change_pct": -0.71,
         "daily_sigma_pct": 1.77,
-        "current_price": 10.53,
+        "current_price": 10.44,
         "risk_analysis": "Geopolitical risk in Finland: NATO frontline state, border with Russia. Stora Enso (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -911,9 +911,9 @@
           "level": "MEDIUM",
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
-            "Ukraine war briefing: Finland urges Elon Musk to expand Kyiv\u2019s Starlink coverage over Russia - The Guardian",
+            "Ukraine war briefing: Finland urges Elon Musk to expand Kyiv\u2019s Starlink coverage over Russia - theguardian.com",
             "Why is Finland asking Musk to help Ukraine prepare for winter war against Russia? - The Times of India",
-            "Watch Finland President Stubb on Russia-Ukraine War and AI - Bloomberg.com"
+            "Watch Finland President Stubb on Russia-Ukraine War and AI - bloomberg.com"
           ],
           "escalated": true,
           "baseline_only": true
@@ -953,9 +953,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Iran says it's up to U.S. to end war as China presses for de-escalation - CNBC",
+            "Trump and China's Xi discuss AI, trade and Iran war during state visit - NPR",
             "\u2018Hostile, but hooked\u2019: What\u2019s behind the US-China trade truce extension? - aljazeera.com",
-            "US, China to extend trade war truce by 2 months - Supply Chain Dive"
+            "Iran offers to reopen Strait of Hormuz within 7 days and restart nuclear talks - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -981,9 +981,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -3.36,
+        "daily_change_pct": -3.59,
         "daily_sigma_pct": 4.16,
-        "current_price": 1237.0,
+        "current_price": 1234.0,
         "risk_analysis": "Geopolitical risk in South Africa: Economic instability, infrastructure challenges, energy crisis. Sappi (Printing Substrates) located in affected region. BAT exposure: Medium. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -995,9 +995,9 @@
           "level": "MEDIUM",
           "reason": "Economic instability, infrastructure challenges, energy crisis",
           "headlines": [
-            "South Africa raises interest rate, citing Iran war price shocks - Reuters",
-            "South Africa Central Bank Hikes Rates as War Fans Inflation - Bloomberg.com",
-            "South Africa raises interest rate, citing Iran war price shocks - TradingView"
+            "How the U.S. war with Iran is impacting African economies - marketplace.org",
+            "Ethiopia: Tigray rebels claim \"full-blown war\" - France 24",
+            "War has returned to Ethiopia\u2019s Tigray \u2014 and former enemies are now fighting together. What changed? - CNN"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1054,13 +1054,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.91,
-        "daily_sigma_pct": 1.75,
-        "current_price": 66.19,
+        "daily_change_pct": 0.63,
+        "daily_sigma_pct": 1.74,
+        "current_price": 66.61,
         "risk_analysis": "No supply chain risks identified. Eastman (Filter Materials) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.9%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.6%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1132,7 +1132,7 @@
           "headlines": [
             "Why South Korea won\u2019t send military to Strait of Hormuz - Responsible Statecraft",
             "Zelenskyy says Ukraine sent 2 North Korean prisoners of war to South Korea - AP News",
-            "Zelenskyy says Ukraine sent two North Korean POWs to South Korea - aljazeera.com"
+            "Zelensky breaches confidentiality agreement by disclosing transfer of North Korean POWs, South Korea says - The Kyiv Independent"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1189,13 +1189,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.98,
-        "daily_sigma_pct": 3.86,
-        "current_price": 12.17,
+        "daily_change_pct": -0.21,
+        "daily_sigma_pct": 3.83,
+        "current_price": 12.15,
         "risk_analysis": "No supply chain risks identified. SWM (Mativ) (Fine Papers) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -1.0%",
+        "last_signal": "\u2713 Normal operations. Stock: -0.2%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1297,8 +1297,8 @@
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
             "Iran offers US 7-day plan to end war, reopen Strait of Hormuz - The Times of India",
-            "The Iran War Is Starving India - Yahoo",
-            "Tata goes to war with itself - The Economist"
+            "Tata goes to war with itself - The Economist",
+            "Iran Threatens To Expand War To Indian Ocean If US Strikes Again - NDTV"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1338,9 +1338,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Iran says it's up to U.S. to end war as China presses for de-escalation - CNBC",
+            "Trump and China's Xi discuss AI, trade and Iran war during state visit - NPR",
             "\u2018Hostile, but hooked\u2019: What\u2019s behind the US-China trade truce extension? - aljazeera.com",
-            "US, China to extend trade war truce by 2 months - Supply Chain Dive"
+            "Iran offers to reopen Strait of Hormuz within 7 days and restart nuclear talks - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1411,9 +1411,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Iran says it's up to U.S. to end war as China presses for de-escalation - CNBC",
+            "Trump and China's Xi discuss AI, trade and Iran war during state visit - NPR",
             "\u2018Hostile, but hooked\u2019: What\u2019s behind the US-China trade truce extension? - aljazeera.com",
-            "US, China to extend trade war truce by 2 months - Supply Chain Dive"
+            "Iran offers to reopen Strait of Hormuz within 7 days and restart nuclear talks - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1439,9 +1439,9 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -1.51,
-        "daily_sigma_pct": 3.17,
-        "current_price": 9.14,
+        "daily_change_pct": 0.16,
+        "daily_sigma_pct": 3.19,
+        "current_price": 9.28,
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. BAT exposure: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
         "event_risk_level": "LOW",
@@ -1453,9 +1453,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Iran says it's up to U.S. to end war as China presses for de-escalation - CNBC",
+            "Trump and China's Xi discuss AI, trade and Iran war during state visit - NPR",
             "\u2018Hostile, but hooked\u2019: What\u2019s behind the US-China trade truce extension? - aljazeera.com",
-            "US, China to extend trade war truce by 2 months - Supply Chain Dive"
+            "Iran offers to reopen Strait of Hormuz within 7 days and restart nuclear talks - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1495,9 +1495,9 @@
           "level": "MEDIUM",
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
-            "Iran says it's up to U.S. to end war as China presses for de-escalation - CNBC",
+            "Trump and China's Xi discuss AI, trade and Iran war during state visit - NPR",
             "\u2018Hostile, but hooked\u2019: What\u2019s behind the US-China trade truce extension? - aljazeera.com",
-            "US, China to extend trade war truce by 2 months - Supply Chain Dive"
+            "Iran offers to reopen Strait of Hormuz within 7 days and restart nuclear talks - CNBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1523,13 +1523,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.72,
-        "daily_sigma_pct": 2.4,
-        "current_price": 270.65,
+        "daily_change_pct": 2.48,
+        "daily_sigma_pct": 2.39,
+        "current_price": 277.37,
         "risk_analysis": "No supply chain risks identified. Texas Instruments (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: -0.7%",
+        "last_signal": "\u2713 Normal operations. Stock: +2.5%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1554,13 +1554,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.92,
+        "daily_change_pct": 0.8,
         "daily_sigma_pct": 3.65,
-        "current_price": 56.78,
+        "current_price": 56.71,
         "risk_analysis": "No supply chain risks identified. Infineon (EE Component) operating normally. BAT exposure: High.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +0.9%",
+        "last_signal": "\u2713 Normal operations. Stock: +0.8%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1647,13 +1647,13 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": 0.63,
+        "daily_change_pct": 4.09,
         "daily_sigma_pct": 3.23,
-        "current_price": 310.69,
+        "current_price": 323.39,
         "risk_analysis": "No supply chain risks identified. Jabil (Mechanical) operating normally. BAT exposure: Medium.",
         "risk_level": "LOW",
         "event_risk_level": "LOW",
-        "last_signal": "\u2713 Normal operations. Stock: +0.6%",
+        "last_signal": "\u2713 Normal operations. Stock: +4.1%",
         "counts_toward_rag": true,
         "price_move_only": false,
         "geopolitical_risk": null,
@@ -1667,21 +1667,21 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-09-25T10:43:40.944317+00:00"
+    "last_fetched": "2026-09-25T16:03:30.750003+00:00"
   },
   "macro_economy": {
     "us": {
-      "cpi": "3.4%",
-      "cpi_as_of": "Aug 2026",
+      "cpi": null,
+      "cpi_as_of": null,
       "rate": "3.63%",
       "rate_as_of": "Aug 2026",
       "rate_label": "Fed funds rate",
       "market_label": "S&P 500",
-      "market_change_pct": -0.02,
-      "market_sigma_pct": 0.71,
+      "market_change_pct": 0.4,
+      "market_sigma_pct": 0.7,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "S&P 500 -0.02% today, inside its normal daily range of \u00b10.7%. CPI 3.4% YoY (Aug 2026) Fed funds rate 3.63% (Aug 2026).",
+      "summary": "S&P 500 +0.40% today, inside its normal daily range of \u00b10.7%. Fed funds rate 3.63% (Aug 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -1694,11 +1694,11 @@
       "rate_as_of": "Sep 2026",
       "rate_label": "ECB deposit facility rate",
       "market_label": "EUR/USD",
-      "market_change_pct": 0.15,
+      "market_change_pct": 0.22,
       "market_sigma_pct": 0.27,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "EUR/USD +0.15% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
+      "summary": "EUR/USD +0.22% today, inside its normal daily range of \u00b10.3%. CPI 3.2% YoY (Aug 2026) ECB deposit facility rate 2.50% (Sep 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -1711,11 +1711,11 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": -0.11,
-      "market_sigma_pct": 0.08,
+      "market_change_pct": 0.02,
+      "market_sigma_pct": 0.07,
       "market_severity": "quiet",
       "trend": "Stable",
-      "summary": "USD/CNY -0.11% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY +0.02% today, inside its normal daily range of \u00b10.1%. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -1726,12 +1726,12 @@
       "name": "British American Tobacco",
       "ticker": "BTI",
       "region": "Global/US ADR",
-      "sentiment": "Neutral",
+      "sentiment": "Negative",
       "latest_headline": "British American Tobacco (LSE:BATS) Following Cash Flow And Buyback Hopes While Fair Value Stays Higher",
-      "stock_move": "+0.30%",
-      "current_price": 56.02000045776367,
-      "daily_change_pct": 0.3,
-      "daily_sigma_pct": 1.73,
+      "stock_move": "-1.18%",
+      "current_price": 55.36000061035156,
+      "daily_change_pct": -1.18,
+      "daily_sigma_pct": 1.7,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 British American Tobacco (LSE:BATS) Following Cash Flow And Buyback Hopes While Fair Value Stays Hig",
       "news_risk": false,
@@ -1744,12 +1744,12 @@
       "name": "Philip Morris Int.",
       "ticker": "PM",
       "region": "US",
-      "sentiment": "Neutral",
+      "sentiment": "Negative",
       "latest_headline": "3 Reasons Growth Investors Will Love Philip Morris (PM)",
-      "stock_move": "+0.35%",
-      "current_price": 191.5,
-      "daily_change_pct": 0.35,
-      "daily_sigma_pct": 1.69,
+      "stock_move": "-1.70%",
+      "current_price": 188.25,
+      "daily_change_pct": -1.7,
+      "daily_sigma_pct": 1.67,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 3 Reasons Growth Investors Will Love Philip Morris (PM)",
       "news_risk": false,
@@ -1762,12 +1762,12 @@
       "name": "Imperial Brands",
       "ticker": "IMB.L",
       "region": "UK",
-      "sentiment": "Neutral",
+      "sentiment": "Negative",
       "latest_headline": "Are Investors Undervaluing Imperial Tobacco Group (IMBBY) Right Now?",
-      "stock_move": "-0.69%",
-      "current_price": 2458.0,
-      "daily_change_pct": -0.69,
-      "daily_sigma_pct": 1.39,
+      "stock_move": "-1.33%",
+      "current_price": 2442.0,
+      "daily_change_pct": -1.33,
+      "daily_sigma_pct": 1.4,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Are Investors Undervaluing Imperial Tobacco Group (IMBBY) Right Now?",
       "news_risk": false,
@@ -1780,12 +1780,12 @@
       "name": "Japan Tobacco",
       "ticker": "2914.T",
       "region": "Japan",
-      "sentiment": "Positive",
+      "sentiment": "Neutral",
       "latest_headline": "Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
-      "stock_move": "+1.03%",
-      "current_price": 6943.0,
-      "daily_change_pct": 1.03,
-      "daily_sigma_pct": 1.54,
+      "stock_move": "-0.20%",
+      "current_price": 6872.0,
+      "daily_change_pct": -0.2,
+      "daily_sigma_pct": 1.55,
       "risk_level": "LOW",
       "last_signal": "\ud83d\udcf0 Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
       "news_risk": false,
@@ -1970,7 +1970,7 @@
       "fetched_at": "2026-09-16T02:03:20.933520+00:00"
     },
     "USA": {
-      "article_count": 29448,
+      "article_count": 25042,
       "avg_tone": -1.2,
       "articles": [
         {
@@ -2002,7 +2002,7 @@
       "has_relevant": true,
       "query_mode": "domestic_press",
       "window": "1d",
-      "fetched_at": "2026-09-25T10:43:57.470478+00:00"
+      "fetched_at": "2026-09-25T16:04:27.777651+00:00"
     },
     "Japan": {
       "article_count": 2782,
@@ -2086,15 +2086,15 @@
       "last_success": "2026-09-15T15:50:24.022185+00:00"
     },
     "India": {
-      "last_attempt": "2026-09-25T10:45:05.871716+00:00",
+      "last_attempt": "2026-09-25T16:05:24.718527+00:00",
       "last_status": "http_429",
       "last_success": "2026-09-24T01:57:39.413926+00:00",
-      "consecutive_failures": 4
+      "consecutive_failures": 5
     },
     "Japan": {
-      "last_attempt": "2026-09-25T10:44:13.610440+00:00",
+      "last_attempt": "2026-09-25T16:04:06.429909+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 2,
+      "consecutive_failures": 3,
       "last_success": "2026-09-24T20:53:57.367221+00:00"
     },
     "South Africa": {
@@ -2104,9 +2104,9 @@
       "consecutive_failures": 7
     },
     "South Korea": {
-      "last_attempt": "2026-09-25T10:44:49.873547+00:00",
-      "last_status": "ok",
-      "consecutive_failures": 0,
+      "last_attempt": "2026-09-25T16:04:46.972746+00:00",
+      "last_status": "http_429",
+      "consecutive_failures": 1,
       "last_success": "2026-09-25T10:44:49.872701+00:00"
     },
     "Sweden": {
@@ -2116,16 +2116,16 @@
       "consecutive_failures": 10
     },
     "Switzerland": {
-      "last_attempt": "2026-09-25T10:44:30.518767+00:00",
+      "last_attempt": "2026-09-25T16:05:05.914393+00:00",
       "last_status": "http_429",
-      "consecutive_failures": 4,
+      "consecutive_failures": 5,
       "last_success": "2026-09-23T02:09:12.617804+00:00"
     },
     "USA": {
-      "last_attempt": "2026-09-25T10:43:57.471553+00:00",
+      "last_attempt": "2026-09-25T16:04:27.778441+00:00",
       "last_status": "ok",
       "consecutive_failures": 0,
-      "last_success": "2026-09-25T10:43:57.470478+00:00"
+      "last_success": "2026-09-25T16:04:27.777651+00:00"
     }
   },
   "harvest_stats": {
@@ -2134,7 +2134,7 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 217.861996
+    "duration_seconds": 230.052173
   },
   "health": {
     "pillars": {

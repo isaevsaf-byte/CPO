@@ -119,7 +119,7 @@ re-tier a supplier, edit that file:
   Graphic Packaging (`GPK`), and `SAP` is SAP SE, not Sappi (`SAP.JO`). Both
   were live on this watchlist and fed another company's price and headlines
   into a supplier's risk score
-- `location` — the country of the **site that supplies BAT**, not the legal
+- `location` — the country of the **site that supplies the company**, not the legal
   headquarters: a strike, a power cut or a border closure hits the plant, not
   the registered office. Where the headquarters sits elsewhere, record it as
   `hq_country` so the fact isn't lost — Weener's plant is in Weener, Germany

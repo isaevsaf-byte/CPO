@@ -1878,7 +1878,7 @@ def _load_watchlist(path: Path) -> tuple:
             # category rather than repeated (and eventually contradicted) on
             # every supplier row.
             "segment": entry.get("segment") or segments.get(category, "Combustibles"),
-            # The country of the site that supplies BAT — a strike or a border
+            # The country of the site that supplies the company — a strike or a border
             # closure hits the plant, not the registered office. Where the legal
             # headquarters sits elsewhere, hq_country keeps that fact visible
             # rather than forcing one field to mean both.
@@ -3186,7 +3186,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
                       previous_suppliers=None, previous_geo_state=None,
                       extra_signals=None):
     """
-    Process supplier watchlist and assess SUPPLY CHAIN RISK to BAT.
+    Process supplier watchlist and assess SUPPLY CHAIN RISK to the company.
 
     Risk is assessed from SIX layers (each can escalate):
       0. Sanctions screening (OFAC SDN) — an automatic, non-overridable CRITICAL
@@ -3336,7 +3336,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
 
     logger.info(f"Geopolitical scan complete. {sum(1 for v in country_news_cache.values() if v['level'] != 'LOW')} countries with elevated risk.")
 
-    # Keywords indicating REAL supply chain risk to BAT
+    # Keywords indicating REAL supply chain risk to the company
     # live in SUPPLY_RISK_KEYWORDS, shared with the unlisted-supplier scan.
 
     # Check each supplier against CISA alerts
@@ -3466,7 +3466,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         slug = supplier_name.lower().replace(" ", "-").replace("(", "").replace(")", "").replace("huizhou-byd-electronic", "byd-electronic")
 
         # ================================================================
-        # RISK LEVEL DETERMINATION - Based on BAT supply chain impact
+        # RISK LEVEL DETERMINATION - Based on supply chain impact on the company
         # Layers 1-3: Cyber, Stock, News (sets initial risk level)
         # ================================================================
         supplier_risk_level = "LOW"
@@ -3515,7 +3515,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         elif cyber_risk:
             supplier_risk_level = "CRITICAL" if len(matching_vulns) >= 2 else "HIGH"
             last_signal = f"🔒 Cyber vulnerability: {len(matching_vulns)} CISA KEV match(es) - {', '.join([v.get('cveID', 'N/A') for v in matching_vulns[:2]])}"
-            risk_analysis = f"CISA Known Exploited Vulnerability detected. {supplier_name} systems may be at risk. {bat_exposure} exposure to BAT requires security assessment."
+            risk_analysis = f"CISA Known Exploited Vulnerability detected. {supplier_name} systems may be at risk. {bat_exposure} exposure tier: security assessment needed."
 
         # Priority 1.5: CPSC safety recall (a real, already-happened event —
         # ranked above news/stock signals but below an active cyber breach)
@@ -3523,7 +3523,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             supplier_risk_level = "CRITICAL" if len(matching_recalls) >= 2 else "HIGH"
             first_recall = matching_recalls[0]
             last_signal = f"⚠️ CPSC recall: {first_recall['product']} ({first_recall['recallNumber']})"
-            risk_analysis = f"CPSC safety recall on file for {supplier_name}: {first_recall['description']}. {bat_exposure} exposure to BAT requires supplier quality review."
+            risk_analysis = f"CPSC safety recall on file for {supplier_name}: {first_recall['description']}. {bat_exposure} exposure tier: supplier quality review needed."
 
         # Priority 2: News-based operational risk (yfinance + Google News)
         elif operational_risk and news_items:
@@ -3537,7 +3537,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             else:
                 supplier_risk_level = "MEDIUM"
                 last_signal = f"📋 Monitor: {news_headline[:100]}"
-            risk_analysis = f"{risk_reason}. {supplier_name} ({category}) requires monitoring. BAT exposure: {bat_exposure}."
+            risk_analysis = f"{risk_reason}. {supplier_name} ({category}) requires monitoring. Exposure tier: {bat_exposure}."
 
         # Priority 3-4: pure price triggers, reached only when the news scan
         # above found nothing concerning. A price move alone doesn't confirm
@@ -3564,21 +3564,21 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
                 risk_analysis = (
                     f"{supplier_name} fell {move_text} — far outside its normal trading range. "
                     f"{corroboration_note} A move this size warrants direct follow-up regardless. "
-                    f"BAT exposure: {bat_exposure}."
+                    f"Exposure tier: {bat_exposure}."
                 )
             elif bat_exposure in ["Critical", "High"]:
                 supplier_risk_level = "HIGH"
                 last_signal = f"📉 Unusual drop: {move_text} — {bat_exposure} exposure supplier"
                 risk_analysis = (
                     f"Unusual decline for {bat_exposure.lower()}-exposure supplier {supplier_name}: "
-                    f"{move_text}. {corroboration_note} BAT exposure: {bat_exposure}."
+                    f"{move_text}. {corroboration_note} Exposure tier: {bat_exposure}."
                 )
             else:
                 supplier_risk_level = "MEDIUM"
                 last_signal = f"📉 Unusual drop: {move_text} — monitoring"
                 risk_analysis = (
                     f"Unusual decline for {supplier_name}: {move_text}. {corroboration_note} "
-                    f"BAT exposure: {bat_exposure}."
+                    f"Exposure tier: {bat_exposure}."
                 )
 
         # Default: Normal operations
@@ -3594,7 +3594,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
                 )
             else:
                 last_signal = "✓ Normal operations. No risk signals."
-            risk_analysis = f"No supply chain risks identified. {supplier_name} ({category}) operating normally. BAT exposure: {bat_exposure}."
+            risk_analysis = f"No supply chain risks identified. {supplier_name} ({category}) operating normally. Exposure tier: {bat_exposure}."
             # A listed supplier whose price never came back used to read
             # "✓ Normal operations. No risk signals." — a layer that could not
             # see anything, reported as one that saw nothing wrong.
@@ -3651,7 +3651,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             # shouldn't still exclude it from the price-move carve-out logic.
             price_move_only = False
             last_signal = f"🌍 Geopolitical: {geo_reason}"
-            risk_analysis = f"Geopolitical risk in {location}: {geo_reason}. {supplier_name} ({category}) located in affected region. BAT exposure: {bat_exposure}. Previous risk: {pre_geo_level}."
+            risk_analysis = f"Geopolitical risk in {location}: {geo_reason}. {supplier_name} ({category}) located in affected region. Exposure tier: {bat_exposure}. Previous risk: {pre_geo_level}."
             logger.info(f"  ↑ {supplier_name}: {pre_geo_level} → {supplier_risk_level} (geopolitical: {location})")
 
         # A supplier's risk only moves the pillar-level RAG dial when
@@ -3740,7 +3740,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
     total_medium = sum(1 for s in suppliers if s["risk_level"] == "MEDIUM")
 
     # ================================================================
-    # RAG ROLLUP — actionable signals only, weighted by BAT exposure
+    # RAG ROLLUP — actionable signals only, weighted by exposure tier
     #
     # total_critical/high/medium above count every supplier in that risk
     # bucket, including ones sitting there purely on a standing structural
@@ -3751,7 +3751,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
     # ignore the color. The rollup below only counts suppliers whose
     # current risk_level reflects a real signal (cyber, news, stock move,
     # or a live-news-corroborated geopolitical escalation), and treats a
-    # hit on a Critical/High-BAT-exposure supplier as more consequential
+    # hit on a Critical/High-exposure-tier supplier as more consequential
     # than the same hit on a Low-exposure one.
     # ================================================================
     actionable = [s for s in suppliers if s.get("counts_toward_rag", True)]
@@ -4459,7 +4459,7 @@ def compute_changes(previous_state: dict | None, suppliers_data: dict,
         when = f" on {session_label(session)}" if session else ""
         add("price_move", "info", name,
             f"{name} {move:+.1f}%{when}{yardstick}, no corroborating signal",
-            f"BAT exposure: {supplier.get('bat_exposure')}. Cause unconfirmed.", href)
+            f"Exposure tier: {supplier.get('bat_exposure')}. Cause unconfirmed.", href)
         # The session this entry covers — what the next harvest dedupes on.
         changes[-1]["price_as_of"] = session
 
@@ -5066,6 +5066,27 @@ def gdelt_event_relevance(suppliers_by_country: dict) -> dict:
     return callables
 
 
+# Entries written before the board stopped naming the buyer still read
+# "BAT exposure: High" and are carried for three weeks; they are reworded as
+# they are carried, so the front page drops the name on the next harvest.
+_BUYER_WORDING = (
+    (re.compile(r"\bBAT exposure\b"), "Exposure tier"),
+    (re.compile(r"\bexposure to BAT\b"), "exposure tier"),
+    (re.compile(r"\bhigh exposure to BAT\b", re.IGNORECASE), "high exposure tier"),
+)
+
+
+def neutral_buyer_entry(entry: dict) -> dict:
+    cleaned = dict(entry)
+    for field in ("headline", "detail"):
+        text = cleaned.get(field)
+        if isinstance(text, str):
+            for pattern, replacement in _BUYER_WORDING:
+                text = pattern.sub(replacement, text)
+            cleaned[field] = text
+    return cleaned
+
+
 def gdelt_files_health(status: dict, fresh: dict, countries) -> tuple:
     """(status, detail) for the GDELT event-file phase. The reader returns
     nothing when it could read less than three quarters of its window, in
@@ -5339,7 +5360,7 @@ def main():
         pillar_rag_scores, overall_rag, harvest_timestamp,
     )
     change_log = trim_change_log(
-        list((previous_state or {}).get("change_log", [])) + new_changes
+        [neutral_buyer_entry(e) for e in (previous_state or {}).get("change_log", [])] + new_changes
     )
     if new_changes:
         logger.info(f"Change log: {len(new_changes)} change(s) this cycle")

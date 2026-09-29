@@ -18,7 +18,7 @@ def one_supplier(harvester, monkeypatch):
     monkeypatch.setattr(harvester, "SUPPLIER_PROFILES", {
         "Infineon": {
             "bat_exposure": "High",
-            "segment": "New Categories (Vuse/Glo)",
+            "segment": "Next-generation products",
             "location": "Germany",
             "stock_ticker": "IFX.DE",
             "url": None,

@@ -1817,7 +1817,9 @@ SUPPLIER_ALIASES = {
     "Smoore": ["SMOORE", "SMOORE INTERNATIONAL"],
     "EVE Energy": ["EVE ENERGY", "EVE"],
     "Huizhou BYD Electronic": ["BYD", "BYD ELECTRONIC", "HUIZHOU BYD"],
-    "SWM (Mativ)": ["MATIV", "SWM", "SCHWEITZER-MAUDUIT"],
+    # Mativ sold the cigarette-paper business to Evergreen Hill Enterprise in
+    # December 2023; MATIV and the MATV ticker now follow a different company.
+    "SWM International": ["SWM INTERNATIONAL", "SCHWEITZER-MAUDUIT"],
     "ITC": ["ITC LIMITED", "ITC LTD"],
     "Sappi": ["SAPPI", "SAPPI LIMITED"],
     "GPI": ["GRAPHIC PACKAGING", "GPI", "GRAPHIC PACKAGING INTERNATIONAL"],

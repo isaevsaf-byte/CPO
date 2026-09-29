@@ -246,10 +246,12 @@ plant. Legal names also cover suppliers whose watchlist name is too short:
 CNT is screened as CONTRAF-NICOTEX-TOBACCO. To use them on leak sites too,
 pass `screening.expand_name_terms(name_terms)` to `fetch_ransom_claims`.
 
-Checking the parents turned up two changes the watchlist has not caught up
-with: International Paper sold its stake in the IP Sun joint venture in 2015,
-and Mativ sold SWM's cigarette-paper business to Evergreen Hill Enterprise in
-2023, so the `MATV` ticker no longer follows that supplier.
+Checking the parents turned up two changes of ownership. Mativ sold SWM's
+cigarette-paper business to Evergreen Hill Enterprise in 2023, so the watchlist
+entry that read SWM (Mativ) with the `MATV` ticker had been following a
+different company's share price since; it is now SWM International, unlisted,
+and scanned by name. International Paper sold its stake in the IP Sun joint
+venture in 2015; the entry keeps its name as the sample set has it.
 
 ### Federal Register topics
 

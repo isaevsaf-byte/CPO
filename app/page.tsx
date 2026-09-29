@@ -639,24 +639,34 @@ export default function MorningCoffeeDashboard() {
                 {getRAGLabel(macro?.rag_score)}
               </span>
             </div>
+            {/* Read from macro_economy, the same live figures the region cards
+                below show. The legacy macro.regions block marks the US and
+                China as "placeholder", so keying off its status printed a
+                bare "—" for two of the three regions on every harvest. */}
             {macro?.status === 'success' && (
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">US:</span>
-                  <span className="font-semibold">{macro?.regions?.us?.status === 'success' ? '✓' : '—'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">EU:</span>
-                  <span className="font-semibold">
-                    {typeof macro?.regions?.eu?.indicators?.fx_rate === 'number' 
-                      ? `€1 = $${macro.regions.eu.indicators.fx_rate.toFixed(4)}` 
-                      : '—'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">China:</span>
-                  <span className="font-semibold">{macro?.regions?.china?.status === 'success' ? '✓' : '—'}</span>
-                </div>
+                {MACRO_REGIONS.map(({ key, label }) => {
+                  const region = macroEconomy?.[key];
+                  const change = region?.market_change_pct;
+                  const severity = region?.market_severity ?? 'quiet';
+                  return (
+                    <div key={key} className="flex justify-between items-baseline gap-2">
+                      <span className="text-gray-600">
+                        {label}
+                        {region?.market_label && (
+                          <span className="ml-1 text-xs text-gray-400">{region.market_label}</span>
+                        )}
+                      </span>
+                      <span className={`font-mono font-semibold ${
+                        severity === 'severe' ? 'text-red-700' :
+                        severity === 'notable' ? 'text-amber-700' :
+                        'text-gray-900'
+                      }`}>
+                        {change != null ? `${change > 0 ? '+' : ''}${change.toFixed(2)}%` : '—'}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -263,6 +263,44 @@ returns within 35 seconds. Things to know when reading it:
 - **Only rises in a price count as risk.** A sharp fall in Brent is relief for
   every buyer of acetate tow and plastics.
 
+## GDELT event files
+
+The GDELT DOC API answers GitHub's runners with HTTP 429: in the snapshot of
+29 Sep 2026 03:05 UTC, nine of the eleven supplier countries had last been
+refused, and Sweden's reading was thirteen days old. `scripts/gdelt_files.py`
+builds the same per-country reading from GDELT's raw event files instead
+(`data.gdeltproject.org/gdeltv2/`, a new file every 15 minutes, no rate limit).
+It is not yet called by `update_intel.py`.
+
+It reads the last 24 hours: measured on 29 Sep 2026, that is 96 files and 6.9 MB
+zipped (43.6 MB unzipped, about 107,000 events), fetched in 1.4 seconds eight at
+a time and 2.7 seconds one at a time. It gives up at 30 seconds or 40 MB, and
+publishes nothing if it read less than three quarters of the window, so the
+caller keeps the previous readings instead.
+
+```python
+fetch_gdelt_from_files(countries: list[str], relevance_for_country: dict[str, callable],
+                       now=None) -> tuple[dict, dict]   # (geopolitical_intel, source_status)
+```
+
+Each country entry keeps the shape the `/geopolitical` page renders today, with
+`query_mode: "events"` and `window: "1d"` (which the page already words as "last
+24 hours"), plus `event_count`, `event_mix` (protest, sanctions/embargo, coerce,
+assault, fight, mass violence) and `goldstein_avg`. What changes underneath:
+
+- Events are placed by where GDELT geocodes the action (`ActionGeo_CountryCode`,
+  FIPS 10-4: Switzerland is `SZ`, Austria `AU`, Australia `AS`).
+- `article_count` counts distinct source articles; tone and Goldstein are
+  averaged over events weighted by how many articles carried each one.
+- The files carry no headlines, so each is read back out of the article URL's
+  slug. A URL without a readable slug still counts; it just cannot be listed.
+- Relevance is the caller's `relevance(title, url) -> int`: only articles
+  scoring above 0 are listed, the top five by relevance, then most negative tone.
+
+`source_status` reports `status` (`ok | failed | empty`), a `detail` line, the
+files expected, read, missing and failed, bytes, seconds, the window actually
+covered, and a per-country status (`ok | empty | unmapped | failed`).
+
 ## Graceful Fallback
 
 If any data source fails:

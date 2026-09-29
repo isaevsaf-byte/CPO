@@ -83,6 +83,17 @@ function formatTimestamp(isoString: string | undefined): string {
   }
 }
 
+// A pillar whose key sources did not all answer still shows what it has, and
+// says that it is partial rather than passing it off as a full reading.
+function DegradedNote({ status }: { status?: string }) {
+  if (status !== 'degraded') return null;
+  return (
+    <p className="-mt-2 mb-3 text-[11px] text-amber-700">
+      Partial reading: some sources did not answer this cycle.
+    </p>
+  );
+}
+
 // Health status indicator component
 function HealthIndicator({ status }: { status: string }) {
   const color = status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-yellow-500';
@@ -712,11 +723,12 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
                 {getRAGLabel(macro?.rag_score)}
               </span>
             </div>
+            <DegradedNote status={macro?.status} />
             {/* Read from macro_economy, the same live figures the region cards
                 below show. The legacy macro.regions block marks the US and
                 China as "placeholder", so keying off its status printed a
                 bare "—" for two of the three regions on every harvest. */}
-            {macro?.status === 'success' && (
+            {macro?.status && macro.status !== 'error' && (
               <div className="space-y-2 text-sm">
                 {MACRO_REGIONS.map(({ key, label }) => {
                   const region = macroEconomy?.[key];
@@ -757,7 +769,8 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
                 {getRAGLabel(peers?.rag_score)}
               </span>
             </div>
-            {peers?.status === 'success' && (
+            <DegradedNote status={peers?.status} />
+            {peers?.status && peers.status !== 'error' && (
               <div className="space-y-2 text-sm">
                 <div className="text-2xl font-bold text-gray-900">{peers?.total_peers || 0}</div>
                 <div className="text-gray-600">Companies tracked</div>
@@ -793,7 +806,8 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
                 {getRAGLabel(suppliers?.rag_score)}
               </span>
             </div>
-            {suppliers?.status === 'success' && (
+            <DegradedNote status={suppliers?.status} />
+            {suppliers?.status && suppliers.status !== 'error' && (
               <div className="space-y-2 text-sm">
                 <div className="text-2xl font-bold text-gray-900">{suppliers?.total_suppliers || 0}</div>
                 <div className="text-gray-600">Suppliers monitored</div>

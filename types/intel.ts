@@ -8,7 +8,9 @@
 // ============================================================================
 
 export type RAGScore = 'RED' | 'AMBER' | 'GREEN' | 'UNKNOWN';
-export type Status = 'success' | 'error' | 'partial' | 'skipped' | 'fallback';
+// 'degraded': the pillar still has data, but one of its key sources failed or
+// answered with nothing this cycle (see source_health).
+export type Status = 'success' | 'degraded' | 'error' | 'partial' | 'skipped' | 'fallback';
 export type OverallStatus = 'healthy' | 'partial' | 'degraded' | 'fallback';
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type Sentiment = 'Positive' | 'Negative' | 'Neutral' | 'N/A';
@@ -64,6 +66,8 @@ export interface MacroEconomyRegion {
   /** That market's own recent daily volatility — the yardstick for "unusual". */
   market_sigma_pct: number | null;
   market_severity: 'quiet' | 'notable' | 'severe';
+  /** Trading session the move belongs to (YYYY-MM-DD). */
+  price_as_of?: string | null;
   trend: Trend;
   summary: string;
   sources: string[];
@@ -102,6 +106,7 @@ export interface PeerGroupItem {
   current_price: number | null;
   daily_change_pct: number | null;
   daily_sigma_pct?: number | null;
+  price_as_of?: string | null;
   risk_level: RiskLevel;
   last_signal: string;
   news_risk?: boolean;

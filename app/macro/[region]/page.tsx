@@ -212,9 +212,14 @@ export default function MacroDetailPage() {
                   : <span className="text-xl text-gray-400">No reading</span>}
               </div>
               <div className="text-xs text-gray-500">
-                {regionData.market_sigma_pct != null
-                  ? `Today · normal daily range ±${regionData.market_sigma_pct.toFixed(1)}%`
-                  : 'Today'}
+                {[
+                  // The session the move belongs to: over a weekend the latest
+                  // close is Friday's, and "Today" said otherwise.
+                  regionData.price_as_of ? `Session of ${regionData.price_as_of}` : 'Latest session',
+                  regionData.market_sigma_pct != null
+                    ? `normal daily range ±${regionData.market_sigma_pct.toFixed(1)}%`
+                    : null,
+                ].filter(Boolean).join(' · ')}
               </div>
             </div>
 

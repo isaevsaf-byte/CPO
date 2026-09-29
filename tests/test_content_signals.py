@@ -413,3 +413,84 @@ def test_british_american_tobacco_is_not_called_unlisted(harvester):
     assert "not US-listed" not in summary.lower()
     # Nothing reads non-US filings, so the summary no longer claims to.
     assert "international filings" not in summary
+
+
+# ---------------------------------------------------------------------------
+# 4. Which way a sanction points
+# ---------------------------------------------------------------------------
+
+def _china_scan(harvester, monkeypatch, *titles):
+    monkeypatch.setattr(harvester, "fetch_google_news_rss",
+                        lambda query, max_results=8: [rss_item(t) for t in titles])
+    _, level, _, reason = harvester.scan_country_geopolitical_news("China")
+    return level, reason
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        # China is the actor in each of these, not the target.
+        "China imposes sanctions on US defense firms over Taiwan arms sales",
+        "Beijing imposes export ban on rare earths to US",
+        "China imposes tariffs on US goods",
+        "EU adopts new sanctions on Russia, China objects",
+    ],
+)
+def test_a_country_imposing_a_measure_is_not_escalated(harvester, monkeypatch, title):
+    assert _china_scan(harvester, monkeypatch, title) == ("LOW", "")
+
+
+@pytest.mark.parametrize(
+    "title,level",
+    [
+        ("US imposes sanctions on Chinese refiners over Iran oil", "HIGH"),
+        ("US tightens export controls on Chinese chipmakers", "HIGH"),
+        ("Washington adds new sanctions on China over Taiwan", "HIGH"),
+        ("Trump threatens tariffs on China", "MEDIUM"),
+    ],
+)
+def test_a_country_on_the_receiving_end_is_escalated(harvester, monkeypatch, title, level):
+    assert _china_scan(harvester, monkeypatch, title)[0] == level
+
+
+@pytest.fixture
+def china_supplier(harvester, monkeypatch):
+    monkeypatch.setattr(harvester, "WATCHLIST_DATA", [{"name": "Smoore", "category": "EMS"}])
+    monkeypatch.setattr(harvester, "SUPPLIER_PROFILES", {
+        "Smoore": {"segment": "Combustibles", "location": "China", "stock_ticker": "6969.HK", "url": None},
+    })
+    monkeypatch.setattr(harvester, "GEOPOLITICAL_RISK_MAP", {
+        "China": {"level": "MEDIUM", "reason": "US-China trade war"},
+    })
+    monkeypatch.setattr(harvester, "fetch_price_reading", lambda *a, **k: {
+        "daily_change_pct": 0.1, "current_price": 9.0, "headlines": [], "daily_sigma_pct": 3.0,
+    })
+
+    def run(title, previous_geo_state=None):
+        monkeypatch.setattr(harvester, "fetch_google_news_rss",
+                            lambda query, max_results=8: [rss_item(title)] if title else [])
+        return harvester.process_suppliers(
+            {"recent_vulnerabilities": []}, previous_geo_state=previous_geo_state)
+    return run
+
+
+def test_china_sanctioning_others_leaves_china_suppliers_at_their_floor(china_supplier):
+    result = china_supplier("China imposes sanctions on US defense firms over Taiwan arms sales")
+    row = result["suppliers"][0]
+    assert row["risk_level"] == "MEDIUM"          # the standing floor
+    assert row["event_risk_level"] == "LOW"
+    assert row["counts_toward_rag"] is False
+    assert result["geo_escalation_state"] == {}
+
+
+def test_a_targeted_escalation_is_still_held_for_48_hours(china_supplier):
+    first = china_supplier("US imposes sanctions on Chinese refiners over Iran oil")
+    assert first["suppliers"][0]["risk_level"] == "HIGH"
+    assert first["suppliers"][0]["counts_toward_rag"] is True
+
+    # Next cycle only the actor headline is left; the escalation is held.
+    second = china_supplier("China imposes sanctions on US defense firms",
+                            previous_geo_state=first["geo_escalation_state"])
+    row = second["suppliers"][0]
+    assert row["risk_level"] == "HIGH"
+    assert "still held" in row["geopolitical_risk"]["reason"]

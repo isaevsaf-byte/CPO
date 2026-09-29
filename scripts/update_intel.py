@@ -579,6 +579,7 @@ GEO_HIGH_KW = [
     "tensions escalat", "border clash", "imposes sanctions on",
     "new sanctions on", "nuclear threat", "proxy war in",
     "ceasefire collapse", "trade ban on", "export ban on", "embargo on",
+    "export controls on",
 ]
 GEO_MEDIUM_KW = [
     "crisis in", "instability in", "unrest in", "protests in", "trade war",
@@ -611,6 +612,43 @@ def country_headline_terms(country: str) -> list:
 
 def headline_names_country(title_lower: str, country: str) -> bool:
     return any(_mentions_subject(title_lower, term) for term in country_headline_terms(country))
+
+
+# Trade measures aimed at someone. The words after the keyword say who:
+# "China imposes sanctions on US defense firms" has China as the actor and US
+# firms as the target, and it used to escalate China. A country escalates on
+# these only when it, or its firms, is the target.
+GEO_TARGETED_KW = {
+    "imposes sanctions on", "new sanctions on", "export controls on",
+    "trade ban on", "export ban on", "embargo on", "tariffs on",
+}
+
+# Where the target of a trade measure stops being named: "sanctions on US
+# defense firms over Taiwan arms sales" is aimed at US firms, not Taiwan.
+_TARGET_CLAUSE_END = re.compile(
+    r"\s(?:over|after|amid|as|for|following|because|while|but|despite|to)\s|[,;:.!?()|]|\s[-–—]\s"
+)
+
+
+def country_is_target(title_lower: str, keyword: str, country: str) -> bool:
+    """True if the country is named in the target clause after a trade-measure
+    keyword (see GEO_TARGETED_KW)."""
+    for match in _keyword_pattern(keyword).finditer(title_lower):
+        clause = _TARGET_CLAUSE_END.split(title_lower[match.end():], 1)[0]
+        if headline_names_country(" ".join(clause.split()[:6]), country):
+            return True
+    return False
+
+
+def _geo_keyword_hit(title_lower: str, keywords: list, country: str):
+    """First keyword that counts against this country, or None."""
+    for keyword in keywords:
+        if not _keyword_hit(title_lower, keyword):
+            continue
+        if keyword in GEO_TARGETED_KW and not country_is_target(title_lower, keyword, country):
+            continue
+        return keyword
+    return None
 
 
 def scan_country_geopolitical_news(country):
@@ -646,17 +684,17 @@ def scan_country_geopolitical_news(country):
         if any(kw in title_lower for kw in GEO_DEESCALATION_KW):
             continue
 
-        hit = next((kw for kw in GEO_CRITICAL_KW if _keyword_hit(title_lower, kw)), None)
+        hit = _geo_keyword_hit(title_lower, GEO_CRITICAL_KW, country)
         if hit:
             critical_hits.append((h["title"], hit))
             continue
 
-        hit = next((kw for kw in GEO_HIGH_KW if _keyword_hit(title_lower, kw)), None)
+        hit = _geo_keyword_hit(title_lower, GEO_HIGH_KW, country)
         if hit:
             high_hits.append((h["title"], hit))
             continue
 
-        hit = next((kw for kw in GEO_MEDIUM_KW if _keyword_hit(title_lower, kw)), None)
+        hit = _geo_keyword_hit(title_lower, GEO_MEDIUM_KW, country)
         if hit:
             medium_hits.append((h["title"], hit))
 

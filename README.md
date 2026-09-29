@@ -52,6 +52,11 @@ Standing geographic exposure is deliberately excluded unless live news escalated
 it that cycle: it is true every day, so logging it as a change would pin the
 same entries at the top permanently.
 
+A price move is logged once per trading session, keyed on the supplier and the
+session the move belongs to (`price_as_of`), and dated by that session — "GPI
+-5.4% on Fri 18 Sep". It used to be once per 24 hours, which logged GPI's
+Friday fall three times as yfinance kept serving it through the weekend.
+
 ## Setup
 
 ### Local Development
@@ -161,6 +166,24 @@ a move hovering at the boundary holds its level instead of flipping every six
 hours. A price move with no corroborating news never turns the board RED: it is
 carried as `price_move_only` and named in the change feed as an unexplained
 move, which is what it is.
+
+### A price reading says which session it is
+
+Every price reading — supplier, peer, macro market — carries `price_as_of`,
+the date of the trading session its latest close belongs to. yfinance does not
+always serve the newest session, and a reading used to look the same whichever
+day it came from:
+
+- A move is described by its session when that is not today: "-5.4% on Fri 18
+  Sep", not "-5.4% today". A Friday fall may keep a supplier flagged over the
+  weekend — it is still the latest thing the market has said — but it is never
+  described or logged as new.
+- A reading from an *older* session than the one the previous snapshot showed
+  is set aside, and the previous reading and its severity carry forward.
+  Infineon's Monday -7.72% came back from a lagging copy of the series on the
+  Wednesday and took the supplier pillar GREEN → AMBER → GREEN.
+- A listed supplier whose price did not come back says so, rather than
+  "Normal operations. No risk signals."
 
 ### Cyber "Panic" Score
 - **RED**: Ransomware campaign use + added in last 48h
@@ -273,9 +296,10 @@ python scripts/send_digest.py --mode daily --dry-run
 ## Tests and CI
 
 `tests/` covers the rules that decide what the board shows — keyword matching,
-price-move classification, macro scoring, the split between event and
-structural risk, source health and the exit code, and what does and does not
-reach the change feed or the daily brief. No network, no yfinance required.
+price-move classification, which session a price reading belongs to, macro
+scoring, the split between event and structural risk, source health and the
+exit code, and what does and does not reach the change feed or the daily
+brief. No network, no yfinance required.
 
 ```bash
 pip install -r requirements-dev.txt && pytest tests/ -q

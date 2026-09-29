@@ -6,6 +6,11 @@ Each section pins a rule that was quietly wrong in production:
 - Every pillar reported "success" whatever happened underneath, and no
   failure ever reached the exit code.
 - Only the first ten KEVs of the CISA window were screened.
+- A price reading carried no date, so yfinance serving an older session read
+  as a fresh move. GPK's Friday -5.39% at $9.31 sat unchanged in ten snapshots
+  from Saturday to Monday, called "today" in every one and logged three times;
+  IFX.DE's Monday -7.72% came back on Wednesday from a lagging copy of the
+  series and flipped the supplier pillar GREEN → AMBER → GREEN.
 
 No network: yfinance, HTTP and the clock-dependent parts are all stubbed.
 """
@@ -110,9 +115,37 @@ def watch_one(harvester, monkeypatch, name, ticker, exposure="High", location="U
 
 def stub_reading(harvester, monkeypatch, **reading):
     base = {"daily_change_pct": None, "current_price": None, "headlines": [],
-            "daily_sigma_pct": None}
+            "daily_sigma_pct": None, "price_as_of": None}
     base.update(reading)
     monkeypatch.setattr(harvester, "fetch_price_reading", lambda *a, **k: dict(base))
+
+
+def change_log_state(suppliers, change_log=()):
+    return {
+        "suppliers": {"suppliers": suppliers},
+        "peer_group": [],
+        "macro_economy": {},
+        "overall_rag": {"score": "GREEN", "pillar_scores": {}},
+        "change_log": list(change_log),
+    }
+
+
+def diff(harvester, before_rows, after_rows, change_log=()):
+    return harvester.compute_changes(
+        change_log_state(before_rows, change_log), {"suppliers": after_rows},
+        [], {}, {}, {"score": "GREEN", "driven_by": []}, "2026-09-21T02:05:00+00:00",
+    )
+
+
+# GPK on Friday 18 Sep: what yfinance kept serving until Monday afternoon.
+GPI_FRIDAY = {"daily_change_pct": -5.39, "current_price": 9.31,
+              "daily_sigma_pct": 2.58, "price_as_of": "2026-09-18"}
+
+# IFX.DE's Tuesday reading, then Monday's fall served again on Wednesday.
+INFINEON_TUESDAY = {"daily_change_pct": 0.54, "current_price": 54.33,
+                    "daily_sigma_pct": 3.68, "price_as_of": "2026-09-15"}
+INFINEON_LAGGING_MONDAY = {"daily_change_pct": -7.72, "current_price": 54.04,
+                           "daily_sigma_pct": 3.68, "price_as_of": "2026-09-14"}
 
 
 # ---------------------------------------------------------------------------
@@ -357,7 +390,7 @@ def test_a_failed_peer_reading_no_longer_resets_the_breaker(harvester, monkeypat
     peers = harvester.fetch_peer_group()
 
     assert harvester.yfinance_circuit_breaker.failure_count == len(harvester.PEERS_CONFIG)
-    assert all(p["current_price"] is None for p in peers)
+    assert all(p["current_price"] is None and p["price_as_of"] is None for p in peers)
     assert health.detail("yfinance_prices").startswith(f"prices for 0/{len(peers)} peers")
     assert not harvester.harvest_stats.successes
 
@@ -385,6 +418,7 @@ def test_a_listed_supplier_without_a_price_says_so(harvester, monkeypatch, healt
     assert row["risk_level"] == "LOW"
     assert row["last_signal"].startswith("No share-price move could be read for IFX.DE")
     assert "Normal operations" not in row["last_signal"]
+    assert row["price_as_of"] is None and row["price_severity"] is None
 
 
 def test_every_kev_in_the_window_is_screened(harvester, monkeypatch, health):
@@ -417,3 +451,180 @@ def test_every_kev_in_the_window_is_screened(harvester, monkeypatch, health):
     row = harvester.process_suppliers(cyber)["suppliers"][0]
     assert row["cyber_risk"] is True
     assert [v["cveID"] for v in row["matching_vulnerabilities"]] == ["CVE-2026-9999"]
+
+
+# ---------------------------------------------------------------------------
+# A price reading knows which session it is
+# ---------------------------------------------------------------------------
+
+def test_reading_carries_the_session_of_its_latest_close(harvester, monkeypatch, health):
+    monkeypatch.setattr(harvester, "yf", FakeYF(FakeTicker(
+        rows=[("2026-09-17", 9.85), ("2026-09-18", 9.31)], headlines=["GPK news"],
+    )))
+
+    reading = harvester.fetch_price_reading("GPK", scope="listed suppliers")
+
+    assert reading["price_as_of"] == "2026-09-18"
+    assert reading["daily_change_pct"] == pytest.approx(-5.48, abs=0.01)
+    assert health.status("yfinance_prices", "listed suppliers") == "ok"
+    assert health.status("yfinance_news", "listed suppliers") == "ok"
+
+
+def test_a_trailing_gap_dates_the_reading_to_the_older_session(harvester, monkeypatch, health):
+    """A session that has not printed a close yet comes back as a NaN row. The
+    two closes before it are Friday's move, and that is what the reading must
+    say — not Monday's."""
+    monkeypatch.setattr(harvester, "yf", FakeYF(FakeTicker(
+        rows=[("2026-09-17", 9.85), ("2026-09-18", 9.31), ("2026-09-21", float("nan"))],
+    )))
+
+    reading = harvester.fetch_price_reading("GPK", scope="listed suppliers")
+
+    assert reading["price_as_of"] == "2026-09-18"
+    assert reading["current_price"] == 9.31
+
+
+@pytest.mark.parametrize(
+    "as_of,today,expected",
+    [
+        ("2026-09-18", "2026-09-18", "-5.4% today (2.1× its normal daily range of ±2.6%)"),
+        ("2026-09-18", "2026-09-19", "-5.4% on Fri 18 Sep (2.1× its normal daily range of ±2.6%)"),
+        ("2026-09-18", "2026-09-21", "-5.4% on Fri 18 Sep (2.1× its normal daily range of ±2.6%)"),
+        # No session known: the old wording, rather than an invented date.
+        (None, "2026-09-21", "-5.4% today (2.1× its normal daily range of ±2.6%)"),
+    ],
+)
+def test_a_move_is_described_by_its_session(harvester, as_of, today, expected):
+    assert harvester.describe_price_move(-5.39, 2.58, as_of, today=today) == expected
+
+
+def test_single_digit_days_read_naturally(harvester):
+    assert harvester.session_label("2026-09-08") == "Tue 8 Sep"
+
+
+def test_an_older_session_is_set_aside(harvester):
+    previous_row = dict(INFINEON_TUESDAY, price_severity="quiet")
+    reading = dict(INFINEON_LAGGING_MONDAY, headlines=["Infineon news"])
+
+    kept = harvester.prefer_latest_session(reading, previous_row)
+
+    assert kept["price_as_of"] == "2026-09-15"
+    assert kept["daily_change_pct"] == 0.54
+    assert kept["current_price"] == 54.33
+    assert kept["severity"] == "quiet"
+    # Headlines do not come from the price series and stay fresh.
+    assert kept["headlines"] == ["Infineon news"]
+
+
+def test_the_same_or_a_newer_session_is_used_as_read(harvester):
+    reading = dict(GPI_FRIDAY, headlines=[])
+    assert harvester.prefer_latest_session(reading, dict(GPI_FRIDAY, daily_change_pct=-5.49)) is reading
+    assert harvester.prefer_latest_session(reading, {"price_as_of": "2026-09-17"}) is reading
+    # A previous snapshot written before sessions were recorded has nothing to compare.
+    assert harvester.prefer_latest_session(reading, {"daily_change_pct": 1.0}) is reading
+
+
+def test_a_lagging_monday_fall_does_not_flip_the_supplier(harvester, monkeypatch, health):
+    """IFX.DE on Wednesday 16 Sep 02:05 UTC: Monday's -7.72% came back after
+    Tuesday's +0.54% had been read. It took the pillar GREEN → AMBER → GREEN
+    and put the fall in the change feed a second time."""
+    watch_one(harvester, monkeypatch, "Infineon", "IFX.DE", location="Germany")
+    stub_reading(harvester, monkeypatch, **INFINEON_LAGGING_MONDAY)
+    tuesday_row = dict(INFINEON_TUESDAY, name="Infineon", risk_level="LOW",
+                       price_move_only=False, price_severity="quiet", bat_exposure="High")
+
+    result = harvester.process_suppliers({"recent_vulnerabilities": []},
+                                         previous_suppliers=[tuesday_row])
+    row = result["suppliers"][0]
+
+    assert row["risk_level"] == "LOW"
+    assert row["price_move_only"] is False
+    assert (row["daily_change_pct"], row["price_as_of"]) == (0.54, "2026-09-15")
+    assert result["rag_score"] == "GREEN"
+    assert diff(harvester, [tuesday_row], [row]) == []
+
+
+def test_the_same_reading_without_a_newer_session_on_record_is_flagged(harvester, monkeypatch, health):
+    """The guard only sets aside what is *older* than what was shown — the
+    Monday fall itself, read on Monday, is a real unusual move."""
+    watch_one(harvester, monkeypatch, "Infineon", "IFX.DE", location="Germany")
+    stub_reading(harvester, monkeypatch, **INFINEON_LAGGING_MONDAY)
+
+    row = harvester.process_suppliers({"recent_vulnerabilities": []})["suppliers"][0]
+
+    assert row["risk_level"] == "HIGH"
+    assert row["price_severity"] == "notable"
+    assert row["price_as_of"] == "2026-09-14"
+
+
+def test_a_friday_fall_holds_over_the_weekend_but_is_not_new(harvester, monkeypatch, health):
+    """GPK's Friday fall may keep GPI flagged through Saturday — it is still
+    the latest thing the market has said — but it reads as Friday's, and the
+    feed that logged it on Friday does not log it again."""
+    watch_one(harvester, monkeypatch, "GPI", "GPK")
+    stub_reading(harvester, monkeypatch, **GPI_FRIDAY)
+    friday_row = dict(GPI_FRIDAY, name="GPI", risk_level="HIGH", price_move_only=True,
+                      price_severity="notable", bat_exposure="High")
+    logged_friday = {"at": "2026-09-18T20:06:40+00:00", "kind": "price_move", "entity": "GPI",
+                     "price_as_of": "2026-09-18",
+                     "headline": "GPI -5.5% on Fri 18 Sep (2.1× its normal daily range), no corroborating signal"}
+
+    row = harvester.process_suppliers({"recent_vulnerabilities": []},
+                                      previous_suppliers=[friday_row])["suppliers"][0]
+
+    assert row["risk_level"] == "HIGH"
+    assert "on Fri 18 Sep" in row["last_signal"]
+    assert "today" not in row["last_signal"]
+    assert diff(harvester, [friday_row], [row], change_log=[logged_friday]) == []
+
+
+def test_a_lagging_market_reading_keeps_the_shown_session(harvester, monkeypatch, health):
+    stub_reading(harvester, monkeypatch, daily_change_pct=-1.5, current_price=1.1,
+                 daily_sigma_pct=0.27, price_as_of="2026-09-25")
+    monkeypatch.setattr(harvester, "fetch_fred_observation", lambda *a, **k: None)
+    shown = {"eu": {"price_as_of": "2026-09-28", "market_change_pct": -0.06,
+                    "market_sigma_pct": 0.27, "market_severity": "quiet"}}
+
+    eu = harvester.fetch_macro_economy(shown)["eu"]
+
+    assert (eu["market_change_pct"], eu["market_severity"], eu["price_as_of"]) == (-0.06, "quiet", "2026-09-28")
+
+
+# ---------------------------------------------------------------------------
+# One change-log entry per session
+# ---------------------------------------------------------------------------
+
+def test_a_move_is_logged_once_per_session_however_long_it_is_served(harvester):
+    """The 24-hour window let GPI's Friday fall through at 20:06 UTC Friday,
+    02:04 Sunday and 02:05 Monday."""
+    before = [dict(GPI_FRIDAY, name="GPI", risk_level="LOW", price_move_only=False, bat_exposure="High")]
+    after = [dict(GPI_FRIDAY, name="GPI", risk_level="HIGH", price_move_only=True, bat_exposure="High")]
+    three_days_ago = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
+    logged = {"at": three_days_ago, "kind": "price_move", "entity": "GPI", "price_as_of": "2026-09-18"}
+
+    assert diff(harvester, before, after, change_log=[logged]) == []
+
+
+def test_a_new_session_is_logged_and_dated(harvester):
+    before = [dict(GPI_FRIDAY, name="GPI", risk_level="LOW", price_move_only=False, bat_exposure="High")]
+    thursday = dict(GPI_FRIDAY, daily_change_pct=-4.35, price_as_of="2026-09-24")
+    after = [dict(thursday, name="GPI", risk_level="HIGH", price_move_only=True, bat_exposure="High")]
+    logged_friday = {"at": "2026-09-18T20:06:40+00:00", "kind": "price_move", "entity": "GPI",
+                     "price_as_of": "2026-09-18"}
+
+    entries = diff(harvester, before, after, change_log=[logged_friday])
+
+    assert [e["kind"] for e in entries] == ["price_move"]
+    assert entries[0]["price_as_of"] == "2026-09-24"
+    assert entries[0]["headline"].startswith("GPI -4.3% on Thu 24 Sep")
+
+
+def test_an_entry_written_before_sessions_still_blocks_for_a_day(harvester):
+    """The first harvest after this change must not re-log a move the feed
+    reported hours earlier under the old rule."""
+    before = [dict(GPI_FRIDAY, name="GPI", risk_level="HIGH", price_move_only=True, bat_exposure="High")]
+    after = [dict(GPI_FRIDAY, name="GPI", risk_level="HIGH", price_move_only=True, bat_exposure="High")]
+    six_hours_ago = (datetime.now(timezone.utc) - timedelta(hours=6)).isoformat()
+    legacy = {"at": six_hours_ago, "kind": "price_move", "entity": "GPI"}
+
+    assert diff(harvester, before, after, change_log=[legacy]) == []

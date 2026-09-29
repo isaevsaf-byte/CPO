@@ -2191,7 +2191,17 @@ EMPTY_STOCK_READING = {
     "current_price": None,
     "headlines": [],
     "daily_sigma_pct": None,
+    "price_as_of": None,
 }
+
+
+def _session_date(stamp) -> str | None:
+    """ISO date of one daily bar — yfinance indexes them at midnight in the
+    exchange's own zone, so this is the trading session, not the UTC day."""
+    try:
+        return stamp.date().isoformat()
+    except AttributeError:
+        return None
 
 
 def _count_price(scope: str | None, outcome: str, note: str = None):
@@ -2229,10 +2239,17 @@ def fetch_price_reading(ticker_symbol, source_label: str = None, scope: str = No
     share, index, FX pair) using yfinance.
 
     Returns a dict with daily_change_pct, current_price, headlines (up to 5
-    raw titles) and daily_sigma_pct (the listing's own recent daily
+    raw titles), daily_sigma_pct (the listing's own recent daily
     volatility, used to judge whether today's move is actually unusual —
-    see daily_sigma_from_closes). Every failure path returns the same shape
-    with None/empty values rather than raising.
+    see daily_sigma_from_closes) and price_as_of. Every failure path returns
+    the same shape with None/empty values rather than raising.
+
+    price_as_of is the ISO date of the session the latest close belongs to.
+    Without it an old pair of closes read exactly like a new one, and
+    yfinance does not always serve the newest: GPK's Friday -5.39% at $9.31
+    came back unchanged in ten snapshots from Saturday to Monday morning, and
+    IFX.DE's Monday -7.72% came back on Wednesday from a lagging copy of the
+    series. Both were described, and scored, as that day's move.
 
     scope says what the listing is on the board ("listed suppliers", "peers",
     "markets"), for the source-health tally; None leaves it out of the tally.
@@ -2263,6 +2280,7 @@ def fetch_price_reading(ticker_symbol, source_label: str = None, scope: str = No
 
         daily_change_pct = None
         current_price = None
+        price_as_of = None
         news_error = None
         closes = [float(c) for c in hist['Close'].tolist()] if len(hist) else []
         # Skip over gaps rather than giving up on them. yfinance routinely
@@ -2273,15 +2291,21 @@ def fetch_price_reading(ticker_symbol, source_label: str = None, scope: str = No
         # for news but silently had no price layer. Comparing the two most
         # recent *actual* closes keeps that layer alive; NaN was also what
         # previously leaked a literal "nan%" into signal text.
-        usable = [c for c in closes if math.isfinite(c)]
+        #
+        # Each close keeps its row, so the reading can say which session it
+        # is: after a trailing NaN the newest usable close is the previous
+        # session's, and that is the reading that used to pass for today's.
+        usable = [(row, c) for row, c in enumerate(closes) if math.isfinite(c)]
 
         if len(usable) >= 2:
-            current, previous = usable[-1], usable[-2]
+            (latest_row, current), (_, previous) = usable[-1], usable[-2]
             if previous:
                 daily_change_pct = ((current - previous) / previous) * 100
             current_price = current
+            price_as_of = _session_date(hist.index[latest_row])
         elif len(usable) == 1:
-            current_price = usable[0]
+            latest_row, current_price = usable[0]
+            price_as_of = _session_date(hist.index[latest_row])
 
         # Get up to 5 news headlines for broader risk scanning
         headlines = []
@@ -2319,6 +2343,7 @@ def fetch_price_reading(ticker_symbol, source_label: str = None, scope: str = No
             "current_price": current_price,
             "headlines": headlines,
             "daily_sigma_pct": daily_sigma_from_closes(closes),
+            "price_as_of": price_as_of,
         }
 
     except Exception as e:
@@ -2385,14 +2410,83 @@ def classify_price_move(change_pct, sigma_pct=None, already_flagged: bool = Fals
     return "quiet"
 
 
-def describe_price_move(change_pct, sigma_pct) -> str:
-    """How unusual the move is, in the reader's terms — appended to signals."""
+def session_label(as_of: str) -> str:
+    """'2026-09-18' -> 'Fri 18 Sep'."""
+    try:
+        day = datetime.strptime(as_of, "%Y-%m-%d")
+    except (TypeError, ValueError):
+        return str(as_of)
+    return f"{day:%a} {day.day} {day:%b}"
+
+
+def session_phrase(as_of: str | None, today: str | None = None) -> str:
+    """'today' for the current session, 'on Fri 18 Sep' for an earlier one.
+
+    today is the harvest's UTC date. The board is read in the UK and Europe,
+    where a US close at 20:00 UTC is still today's news and by 02:00 UTC the
+    next morning is not. A reading with no session date keeps the old wording.
+    """
+    if not as_of:
+        return "today"
+    today = today or datetime.now(timezone.utc).date().isoformat()
+    return "today" if as_of >= today else f"on {session_label(as_of)}"
+
+
+def describe_price_move(change_pct, sigma_pct, as_of: str = None, today: str = None) -> str:
+    """How unusual the move is, in the reader's terms — appended to signals.
+
+    Dated by its session when that is not the current one: GPK's Friday fall
+    read "-5.4% today" on the board all weekend.
+    """
     if change_pct is None:
         return ""
+    when = session_phrase(as_of, today)
     if not sigma_pct:
-        return f"{change_pct:+.1f}% today"
+        return f"{change_pct:+.1f}% {when}"
     z = abs(change_pct) / sigma_pct
-    return f"{change_pct:+.1f}% today ({z:.1f}× its normal daily range of ±{sigma_pct:.1f}%)"
+    return f"{change_pct:+.1f}% {when} ({z:.1f}× its normal daily range of ±{sigma_pct:.1f}%)"
+
+
+# The row fields a carried-forward reading is rebuilt from. Supplier and peer
+# rows share one naming; macro rows name the same things after the market.
+PRICE_ROW_FIELDS = {
+    "daily_change_pct": "daily_change_pct",
+    "daily_sigma_pct": "daily_sigma_pct",
+    "current_price": "current_price",
+    "severity": "price_severity",
+}
+MARKET_ROW_FIELDS = {
+    "daily_change_pct": "market_change_pct",
+    "daily_sigma_pct": "market_sigma_pct",
+    "current_price": None,
+    "severity": "market_severity",
+}
+
+
+def prefer_latest_session(reading: dict, previous_row: dict | None,
+                          row_fields: dict = PRICE_ROW_FIELDS, label: str = "") -> dict:
+    """The reading, unless its session is older than the one the previous
+    snapshot already showed for this entity.
+
+    yfinance answers some requests from a lagging copy of a series. IFX.DE's
+    Monday -7.72% came back at the Wednesday 02:05 UTC harvest, after
+    Tuesday's +0.54% had already been read, and the supplier pillar went
+    GREEN → AMBER → GREEN on it while the change feed logged the fall again.
+    An older session says nothing the board has not already shown, so it is
+    set aside and the previous reading carries forward: its values, its
+    session and the severity it was given. The reading's headlines stay; they
+    do not come from the price series.
+    """
+    stored = (previous_row or {}).get("price_as_of")
+    fresh = reading.get("price_as_of")
+    if not stored or not fresh or fresh >= stored:
+        return reading
+    logger.info(f"  {label or 'price'}: yfinance served the {fresh} session after {stored} "
+                f"was already shown — keeping {stored}")
+    carried = dict(reading, price_as_of=stored)
+    for key, row_key in row_fields.items():
+        carried[key] = previous_row.get(row_key) if row_key else None
+    return carried
 
 
 GEO_ESCALATION_STICKY_HOURS = 48
@@ -2629,12 +2723,19 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         risk_reason = ""
 
         daily_sigma_pct = None
+        price_as_of = None
+        carried_severity = None
         if stock_ticker and stock_ticker != "N/A":
             reading = fetch_price_reading(stock_ticker, source_label=f"supplier_stock_{stock_ticker}",
                                           scope="listed suppliers")
+            # A session older than the one last shown is set aside and the
+            # previous reading, with its severity, carries forward.
+            reading = prefer_latest_session(reading, previous_by_name.get(supplier_name), label=supplier_name)
             daily_change_pct = reading["daily_change_pct"]
             current_price = reading["current_price"]
             daily_sigma_pct = reading["daily_sigma_pct"]
+            price_as_of = reading.get("price_as_of")
+            carried_severity = reading.get("severity")
 
             # Only headlines that actually name this supplier are attributed to
             # it. yfinance's ticker.news returns sector-adjacent coverage, not
@@ -2746,6 +2847,17 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         # is a strong enough signal on its own regardless of exposure.
         price_move_only = False
 
+        # The price layer's verdict, worked out before the chain below so it
+        # can be kept on the row even when a stronger signal takes precedence.
+        # A later harvest that sets aside an older session carries it forward
+        # as it was (see prefer_latest_session) instead of re-deriving it from
+        # the rounded figures on the row.
+        price_severity = carried_severity or classify_price_move(
+            daily_change_pct,
+            daily_sigma_pct,
+            already_flagged=previous_by_name.get(supplier_name, {}).get("price_move_only", False),
+        )
+
         # Priority 0: Sanctions match — automatic CRITICAL, takes priority
         # over everything else. Transacting with a sanctioned party is a
         # legal blocker, not a graded operational risk.
@@ -2794,13 +2906,13 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         # hysteresis so a supplier already flagged last cycle doesn't clear on
         # a marginal move (see classify_price_move for what the old fixed
         # thresholds cost).
-        elif (price_severity := classify_price_move(
-            daily_change_pct,
-            daily_sigma_pct,
-            already_flagged=previous_by_name.get(supplier_name, {}).get("price_move_only", False),
-        )) != "quiet":
+        #
+        # The move is dated by its session. A Friday fall may keep a supplier
+        # flagged through the weekend — it is still the latest thing the market
+        # has said — but it reads "on Fri 18 Sep", not "today".
+        elif price_severity != "quiet":
             price_move_only = True
-            move_text = describe_price_move(daily_change_pct, daily_sigma_pct)
+            move_text = describe_price_move(daily_change_pct, daily_sigma_pct, price_as_of)
             if price_severity == "severe":
                 supplier_risk_level = "CRITICAL"
                 last_signal = f"📉 Severe unexplained drop: {move_text}"
@@ -2921,6 +3033,12 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             # printing a bare percentage the reader has no yardstick for.
             "daily_sigma_pct": round(daily_sigma_pct, 2) if daily_sigma_pct is not None else None,
             "current_price": round(current_price, 2) if current_price is not None else None,
+            # ISO date of the session the price and move belong to — not
+            # necessarily today's (see fetch_price_reading) — and the verdict
+            # the price layer gave it, carried forward with it when a later
+            # harvest is served an older session.
+            "price_as_of": price_as_of,
+            "price_severity": price_severity if daily_change_pct is not None else None,
             "risk_analysis": risk_analysis,
             "risk_level": supplier_risk_level,
             # Level excluding a standing country floor — what actually happened
@@ -3111,7 +3229,7 @@ def _region_trend(kind: str, change_pct, severity: str) -> str:
     return "Declining" if falling else "Growing"
 
 
-def fetch_macro_economy():
+def fetch_macro_economy(previous_economy: dict = None):
     """Live market reading plus official statistics for US, EU and China.
 
     Everything here is either measured or explicitly absent. The previous
@@ -3122,14 +3240,21 @@ def fetch_macro_economy():
     It rendered under an "Analyst Summary" heading on the region pages, which
     made invented sentences read as sourced intelligence — the single most
     damaging thing a board like this can do to its own credibility.
+
+    previous_economy is the last snapshot's macro_economy: a market reading
+    from an older session than the one it shows is set aside and the shown one
+    carries forward (see prefer_latest_session).
     """
     regions = {}
 
     for region_key, market in MACRO_MARKETS.items():
         reading = fetch_price_reading(market["ticker"], source_label=f"macro_{region_key}", scope="markets")
+        reading = prefer_latest_session(reading, (previous_economy or {}).get(region_key),
+                                        MARKET_ROW_FIELDS, label=market["label"])
         change_pct = reading["daily_change_pct"]
         sigma_pct = reading["daily_sigma_pct"]
-        severity = classify_move(change_pct, sigma_pct)
+        price_as_of = reading.get("price_as_of")
+        severity = reading.get("severity") or classify_move(change_pct, sigma_pct)
         trend = _region_trend(market["kind"], change_pct, severity)
 
         series = MACRO_SERIES[region_key]
@@ -3145,9 +3270,9 @@ def fetch_macro_economy():
                     f"inside {band}" if severity == "quiet"
                     else f"{abs(change_pct) / sigma_pct:.1f}× {band}"
                 )
-                market_sentence = f"{market['label']} {change_pct:+.2f}% today, {comparison}."
+                market_sentence = f"{market['label']} {change_pct:+.2f}% {session_phrase(price_as_of)}, {comparison}."
             else:
-                market_sentence = f"{market['label']} {change_pct:+.2f}% today."
+                market_sentence = f"{market['label']} {change_pct:+.2f}% {session_phrase(price_as_of)}."
 
         stat_parts = []
         if cpi_obs:
@@ -3170,6 +3295,9 @@ def fetch_macro_economy():
             "market_change_pct": round(change_pct, 2) if change_pct is not None else None,
             "market_sigma_pct": round(sigma_pct, 2) if sigma_pct else None,
             "market_severity": severity,
+            # Session the move belongs to — the page should date it rather
+            # than label every reading "Today".
+            "price_as_of": price_as_of,
             "trend": trend,
             "summary": f"{market_sentence} {stat_sentence}".strip(),
             "sources": ["Yahoo Finance"] + (["FRED"] if (cpi_obs or rate_obs) else []),
@@ -3186,10 +3314,13 @@ def fetch_macro_economy():
 # PEER GROUP DATA GENERATION (LIVE DATA)
 # ============================================================================
 
-def fetch_peer_group():
+def fetch_peer_group(previous_peers: list = None):
     """
     Fetch real peer group intelligence using yfinance.
     MORE SENSITIVE risk detection - stock movements are a primary signal.
+
+    previous_peers is the last snapshot's peer_group: a price reading from an
+    older session than the one it shows is set aside (see prefer_latest_session).
     """
     peer_data = []
 
@@ -3231,6 +3362,7 @@ def fetch_peer_group():
                 "stock_move": "N/A",
                 "current_price": None,
                 "daily_change_pct": None,
+                "price_as_of": None,
                 "risk_level": "LOW",
                 "last_signal": peer_config.get("default_text", "Circuit breaker active."),
                 "sec_red_signals": 0,
@@ -3252,9 +3384,15 @@ def fetch_peer_group():
             # failing endpoint and its only use was a fallback price for the
             # case where no history exists at all.
             reading = fetch_price_reading(ticker_symbol, source_label=f"peer_{ticker_symbol}", scope="peers")
+            reading = prefer_latest_session(
+                reading,
+                next((p for p in (previous_peers or []) if p.get("name") == peer_config["name"]), None),
+                label=peer_config["name"],
+            )
             current_price = reading["current_price"]
             daily_change_pct = reading["daily_change_pct"]
             daily_sigma_pct = reading["daily_sigma_pct"]
+            price_as_of = reading.get("price_as_of")
             stock_move = f"{daily_change_pct:+.2f}%" if daily_change_pct is not None else "N/A"
 
             # Get up to 5 news headlines for broader scanning. Only headlines
@@ -3334,10 +3472,12 @@ def fetch_peer_group():
             # a point or two on an ordinary day isn't procurement-relevant.
             # Judged against the listing's own volatility, same as suppliers,
             # so a jumpy small-cap and a defensive large-cap aren't held to
-            # one shared percentage.
-            peer_severity = classify_price_move(daily_change_pct, daily_sigma_pct)
+            # one shared percentage. A reading carried forward over an older
+            # session keeps the severity it was given (prefer_latest_session),
+            # and the move is dated by its own session.
+            peer_severity = reading.get("severity") or classify_price_move(daily_change_pct, daily_sigma_pct)
             if peer_severity != "quiet":
-                move_text = describe_price_move(daily_change_pct, daily_sigma_pct)
+                move_text = describe_price_move(daily_change_pct, daily_sigma_pct, price_as_of)
                 if peer_severity == "severe":
                     if risk_level != "CRITICAL":
                         risk_level = "CRITICAL"
@@ -3409,6 +3549,8 @@ def fetch_peer_group():
                 "current_price": current_price,
                 "daily_change_pct": round(daily_change_pct, 2) if daily_change_pct is not None else None,
                 "daily_sigma_pct": round(daily_sigma_pct, 2) if daily_sigma_pct else None,
+                "price_as_of": price_as_of,
+                "price_severity": peer_severity if daily_change_pct is not None else None,
                 "risk_level": risk_level,
                 "last_signal": last_signal,
                 "news_risk": news_risk_detected,
@@ -3431,6 +3573,7 @@ def fetch_peer_group():
                 "stock_move": "N/A",
                 "current_price": None,
                 "daily_change_pct": None,
+                "price_as_of": None,
                 "risk_level": "LOW",
                 "last_signal": peer_config.get("default_text", "Data fetch error."),
                 "news_risk": False,
@@ -3560,18 +3703,29 @@ def _rag_direction(before: str, after: str) -> str:
     return "up" if order.get(after, 0) > order.get(before, 0) else "down"
 
 
-# A supplier whose price already produced an entry inside this window does not
-# produce another. ITC printed three in twenty-four hours on the live board
-# (-4.0%, +4.3%, -4.0%) — the same stock breathing, reported as three events.
-PRICE_MOVE_QUIET_HOURS = 24
+# Entries written before price moves carried their session have nothing to key
+# on, so they keep the rule they were written under — one per supplier per 24
+# hours. That stops the first harvest after the change from logging a second
+# time a move the feed reported hours earlier; after a day it stops mattering.
+LEGACY_PRICE_MOVE_QUIET_HOURS = 24
 
 
-def _recent_price_move_entities(previous_log: list, now: datetime) -> set:
-    """Suppliers already reported for a price move inside the quiet window."""
-    cutoff = now - timedelta(hours=PRICE_MOVE_QUIET_HOURS)
+def _reported_price_sessions(previous_log: list, now: datetime) -> set:
+    """(entity, session) pairs the feed has already reported a price move for.
+
+    Keyed on the session the move belongs to, not on when it was logged. The
+    24-hour window this replaces let one move through as often as yfinance
+    kept serving it: GPI's Friday fall was logged at 20:06 UTC that Friday,
+    again at 02:04 on Sunday and again at 02:05 on Monday. An entry with no
+    session is kept as (entity, None) for LEGACY_PRICE_MOVE_QUIET_HOURS.
+    """
+    cutoff = now - timedelta(hours=LEGACY_PRICE_MOVE_QUIET_HOURS)
     seen = set()
     for entry in previous_log or []:
-        if entry.get("kind") != "price_move":
+        if entry.get("kind") != "price_move" or not entry.get("entity"):
+            continue
+        if entry.get("price_as_of"):
+            seen.add((entry["entity"], entry["price_as_of"]))
             continue
         raw = entry.get("at")
         if not raw:
@@ -3582,8 +3736,8 @@ def _recent_price_move_entities(previous_log: list, now: datetime) -> set:
             continue
         if stamp.tzinfo is None:
             stamp = stamp.replace(tzinfo=timezone.utc)
-        if stamp >= cutoff and entry.get("entity"):
-            seen.add(entry["entity"])
+        if stamp >= cutoff:
+            seen.add((entry["entity"], None))
     return seen
 
 
@@ -3613,30 +3767,36 @@ def compute_changes(previous_state: dict | None, suppliers_data: dict,
             "href": href,
         })
 
-    recently_reported = _recent_price_move_entities(
+    reported_sessions = _reported_price_sessions(
         previous_state.get("change_log"), datetime.now(timezone.utc)
     )
 
     def report_price_move(supplier, name, href):
-        """One entry per unexplained fall, at most one per supplier per day.
+        """One entry per unexplained fall, and one per session.
 
         Two rules learned from the live feed. Only falls: a supplier's share
         price rising is not a supply risk, and "ITC +4.3%" in a feed headed
-        "what changed" is noise wearing the clothes of a signal. And once a
-        day: ITC printed three entries in twenty-four hours (-4.0%, +4.3%,
-        -4.0%) — the same stock breathing, reported as three events.
+        "what changed" is noise wearing the clothes of a signal. And once per
+        session: a fall belongs to the day the market made it, however many
+        harvests go on reading it (see _reported_price_sessions). The entry is
+        dated by that session, since it is read long after the harvest — the
+        daily brief the next morning included.
         """
         move = supplier.get("daily_change_pct")
         if not isinstance(move, (int, float)) or move >= 0:
             return
-        if name in recently_reported:
+        session = supplier.get("price_as_of")
+        if (name, session) in reported_sessions or (name, None) in reported_sessions:
             return
-        recently_reported.add(name)
+        reported_sessions.add((name, session))
         sigma = supplier.get("daily_sigma_pct")
         yardstick = f" ({abs(move) / sigma:.1f}× its normal daily range)" if sigma else ""
+        when = f" on {session_label(session)}" if session else ""
         add("price_move", "info", name,
-            f"{name} {move:+.1f}%{yardstick}, no corroborating signal",
+            f"{name} {move:+.1f}%{when}{yardstick}, no corroborating signal",
             f"BAT exposure: {supplier.get('bat_exposure')}. Cause unconfirmed.", href)
+        # The session this entry covers — what the next harvest dedupes on.
+        changes[-1]["price_as_of"] = session
 
     # --- Overall and per-pillar RAG -------------------------------------
     prev_overall = (previous_state.get("overall_rag") or {}).get("score")
@@ -4006,8 +4166,9 @@ def main():
 
     # PILLAR 1: Macro Overview. The live market readings are fetched first
     # because the pillar's RAG score is derived from them (see score_macro_rag)
-    # rather than from a region-count that could never reach GREEN.
-    macro_economy = fetch_macro_economy()
+    # rather than from a region-count that could never reach GREEN. Last
+    # cycle's readings let a lagging, older session be set aside.
+    macro_economy = fetch_macro_economy((previous_state or {}).get("macro_economy"))
     macro_data = fetch_macro_overview(macro_economy)
 
     # PILLAR 2: Peers & Competitors — peer_group (live stock/news + SEC
@@ -4015,7 +4176,7 @@ def main():
     # source of truth; fetch_peers_overview just rolls it up into the
     # pillar-level status the dashboard card needs. No separate fetch, no
     # separate cross-pillar escalation merge required anymore.
-    peer_group = fetch_peer_group()
+    peer_group = fetch_peer_group((previous_state or {}).get("peer_group"))
     peers_data = fetch_peers_overview(peer_group)
 
     # PILLAR 3: Supplier Watchlist

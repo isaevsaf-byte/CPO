@@ -26,8 +26,10 @@ Environment:
 """
 
 import argparse
+import html
 import json
 import os
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -43,9 +45,63 @@ DASHBOARD_URL = os.getenv("DASHBOARD_URL", "")
 # dip is how alerting stops being read.
 ALERT_KINDS = {"supplier_risk", "supplier_signal", "peer_risk", "overall_rag"}
 ALERT_LEVELS = ("CRITICAL", "HIGH", "RED")
+# A sanctions match is a legal blocker rather than a graded risk, so it pages
+# even when the supplier was already elevated for another reason and its level
+# did not move. The change log then records a supplier_signal whose headline
+# names the signal, not a level, so ALERT_LEVELS never matched it. The label is
+# the one SUPPLIER_SIGNAL_LABELS uses in update_intel.py.
+ALWAYS_ALERT_SIGNALS = ("OFAC sanctions match",)
 
 MAX_MESSAGE_CHARS = 3900
 TRUNCATION_NOTE = "\n…truncated. Full picture on the board."
+
+
+# ---------------------------------------------------------------------------
+# Markup per channel
+# ---------------------------------------------------------------------------
+# Headlines and the executive summary carry third-party text. Slack reads &,
+# < and > as markup, so an unescaped "<!channel>" pinged everyone and
+# "<https://example.com|text>" rendered as a link with any label. Telegram
+# gets HTML, whose only special characters are the same three; it used to be
+# sent as plain text with every * and _ deleted, content included.
+
+def slack_escape(text: str) -> str:
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def telegram_escape(text: str) -> str:
+    return html.escape(text, quote=False)
+
+
+class Markup:
+    def __init__(self, escape, bold: str, italic: str):
+        self.escape = escape
+        self._bold, self._italic = bold, italic
+
+    def bold(self, text: str) -> str:
+        return self._bold.format(self.escape(text))
+
+    def italic(self, text: str) -> str:
+        return self._italic.format(self.escape(text))
+
+
+PLAIN = Markup(lambda text: text, "*{}*", "_{}_")
+SLACK = Markup(slack_escape, "*{}*", "_{}_")
+TELEGRAM = Markup(telegram_escape, "<b>{}</b>", "<i>{}</i>")
+
+
+class Brief(str):
+    """The brief as plain text, carrying each channel's own rendering.
+
+    A str, so it prints, measures and compares as the plain text does, which
+    is what --dry-run shows; deliver() sends .slack and .telegram.
+    """
+
+    def __new__(cls, plain: str, slack: str, telegram: str):
+        brief = super().__new__(cls, plain)
+        brief.slack = slack
+        brief.telegram = telegram
+        return brief
 
 
 def parse_time(raw: str) -> datetime:
@@ -104,44 +160,72 @@ def is_escalation(entry: dict) -> bool:
     if entry.get("direction") != "up":
         return False
     headline = entry.get("headline", "")
+    if entry.get("kind") == "supplier_signal" and any(signal in headline for signal in ALWAYS_ALERT_SIGNALS):
+        return True
     return any(level in headline for level in ALERT_LEVELS)
 
 
-def format_message(snapshot: dict, entries: list, mode: str) -> str:
+def _fit(lines: list, limit: int) -> str:
+    """Join (text, clippable) lines, cutting at whole lines to stay within
+    limit. Only an entry line, which holds no tags, may be clipped part-way,
+    and never inside an HTML entity, so the result still parses."""
+    message = "\n".join(text for text, _ in lines)
+    if len(message) <= limit:
+        return message
+    budget = limit - len(TRUNCATION_NOTE)
+    kept, used = [], 0
+    for text, clippable in lines:
+        extra = len(text) + (1 if kept else 0)
+        if used + extra <= budget:
+            kept.append(text)
+            used += extra
+            continue
+        room = budget - used - (1 if kept else 0)
+        if clippable and room > 20:
+            kept.append(re.sub(r"&[#a-zA-Z0-9]*$", "", text[:room - 1]).rstrip() + "…")
+        break
+    return "\n".join(kept).rstrip() + TRUNCATION_NOTE
+
+
+def format_message(snapshot: dict, entries: list, mode: str, markup: Markup = PLAIN) -> str:
+    """The brief in one channel's markup; plain text by default."""
+    esc = markup.escape
     rag = (snapshot.get("overall_rag") or {}).get("score", "UNKNOWN")
     light = {"RED": "🔴", "AMBER": "🟡", "GREEN": "🟢"}.get(rag, "⚪")
     summary = snapshot.get("executive_summary") or {}
 
-    if mode == "alert":
-        lines = [f"{light} *Supply chain alert — status {rag}*", ""]
-    else:
-        lines = [f"{light} *Supply chain brief — status {rag}*", ""]
+    kind = "alert" if mode == "alert" else "brief"
+    lines = [(f"{light} {markup.bold(f'Supply chain {kind} — status {rag}')}", False), ("", False)]
 
     if entries:
-        lines.append(f"*{len(entries)} change{'s' if len(entries) > 1 else ''}:*")
+        lines.append((markup.bold(f"{len(entries)} change{'s' if len(entries) > 1 else ''}:"), False))
         for entry in entries[:10]:
             marker = "▲" if entry.get("direction") == "up" else "▼" if entry.get("direction") == "down" else "•"
-            lines.append(f"{marker} {entry.get('headline', '')}")
+            lines.append((f"{marker} {esc(entry.get('headline', ''))}", True))
         if len(entries) > 10:
-            lines.append(f"…and {len(entries) - 10} more")
+            lines.append((f"…and {len(entries) - 10} more", False))
     else:
-        lines.append("Nothing moved since yesterday. Standing position unchanged.")
+        lines.append(("Nothing moved since yesterday. Standing position unchanged.", False))
 
     if summary.get("headline"):
-        lines += ["", f"_{summary['headline']}_"]
+        lines += [("", False), (markup.italic(summary["headline"]), False)]
     if summary.get("next_step"):
-        lines.append(f"*Next step:* {summary['next_step']}")
+        lines.append((f"{markup.bold('Next step:')} {esc(summary['next_step'])}", False))
 
     if DASHBOARD_URL:
-        lines += ["", DASHBOARD_URL]
+        lines += [("", False), (esc(DASHBOARD_URL), False)]
 
-    message = "\n".join(lines)
     # Telegram rejects a message over 4096 characters outright, so a long
     # backlog would fail to send rather than send short.
-    if len(message) > MAX_MESSAGE_CHARS:
-        keep = MAX_MESSAGE_CHARS - len(TRUNCATION_NOTE)
-        message = message[:keep].rstrip() + TRUNCATION_NOTE
-    return message
+    return _fit(lines, MAX_MESSAGE_CHARS)
+
+
+def render_brief(snapshot: dict, entries: list, mode: str) -> Brief:
+    return Brief(
+        format_message(snapshot, entries, mode),
+        format_message(snapshot, entries, mode, SLACK),
+        format_message(snapshot, entries, mode, TELEGRAM),
+    )
 
 
 def post_json(url: str, payload: dict) -> bool:
@@ -159,22 +243,25 @@ def post_json(url: str, payload: dict) -> bool:
 
 
 def deliver(message: str) -> int:
-    """Send to every configured channel. Returns the number that accepted it."""
+    """Send to every configured channel. Returns the number that accepted it.
+
+    message is normally a Brief carrying each channel's escaped rendering. A
+    bare string is escaped whole, so it is still safe, just without bold.
+    """
     delivered = 0
+    slack_text = getattr(message, "slack", None) or slack_escape(str(message))
+    telegram_text = getattr(message, "telegram", None) or telegram_escape(str(message))
 
     slack_url = os.getenv("SLACK_WEBHOOK_URL")
-    if slack_url and post_json(slack_url, {"text": message}):
+    if slack_url and post_json(slack_url, {"text": slack_text}):
         delivered += 1
 
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     chat_id = os.getenv("TELEGRAM_CHAT_ID")
     if token and chat_id:
-        # Telegram's Markdown dialect differs from Slack's; the shared plain
-        # text degrades acceptably, so it is sent without a parse mode rather
-        # than risking a 400 on an unescaped character in a headline.
         if post_json(
             f"https://api.telegram.org/bot{token}/sendMessage",
-            {"chat_id": chat_id, "text": message.replace("*", "").replace("_", ""),
+            {"chat_id": chat_id, "text": telegram_text, "parse_mode": "HTML",
              "disable_web_page_preview": True},
         ):
             delivered += 1
@@ -206,7 +293,7 @@ def main() -> int:
     else:
         entries = entries_since(snapshot, args.hours)
 
-    message = format_message(snapshot, entries, args.mode)
+    message = render_brief(snapshot, entries, args.mode)
 
     if args.dry_run:
         print(message)

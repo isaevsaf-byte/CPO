@@ -7,11 +7,14 @@ executive summary is given and keeps, and how text reaches Slack and Telegram.
 Everything is offline; every fetch is stubbed.
 """
 
+import importlib.util
 import json
+import re
 import sys
 import types
 from datetime import datetime, timezone
 from email.utils import format_datetime
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -645,3 +648,101 @@ def test_the_client_is_bounded_and_the_data_is_fenced(harvester, fake_anthropic)
 def test_an_unfinished_reply_is_not_published(harvester, fake_anthropic, stop_reason):
     fake_anthropic["stop_reason"] = stop_reason
     assert _summary(harvester) is None
+
+
+# ---------------------------------------------------------------------------
+# 6. Slack and Telegram
+# ---------------------------------------------------------------------------
+
+DIGEST_PATH = Path(__file__).resolve().parent.parent / "scripts" / "send_digest.py"
+
+HOSTILE_SUMMARY = {
+    "headline": "<!channel> Payment details changed, see <https://pay.example|the new invoice>",
+    "next_step": "Reply & confirm <b>today</b>",
+}
+
+
+@pytest.fixture(scope="module")
+def digest():
+    spec = importlib.util.spec_from_file_location("send_digest_content", DIGEST_PATH)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _snapshot(entries=(), summary=None, rag="GREEN"):
+    return {"last_updated": datetime.now(timezone.utc).isoformat(),
+            "overall_rag": {"score": rag}, "executive_summary": summary,
+            "change_log": list(entries)}
+
+
+def test_slack_cannot_be_made_to_ping_or_link(digest):
+    brief = digest.render_brief(_snapshot(summary=HOSTILE_SUMMARY), [], "daily")
+    assert "<!channel>" not in brief.slack and "<https://" not in brief.slack
+    assert "&lt;!channel&gt;" in brief.slack
+    assert "Reply &amp; confirm &lt;b&gt;today&lt;/b&gt;" in brief.slack
+    # Slack's own formatting is still there.
+    assert "*Supply chain brief — status GREEN*" in brief.slack
+
+
+def test_telegram_gets_escaped_html(digest):
+    brief = digest.render_brief(_snapshot(summary=HOSTILE_SUMMARY), [], "daily")
+    assert "<b>Supply chain brief — status GREEN</b>" in brief.telegram
+    assert "&lt;!channel&gt;" in brief.telegram
+    assert "&lt;b&gt;today&lt;/b&gt;" in brief.telegram
+    # Content characters are no longer deleted to dodge the parser.
+    entries = [{"at": datetime.now(timezone.utc).isoformat(), "kind": "supplier_risk",
+                "direction": "up", "entity": "SWM (Mativ)", "headline": "SWM_Mativ: 5*3 → CRITICAL"}]
+    assert "SWM_Mativ: 5*3 → CRITICAL" in digest.render_brief(_snapshot(entries), entries, "daily").telegram
+
+
+def test_each_channel_receives_its_own_rendering(digest, monkeypatch):
+    posted = []
+    monkeypatch.setattr(digest, "post_json", lambda url, payload: posted.append((url, payload)) or True)
+    monkeypatch.setenv("SLACK_WEBHOOK_URL", "https://hooks.example/test")
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test-placeholder")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+
+    assert digest.deliver(digest.render_brief(_snapshot(summary=HOSTILE_SUMMARY), [], "daily")) == 2
+    (_, slack), (_, telegram) = posted
+    assert "&lt;!channel&gt;" in slack["text"]
+    assert telegram["parse_mode"] == "HTML"
+    assert "&lt;!channel&gt;" in telegram["text"] and "<b>" in telegram["text"]
+
+
+def test_a_bare_string_is_still_escaped(digest, monkeypatch):
+    posted = []
+    monkeypatch.setattr(digest, "post_json", lambda url, payload: posted.append(payload) or True)
+    monkeypatch.setenv("SLACK_WEBHOOK_URL", "https://hooks.example/test")
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    digest.deliver("<!here> hello")
+    assert posted[0]["text"] == "&lt;!here&gt; hello"
+
+
+def test_truncation_never_splits_an_entity_or_a_tag(digest):
+    entries = [{"at": datetime.now(timezone.utc).isoformat(), "kind": "supplier_risk", "direction": "up",
+                "entity": "Acme", "headline": "Acme: LOW → CRITICAL " + "R&D <plant> " * 120}
+               for _ in range(10)]
+    brief = digest.render_brief(_snapshot(entries, summary=HOSTILE_SUMMARY), entries, "daily")
+    for text in (brief, brief.slack, brief.telegram):
+        assert len(text) <= digest.MAX_MESSAGE_CHARS
+        assert text.endswith(digest.TRUNCATION_NOTE)
+    for text in (brief.slack, brief.telegram):
+        body = text[:-len(digest.TRUNCATION_NOTE)]
+        assert not re.search(r"&(?!amp;|lt;|gt;)", body)
+        assert body.count("<b>") == body.count("</b>")
+
+
+@pytest.mark.parametrize(
+    "kind,direction,headline,expected",
+    [
+        # A new sanctions match on a supplier already elevated for something
+        # else: its level holds, so the log records a supplier_signal.
+        ("supplier_signal", "up", "Smoore: OFAC sanctions match", True),
+        ("supplier_signal", "up", "Smoore: CISA cyber vulnerability, OFAC sanctions match", True),
+        ("supplier_signal", "up", "Jabil: CISA cyber vulnerability", False),
+        ("supplier_signal", "down", "Smoore: OFAC sanctions match cleared", False),
+    ],
+)
+def test_a_new_sanctions_match_always_pages(digest, kind, direction, headline, expected):
+    assert digest.is_escalation({"kind": kind, "direction": direction, "headline": headline}) is expected

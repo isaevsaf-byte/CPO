@@ -899,3 +899,48 @@ def test_the_unlisted_scan_is_target_aware_too(harvester, monkeypatch):
     monkeypatch.setattr(harvester, "fetch_google_news_rss", lambda query, max_results=5: [
         rss_item("US sanctions on CNT nicotine exports")])
     assert harvester.scan_supplier_news_google("CNT", "Switzerland")[1] == "CRITICAL"
+
+
+# ---------------------------------------------------------------------------
+# 9. Military posture counts where it happens, not for whose military it is
+# ---------------------------------------------------------------------------
+
+def _country_level(harvester, monkeypatch, country, title):
+    monkeypatch.setattr(harvester, "fetch_google_news_rss",
+                        lambda query, max_results=8: [rss_item(title)])
+    return harvester.scan_country_geopolitical_news(country)[1]
+
+
+@pytest.mark.parametrize(
+    "country,title",
+    [
+        # Routine coverage of a standing condition, not an event in China.
+        ("China", "Chinese military buildup near Taiwan"),
+        ("China", "China's military buildup near Taiwan alarms Beijing's neighbours"),
+        ("China", "China mobilizes troops"),
+        ("China", "China mobilises troops against India"),
+        ("China", "US military buildup in response to Chinese threats"),
+    ],
+)
+def test_the_actor_of_a_buildup_is_not_escalated(harvester, monkeypatch, country, title):
+    assert _country_level(harvester, monkeypatch, country, title) == "LOW"
+
+
+@pytest.mark.parametrize(
+    "country,title",
+    [
+        ("Finland", "Russia mobilizes troops along border with Finland"),
+        ("Finland", "Russian military buildup on its border with Finland"),
+        ("India", "China mobilises troops against India"),
+        ("India", "Pakistan military buildup along Indian border"),
+        ("China", "Military buildup in China's Fujian province"),
+        ("South Korea", "North Korea military buildup near Seoul raises alarm"),
+    ],
+)
+def test_the_place_a_buildup_is_aimed_at_is_escalated(harvester, monkeypatch, country, title):
+    assert _country_level(harvester, monkeypatch, country, title) == "HIGH"
+
+
+def test_an_event_between_two_countries_still_counts_for_both(harvester, monkeypatch):
+    for country in ("India", "China"):
+        assert _country_level(harvester, monkeypatch, country, "India-China border clash leaves 3 dead") == "HIGH"

@@ -663,12 +663,52 @@ def country_is_target(title_lower: str, keyword: str, country: str) -> bool:
     return False
 
 
+# Military posture: the country it counts against is where it happens, not
+# whose military it is. "Chinese military buildup near Taiwan" is routine
+# coverage of a standing condition for China and an event for Taiwan, and
+# "China mobilizes troops" says nothing about where. These escalate only the
+# country named after near, in, on, along or against: "Russia mobilizes troops
+# along border with Finland" escalates Finland, "military buildup in China's
+# Fujian province" escalates China.
+GEO_POSTURE_KW = {"military buildup", "mobilizes troops", "mobilises troops"}
+_LOCATION_AFTER = re.compile(r"\s+(?:\S+\s+){0,3}?(?:near|in|on|along|against|around|off)\s+(.+)")
+# Words that can sit inside a place ("on its border with India", "in
+# disputed waters") although they end in -s like the verb that would
+# otherwise end it ("near Taiwan alarms Beijing").
+_PLACE_WORDS_ENDING_IN_S = {
+    "its", "his", "this", "waters", "borders", "frontiers", "islands", "areas",
+    "straits", "seas", "regions", "provinces", "territories", "heights",
+}
+
+
+def country_is_location(title_lower: str, keyword: str, country: str) -> bool:
+    """True if a military-posture keyword (GEO_POSTURE_KW) is followed by a
+    place in or aimed at the country."""
+    for match in _keyword_pattern(keyword).finditer(title_lower):
+        clause = _TARGET_CLAUSE_END.split(title_lower[match.end():], 1)[0]
+        located = _LOCATION_AFTER.match(clause)
+        if not located:
+            continue
+        place = []
+        for word in located.group(1).split()[:5]:
+            bare = word.strip("\"'")
+            if bare in _OBJECT_ENDS or (bare.endswith("s") and not bare.endswith("'s")
+                                        and bare not in _PLACE_WORDS_ENDING_IN_S):
+                break
+            place.append(word)
+        if headline_names_country(" ".join(place), country):
+            return True
+    return False
+
+
 def _geo_keyword_hit(title_lower: str, keywords: list, country: str):
     """First keyword that counts against this country, or None."""
     for keyword in keywords:
         if not _keyword_hit(title_lower, keyword):
             continue
         if keyword in GEO_TARGETED_KW and not country_is_target(title_lower, keyword, country):
+            continue
+        if keyword in GEO_POSTURE_KW and not country_is_location(title_lower, keyword, country):
             continue
         return keyword
     return None

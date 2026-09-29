@@ -369,6 +369,16 @@ NEGATION_MARKERS = [
     "cleared of", "clears ", "false reports", "false claims",
 ]
 
+# The markers are matched as whole words. As raw substrings they fired inside
+# ordinary words and hid the event the headline reported: "no " inside
+# "Filipino workers strike", "ends " inside "suspends production after
+# explosion" and "extends plant shutdown", "not " inside "cannot avoid
+# bankruptcy". "No." is a rank ("No. 1 supplier"), not a denial.
+_NEGATION_PATTERN = re.compile(
+    r"\b(?:" + "|".join(re.escape(m.strip()) for m in NEGATION_MARKERS) + r")\b(?!\.)"
+)
+NEGATION_WINDOW = 45
+
 
 # Keywords deliberately matched as a word *prefix* rather than a whole word,
 # because the tail varies and all variants mean the same thing:
@@ -378,8 +388,43 @@ PREFIX_KEYWORDS = {
     "restructur", "tensions escalat", "de-escalat", "ceasefire collapse",
 }
 
+# Phrases also written as one word or hyphenated: "cyberattack", "cyber-attack".
+JOINABLE_KEYWORDS = {"cyber attack"}
 
-@lru_cache(maxsize=512)
+# Last words of a keyword phrase that never take an inflection: "invasion of",
+# "sanctions on", "shut down".
+_UNINFLECTED_WORDS = {
+    "of", "on", "in", "to", "at", "by", "for", "from", "with", "into",
+    "against", "out", "down", "up", "off",
+}
+
+
+def _inflected(word: str) -> str:
+    """Regex for the last word of a keyword phrase, with its common inflections.
+
+    Whole-word matching fixed "miss" firing inside "emissions", but it also
+    made every keyword blind to its own plural and past tense: "ceo resign"
+    missed "CEO resigns", "mass layoff" missed "mass layoffs", "sanction" missed
+    "sanctions". A word already inflected ("sanctioned", "layoffs") is taken as
+    written.
+    """
+    if (not word.isalpha() or len(word) < 3 or word in _UNINFLECTED_WORDS
+            or word.endswith(("ed", "ing"))
+            or (word.endswith("s") and not word.endswith("ss"))):
+        return re.escape(word)
+    if word.endswith("e"):                                   # strike, shortage
+        return re.escape(word[:-1]) + "(?:e|es|ed|ing)"
+    if word.endswith("y") and word[-2] not in "aeiou":       # bankruptcy
+        return re.escape(word[:-1]) + "(?:y|ies|ied)"
+    if word.endswith(("ss", "sh", "ch", "x", "z", "o")):     # clash, breach, embargo
+        return re.escape(word) + "(?:es|s|ed|ing)?"
+    if (len(word) <= 4 and word[-1] not in "aeiouwxy"        # cut, ban, war
+            and word[-2] in "aeiou" and word[-3] not in "aeiou"):
+        return re.escape(word) + f"(?:s|{word[-1]}ed|{word[-1]}ing)?"
+    return re.escape(word) + "(?:s|ed|ing|ation|ations)?"   # resign, recall, delay
+
+
+@lru_cache(maxsize=1024)
 def _keyword_pattern(keyword: str) -> re.Pattern:
     """Compiled whole-word matcher for one risk keyword.
 
@@ -393,28 +438,39 @@ def _keyword_pattern(keyword: str) -> re.Pattern:
     skipped for PREFIX_KEYWORDS (so "restructur" still matches
     "restructuring"), and boundaries are dropped entirely on an edge that
     isn't a word character, so multi-word phrases and trailing spaces in the
-    keyword lists keep working.
+    keyword lists keep working. The last word accepts its inflections (see
+    _inflected), and the words of a phrase may be joined by a hyphen.
     """
     kw = keyword.strip().lower()
+    words = kw.split() or [kw]
+    joiner = r'[\s\-]*' if kw in JOINABLE_KEYWORDS else r'[\s\-]+'
+    if keyword in PREFIX_KEYWORDS:
+        body = joiner.join(re.escape(w) for w in words)
+        trail = ''
+    else:
+        body = joiner.join([re.escape(w) for w in words[:-1]] + [_inflected(words[-1])])
+        trail = r'\b' if kw[-1:].isalnum() else ''
     lead = r'\b' if kw[:1].isalnum() else ''
-    trail = '' if keyword in PREFIX_KEYWORDS or not kw[-1:].isalnum() else r'\b'
-    return re.compile(lead + re.escape(kw) + trail)
+    return re.compile(lead + body + trail)
 
 
-def _is_negated_near(text_lower: str, keyword: str, window: int = 45) -> bool:
+def _negated_before(text_lower: str, position: int, window: int = NEGATION_WINDOW) -> bool:
+    """True if a negation/de-escalation marker sits in the words just before position."""
+    return _NEGATION_PATTERN.search(text_lower, max(0, position - window), position) is not None
+
+
+def _is_negated_near(text_lower: str, keyword: str, window: int = NEGATION_WINDOW) -> bool:
     """True if a negation/de-escalation marker appears just before the keyword."""
     match = _keyword_pattern(keyword).search(text_lower)
-    if match is None:
-        return False
-    context = text_lower[max(0, match.start() - window):match.start()]
-    return any(marker in context for marker in NEGATION_MARKERS)
+    return match is not None and _negated_before(text_lower, match.start(), window)
 
 
 def _keyword_hit(text_lower: str, keyword: str) -> bool:
-    """A keyword only counts if present as a whole word and not negated nearby."""
-    return (
-        _keyword_pattern(keyword).search(text_lower) is not None
-        and not _is_negated_near(text_lower, keyword)
+    """A keyword counts if it appears as a whole word and at least one
+    occurrence of it is not negated just before."""
+    return any(
+        not _negated_before(text_lower, match.start())
+        for match in _keyword_pattern(keyword).finditer(text_lower)
     )
 
 
@@ -1097,6 +1153,67 @@ def fetch_gdelt_intel(countries: list, attempts: dict = None, suppliers_by_count
     return result, attempts
 
 
+# Supply-risk vocabulary for headlines that name a supplier, most severe tier
+# first. One list for both scans: the listed-supplier scan (yfinance headlines)
+# and the unlisted-supplier scan (Google News) used to carry two copies that
+# had drifted apart. Each keyword also matches its inflections (see
+# _inflected): "ceo resign" covers "CEO resigns" and "CEO resignation".
+SUPPLY_RISK_KEYWORDS = {
+    "CRITICAL": [
+        "bankruptcy", "bankrupt", "insolvent", "insolvency", "liquidation", "chapter 11",
+        "factory fire", "plant fire", "explosion", "plant closure", "facility closure",
+        "plant shutdown", "factory shutdown", "production shutdown",
+        "cease operations", "shut down", "shutting down",
+        "sanction", "sanctioned", "import ban", "export ban", "trade ban", "seized", "embargo",
+        "ransomware", "cyber attack", "systems down", "operations halted",
+        # Labour action only: a bare "strike" also reads a missile strike.
+        "labor strike", "labour strike", "workers strike", "on strike", "union strike",
+        "strike action", "industrial action", "walkout",
+    ],
+    "HIGH": [
+        "fraud investigation", "sec investigation", "fbi investigation",
+        "accounting fraud", "securities fraud",
+        "major recall", "product recall", "safety recall",
+        "ceo fired", "ceo resign", "cfo resign", "chief executive resign", "executive exodus",
+    ],
+    "MEDIUM": [
+        "mass layoff", "major layoff", "workforce reduction",
+        "supply shortage", "supply disruption", "production delay", "shipping delay",
+        "restructuring", "downsizing",
+        "credit downgrade", "debt default",
+    ],
+}
+
+
+def classify_supply_headline(headline: str) -> tuple:
+    """(level, keyword) for the most severe supply-risk keyword in one headline,
+    or ("LOW", None)."""
+    text = headline.lower()
+    for level in ("CRITICAL", "HIGH", "MEDIUM"):
+        for keyword in SUPPLY_RISK_KEYWORDS[level]:
+            if _keyword_hit(text, keyword):
+                return level, keyword
+    return "LOW", None
+
+
+def most_severe_supply_headline(headlines: list) -> tuple:
+    """(level, keyword, headline) for the most severe of headlines, earliest
+    first on a tie, or ("LOW", None, None).
+
+    Every headline is read. The scan used to stop at the first one carrying
+    any keyword, so a restructuring story listed above a plant fire left the
+    supplier at MEDIUM.
+    """
+    best = ("LOW", None, None)
+    for headline in headlines:
+        level, keyword = classify_supply_headline(headline)
+        if RISK_PRIORITY[level] > RISK_PRIORITY[best[0]]:
+            best = (level, keyword, headline)
+            if level == "CRITICAL":
+                break
+    return best
+
+
 def scan_supplier_news_google(supplier_name, country):
     """
     Scan Google News for supply chain risk signals for a specific supplier.
@@ -1111,45 +1228,13 @@ def scan_supplier_news_google(supplier_name, country):
     if not headlines:
         return [], "LOW", ""
 
-    # Re-use the same keyword sets from the main supply chain scanner
-    CRITICAL_KW = ["bankruptcy", "bankrupt", "insolvent", "liquidation",
-                   "factory fire", "plant fire", "explosion", "facility closure",
-                   "sanction", "ransomware", "cyber attack", "operations halted",
-                   "labor strike", "workers strike", "walkout"]
-    HIGH_KW = ["fraud investigation", "sec investigation", "major recall",
-               "product recall", "ceo fired", "ceo resign"]
-    MEDIUM_KW = ["mass layoff", "supply shortage", "supply disruption",
-                 "production delay", "restructuring", "credit downgrade"]
-
-    max_level = "LOW"
-    reason = ""
-
-    for h in headlines:
-        title_lower = h["title"].lower()
-        if not _mentions_subject(title_lower, supplier_name):
-            continue
-
-        for kw in CRITICAL_KW:
-            if _keyword_hit(title_lower, kw):
-                max_level = "CRITICAL"
-                reason = f"Critical supply risk from news: '{kw}'"
-                break
-        if max_level == "CRITICAL":
-            break
-
-        for kw in HIGH_KW:
-            if _keyword_hit(title_lower, kw):
-                if RISK_PRIORITY.get("HIGH", 2) > RISK_PRIORITY.get(max_level, 0):
-                    max_level = "HIGH"
-                    reason = reason or f"High supply risk from news: '{kw}'"
-                break
-
-        for kw in MEDIUM_KW:
-            if _keyword_hit(title_lower, kw):
-                if RISK_PRIORITY.get("MEDIUM", 1) > RISK_PRIORITY.get(max_level, 0):
-                    max_level = "MEDIUM"
-                    reason = reason or f"Supply concern from news: '{kw}'"
-                break
+    naming = [h["title"] for h in headlines if _mentions_subject(h["title"].lower(), supplier_name)]
+    max_level, keyword, _ = most_severe_supply_headline(naming)
+    reason = {
+        "CRITICAL": f"Critical supply risk from news: '{keyword}'",
+        "HIGH": f"High supply risk from news: '{keyword}'",
+        "MEDIUM": f"Supply concern from news: '{keyword}'",
+    }.get(max_level, "")
 
     return [h["title"] for h in headlines], max_level, reason
 
@@ -1334,6 +1419,107 @@ def supplier_terms_hit(text_upper: str, search_terms: list) -> bool:
     """Whole-word match: True if any term appears as a standalone word in
     text_upper (not merely as a substring inside a longer word)."""
     return any(re.search(r'\b' + re.escape(term) + r'\b', text_upper) for term in search_terms)
+
+
+# ============================================================================
+# SUPPLIER NEWS IDENTITY — which headlines are about which supplier
+# The screening terms above decide whether a CISA record or a CPSC recall names
+# a supplier. A headline needs more: several watchlist names are also the names
+# of better-known things. "ITC" is the US International Trade Commission as
+# often as it is the Indian company, "Fuji" is a mountain and a film maker,
+# "Porton" is a UK defence laboratory, "CNT" is a crypto token.
+#
+# data/suppliers.json gives such a supplier a "news" block:
+#   names         identify the supplier on their own ("ITC Ltd", "Porton Pharma")
+#   bare          ambiguous names that count only alongside a context word
+#   context       the words that make a bare name mean this supplier
+#   exclude       phrases naming a different entity; any one rejects the headline
+#   exclude_near  words within two words of a bare name that mark a different
+#                 entity ("ITC ruling", "patent fight at the ITC")
+# Exclusions win over names. A supplier without a block is matched on its
+# screening terms, as before.
+# ============================================================================
+NEWS_IDENTITY_KEYS = {"names", "bare", "context", "exclude", "exclude_near"}
+
+
+def _headline_text(headline: str) -> str:
+    """Lower-cased headline with typographic apostrophes and runs of
+    whitespace normalised, so "ITC’s" and "ITC's" read the same."""
+    text = headline.replace("’", "'").replace("‘", "'")
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+def _phrase_regex(phrase: str) -> str:
+    """Whole-phrase regex whose words may be separated by spaces or hyphens,
+    so "IP Sun" also matches "IP-Sun"."""
+    words = [w for w in re.split(r"[\s\-]+", _headline_text(phrase)) if w]
+    return r"(?<!\w)" + r"[\s\-]+".join(re.escape(w) for w in words) + r"(?!\w)"
+
+
+class NewsIdentity:
+    """How headlines name one supplier; see the section comment above."""
+
+    def __init__(self, spec: dict):
+        def compiled(key):
+            return [re.compile(_phrase_regex(p)) for p in spec.get(key, []) if p.strip()]
+
+        self.names = compiled("names")
+        self.bare = compiled("bare")
+        self.context = compiled("context")
+        self.exclude = compiled("exclude")
+        near_words = [_phrase_regex(w) for w in spec.get("exclude_near", []) if w.strip()]
+        self.exclude_near = []
+        if near_words:
+            near = "(?:" + "|".join(near_words) + ")"
+            gap = r"(?:\W+\w+){0,2}?\W+"   # up to two words in between
+            for bare in spec.get("bare", []):
+                name = _phrase_regex(bare)
+                self.exclude_near.append(re.compile(f"{name}{gap}{near}|{near}{gap}{name}"))
+
+    def matches(self, headline: str) -> bool:
+        text = _headline_text(headline)
+        if any(p.search(text) for p in self.exclude + self.exclude_near):
+            return False
+        if any(p.search(text) for p in self.names):
+            return True
+        return (any(p.search(text) for p in self.bare)
+                and any(p.search(text) for p in self.context))
+
+
+def _load_news_identities(path: Path) -> dict:
+    """Supplier name -> NewsIdentity for every supplier with a "news" block.
+
+    A typo in a key raises rather than being ignored: a misspelt "exclude"
+    would quietly let the namesake's news through again.
+    """
+    with open(path) as f:
+        entries = json.load(f).get("suppliers", [])
+    identities = {}
+    for entry in entries:
+        spec = entry.get("news")
+        if not spec:
+            continue
+        name = entry.get("name")
+        unknown = set(spec) - NEWS_IDENTITY_KEYS
+        if unknown:
+            raise ValueError(f"{path.name}: {name!r} news block has unknown keys {sorted(unknown)}")
+        if spec.get("bare") and not spec.get("context"):
+            raise ValueError(f"{path.name}: {name!r} lists bare names without the context that qualifies them")
+        if not spec.get("names") and not spec.get("bare"):
+            raise ValueError(f"{path.name}: {name!r} news block names nothing to match")
+        identities[name] = NewsIdentity(spec)
+    return identities
+
+
+SUPPLIER_NEWS_IDENTITIES = _load_news_identities(WATCHLIST_FILE)
+
+
+def headline_names_supplier(headline: str, supplier_name: str) -> bool:
+    """True if a headline is about this supplier rather than a namesake."""
+    identity = SUPPLIER_NEWS_IDENTITIES.get(supplier_name)
+    if identity is None:
+        return supplier_terms_hit(headline.upper(), supplier_search_terms(supplier_name))
+    return identity.matches(headline)
 
 
 def fetch_cisa_kev():
@@ -2258,28 +2444,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
     logger.info(f"Geopolitical scan complete. {sum(1 for v in country_news_cache.values() if v['level'] != 'LOW')} countries with elevated risk.")
 
     # Keywords indicating REAL supply chain risk to BAT
-    CRITICAL_SUPPLY_KEYWORDS = [
-        "bankruptcy", "bankrupt", "insolvent", "liquidation", "chapter 11",
-        "factory fire", "plant fire", "explosion", "plant closure", "facility closure",
-        "cease operations", "shut down", "shutting down",
-        "sanctioned", "import ban", "export ban", "trade ban", "seized", "embargo",
-        "ransomware attack", "cyber attack", "systems down", "operations halted",
-        "labor strike", "workers strike", "walkout"
-    ]
-
-    HIGH_SUPPLY_KEYWORDS = [
-        "fraud investigation", "sec investigation", "fbi investigation",
-        "accounting fraud", "securities fraud",
-        "major recall", "product recall", "safety recall",
-        "ceo fired", "ceo resign", "cfo resign", "executive exodus"
-    ]
-
-    MEDIUM_SUPPLY_KEYWORDS = [
-        "mass layoff", "major layoff", "workforce reduction",
-        "supply shortage", "supply disruption", "production delay", "shipping delay",
-        "restructuring", "downsizing",
-        "credit downgrade", "debt default"
-    ]
+    # live in SUPPLY_RISK_KEYWORDS, shared with the unlisted-supplier scan.
 
     # Check each supplier against CISA alerts
     for supplier in WATCHLIST_DATA:
@@ -2349,51 +2514,26 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             # ticker could raise a CRITICAL supply-risk flag against a supplier
             # the article never mentioned. Same whole-word matcher used for
             # CISA/recall/sanctions screening.
+            # A supplier with a news identity (see SUPPLIER_NEWS_IDENTITIES) is
+            # matched on it, so "US ITC patent ruling" is not read as ITC news.
             headlines_list = [
                 h for h in reading["headlines"]
-                if h and supplier_terms_hit(h.upper(), search_terms)
+                if h and headline_names_supplier(h, supplier_name)
             ]
 
-            # Analyze ALL news headlines (up to 5) for SUPPLY CHAIN risk keywords
-            for headline in headlines_list:
-                if not headline:
-                    continue
-                if not news_headline:
-                    news_headline = headline  # Keep first headline for display
-                headline_lower = headline.lower()
-
-                # Check for CRITICAL supply risk keywords
-                for kw in CRITICAL_SUPPLY_KEYWORDS:
-                    if _keyword_hit(headline_lower, kw):
-                        news_risk = True
-                        operational_risk = True
-                        news_items.append({"headline": headline, "risk": "CRITICAL", "keyword": kw})
-                        risk_reason = f"Critical supply risk: '{kw}' detected in news"
-                        break
-
-                # Check for HIGH supply risk keywords
-                if not operational_risk:
-                    for kw in HIGH_SUPPLY_KEYWORDS:
-                        if _keyword_hit(headline_lower, kw):
-                            news_risk = True
-                            operational_risk = True
-                            news_items.append({"headline": headline, "risk": "HIGH", "keyword": kw})
-                            risk_reason = f"High supply risk: '{kw}' detected in news"
-                            break
-
-                # Check for MEDIUM supply risk keywords
-                if not operational_risk:
-                    for kw in MEDIUM_SUPPLY_KEYWORDS:
-                        if _keyword_hit(headline_lower, kw):
-                            news_risk = True
-                            operational_risk = True
-                            news_items.append({"headline": headline, "risk": "MEDIUM", "keyword": kw})
-                            risk_reason = f"Supply concern: '{kw}' detected in news"
-                            break
-
-                # Stop scanning once we find the highest-severity match
-                if operational_risk:
-                    break
+            # Every headline is read and the most severe one wins; the one shown
+            # is the headline that carried the signal, not merely the first.
+            level, kw, flagged = most_severe_supply_headline(headlines_list)
+            news_headline = flagged or (headlines_list[0] if headlines_list else "")
+            if flagged:
+                news_risk = True
+                operational_risk = True
+                news_items.append({"headline": flagged, "risk": level, "keyword": kw})
+                risk_reason = {
+                    "CRITICAL": f"Critical supply risk: '{kw}' detected in news",
+                    "HIGH": f"High supply risk: '{kw}' detected in news",
+                    "MEDIUM": f"Supply concern: '{kw}' detected in news",
+                }[level]
 
         # ================================================================
         # LAYER 3: Google News for ticker-less suppliers

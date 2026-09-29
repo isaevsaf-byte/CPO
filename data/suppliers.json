@@ -97,6 +97,7 @@
       "contract manufacturing"
     ]
   },
+  "_news_comment": "Optional per-supplier \"news\" block: which headlines are about this supplier rather than a namesake. names identify the supplier on their own; bare names count only alongside one of the context words; exclude phrases name a different entity and reject the headline outright, even when a name also matches; exclude_near words within two words of a bare name do the same (\"ITC ruling\" is the US International Trade Commission). Matching is whole-word and case-insensitive, and a hyphen counts as a space. A supplier without the block is matched on its name and screening aliases.",
   "suppliers": [
     {
       "name": "AMCOR",
@@ -197,7 +198,55 @@
       "category": "Nicotine",
       "bat_exposure": "High",
       "location": "India",
-      "stock_ticker": "ITC.NS"
+      "stock_ticker": "ITC.NS",
+      "news": {
+        "names": [
+          "ITC Ltd",
+          "ITC Limited",
+          "ITC's",
+          "ITC share",
+          "ITC shares",
+          "ITC stock",
+          "ITC Q1",
+          "ITC Q2",
+          "ITC Q3",
+          "ITC Q4",
+          "ITC Hotels"
+        ],
+        "bare": [
+          "ITC"
+        ],
+        "context": [
+          "India",
+          "Indian"
+        ],
+        "exclude": [
+          "US ITC",
+          "U.S. ITC",
+          "USITC",
+          "International Trade Commission",
+          "ITC Holdings"
+        ],
+        "exclude_near": [
+          "import",
+          "imports",
+          "imported",
+          "tariff",
+          "tariffs",
+          "patent",
+          "patents",
+          "ruling",
+          "rulings",
+          "rules",
+          "ruled",
+          "probe",
+          "probes",
+          "investigation",
+          "investigations",
+          "exclusion order",
+          "Section 337"
+        ]
+      }
     },
     {
       "name": "Porton",

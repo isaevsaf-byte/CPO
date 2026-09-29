@@ -63,6 +63,7 @@ function windowHours(window: string | undefined): number {
 const EVENT_LABELS: Record<string, string> = {
   protest: 'protests',
   sanctions: 'sanctions or embargoes',
+  sanctions_embargo: 'sanctions or embargoes',
   coerce: 'coercion',
   assault: 'assaults',
   fight: 'armed clashes',
@@ -103,7 +104,7 @@ export default function GeopoliticalIntelPage() {
   const noReadingReason = (country: string): string => {
     const state = attempts[country];
     if (!state?.last_attempt) {
-      return 'Queued — GDELT is queried a few countries at a time each cycle, so coverage fills in over a day or so.';
+      return 'No reading yet — it arrives with the next harvest.';
     }
     const when = relativeAttempt(state.last_attempt);
     const streak = state.consecutive_failures ?? 0;
@@ -177,12 +178,12 @@ export default function GeopoliticalIntelPage() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-slate-400 mt-1 max-w-3xl">
-                    Early-warning signal, independent of the main risk score: news tone across
-                    65+ languages for every country where a watchlist supplier is based. GDELT
-                    itself refreshes every 15 min but limits how often this board may ask, so each
-                    country is re-read when a request gets through and every card says how old its
-                    reading is. A sharp negative shift here can show up days before it reaches a
-                    supplier&apos;s stock price or a named headline in the main dashboard.
+                    Early-warning signal, independent of the main risk score: what is happening in
+                    every country where a watchlist supplier is based, read from GDELT&apos;s event
+                    files across 65+ languages of news, with the tone of the coverage each event got.
+                    Every card says how old its reading is. A sharp negative shift here can show up
+                    days before it reaches a supplier&apos;s stock price or a named headline in the
+                    main dashboard.
                   </p>
                 </div>
               </div>
@@ -206,12 +207,13 @@ export default function GeopoliticalIntelPage() {
             <div>
               <h2 className="text-sm font-bold text-gray-900 dark:text-slate-200 mb-2">What is this?</h2>
               <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
-                A smoke detector for the countries your suppliers are based in. It reads global
-                news coverage (thousands of outlets, 65+ languages) and scores how negative or
-                positive the coverage of each country has been over the last 3 days. It doesn&apos;t
-                know anything about supply chains — it just measures the mood of the news. A
-                sudden dip is worth a look; it says nothing on its own about whether a specific
-                supplier is actually affected. Headlines are listed only where the coverage
+                A smoke detector for the countries your suppliers are based in. GDELT reads global
+                news (thousands of outlets, 65+ languages) and records what happened where: protests,
+                sanctions, coercion, armed clashes. Each card counts the events located in that
+                country over the last day and averages the tone of the coverage they got. It
+                doesn&apos;t know anything about supply chains — it measures what the news is
+                reporting and how. A sudden dip is worth a look; it says nothing on its own about
+                whether a specific supplier is actually affected. Headlines are listed only where the coverage
                 actually touches your supply chain &mdash; a supplier by name, its industry, or
                 events like export controls, port disruption or a walkout. Most countries most
                 days will show a tone reading and no headlines, which is the honest answer.

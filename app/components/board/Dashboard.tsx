@@ -23,7 +23,7 @@ import {
 import CtaBanner from './CtaBanner';
 import Concentration from './Concentration';
 import Scenarios from './Scenarios';
-import WorldSignals, { severityTone } from './WorldSignals';
+import WorldSignals, { severityTone, worldSignalsAnswered } from './WorldSignals';
 import SourceHealthList, { SourceHealthBadge } from './SourceHealth';
 import { BOOKING_URL, CASE_STUDY_URL, AUTHOR_NAME } from './links';
 import RegulatoryCalendar from '../RegulatoryCalendar';
@@ -698,7 +698,7 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
 
         {/* Three Core Pillars Overview, plus the world-signals card once the
             harvest carries it */}
-        <div className={`grid grid-cols-1 gap-6 mb-8 ${typedIntel.world_signals ? 'md:grid-cols-2 xl:grid-cols-4' : 'md:grid-cols-3'}`}>
+        <div className={`grid grid-cols-1 gap-6 mb-8 ${typedIntel.world_signals && worldSignalsAnswered(typedIntel.world_signals) ? 'md:grid-cols-2 xl:grid-cols-4' : 'md:grid-cols-3'}`}>
           {/* PILLAR 1: MACRO OVERVIEW */}
           <div className={`bg-white p-6 rounded-xl shadow-sm border-t-4 ${getRAGColor(macro?.rag_score)}`}>
             <div className="flex justify-between items-start mb-4">
@@ -879,7 +879,7 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
           </div>
 
           {/* PILLAR 4: WORLD — routes, inputs and hazards */}
-          {typedIntel.world_signals && (
+          {typedIntel.world_signals && worldSignalsAnswered(typedIntel.world_signals) && (
             <a href="#world-heading" className={`bg-white p-6 rounded-xl shadow-sm border-t-4 block hover:bg-slate-50 ${
               typedIntel.world_signals.level === 'severe' ? 'border-red-500' :
               typedIntel.world_signals.level === 'notable' ? 'border-amber-500' : 'border-green-500'

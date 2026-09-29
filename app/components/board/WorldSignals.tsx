@@ -15,6 +15,14 @@ const GROUPS: { key: 'commodities' | 'chokepoints' | 'rivers' | 'hazards'; title
   { key: 'hazards', title: 'Natural hazards' },
 ];
 
+// "quiet" is also what the harvest reports when every source failed, so the
+// level only means "within normal range" if at least one source answered.
+export function worldSignalsAnswered(data?: WorldSignalsData): boolean {
+  if (!data) return false;
+  const sources = Object.values(data.sources ?? {});
+  return sources.length === 0 || sources.some((src) => src.status !== 'failed');
+}
+
 export function severityTone(severity: WorldSeverity | undefined): string {
   return severity === 'severe'
     ? 'border-red-300 bg-red-50 text-red-800'
@@ -86,7 +94,7 @@ function Item({ item }: { item: WorldSignalItem }) {
 }
 
 export default function WorldSignals({ data }: { data?: WorldSignalsData }) {
-  if (!data) return null;
+  if (!data || !worldSignalsAnswered(data)) return null;
   const groups = GROUPS.map((g) => ({ ...g, items: data[g.key] ?? [] })).filter((g) => g.items.length > 0);
   if (groups.length === 0) return null;
 

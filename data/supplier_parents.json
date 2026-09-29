@@ -1,0 +1,150 @@
+{
+  "_comment": "Legal names and parent companies screened by scripts/screening.py against the US Consolidated Screening List and the UFLPA Entity List, on top of the supplier names and aliases the harvester passes in. Keys must match a name in suppliers.json. match_terms are matched whole-word after punctuation is folded to spaces, so 'BYD CO' matches 'BYD Co., Ltd.' but not 'BYD Company'; terms under five characters are ignored. A hit through a parent is reported as via 'parent', so the reviewer sees it is the group, not the plant, that is listed. Only suppliers whose legal or parent names add something to the watchlist name are here; every entry was checked on the date shown.",
+  "suppliers": {
+    "Huizhou BYD Electronic": {
+      "legal_name": "Huizhou BYD Electronic Co., Ltd. (惠州比亚迪电子有限公司)",
+      "match_terms": ["HUIZHOU BYD ELECTRONIC", "HUIZHOU BYD ELECTRONICS"],
+      "parents": [
+        {
+          "name": "BYD Precision Manufacture Co., Ltd. (比亚迪精密制造有限公司)",
+          "relationship": "direct shareholder, 34.09%",
+          "match_terms": ["BYD PRECISION MANUFACTURE"]
+        },
+        {
+          "name": "BYD Electronic (International) Company Limited",
+          "relationship": "listed intermediate parent, HKEX 0285",
+          "match_terms": ["BYD ELECTRONIC"]
+        },
+        {
+          "name": "BYD Company Limited",
+          "relationship": "ultimate parent, HKEX 1211 / SZSE 002594",
+          "match_terms": ["BYD COMPANY", "BYD CO"]
+        }
+      ],
+      "note": "The other direct shareholder, Lead Wealth International Limited (领裕国际有限公司, 65.91%), is not screened by name: the words are generic enough that an unrelated Hong Kong shell of the same name would be reported as BYD.",
+      "sources": [
+        "https://m.qcc.com/firm_1ae7f766fe9ecea2ca42c92ff41db01d.html",
+        "https://www.investing.com/equities/byd-electronic-company-profile"
+      ],
+      "checked": "2026-09-29"
+    },
+    "Smoore": {
+      "legal_name": "Smoore International Holdings Limited (思摩尔国际控股有限公司), HKEX 6969",
+      "match_terms": ["SMOORE"],
+      "parents": [],
+      "note": "The listed company is the holding company; the plants belong to its subsidiary Shenzhen Smoore Technology Limited (深圳麦克韦尔科技有限公司). Both names contain SMOORE, so one term covers both.",
+      "sources": [
+        "https://stockanalysis.com/quote/hkg/6969/company/",
+        "https://en.smooreholdings.com/"
+      ],
+      "checked": "2026-09-29"
+    },
+    "EVE Energy": {
+      "legal_name": "EVE Energy Co., Ltd. (惠州亿纬锂能股份有限公司), SZSE 300014",
+      "match_terms": ["EVE ENERGY"],
+      "parents": [],
+      "note": "Listed in its own right. The largest shareholder, reported as Xizang Yiwei Holding Co., Ltd. (西藏亿纬控股有限公司), announced a change of name on CNINFO on 2026-09-18; the new name has not been verified, so it is not screened.",
+      "sources": [
+        "https://en.wikipedia.org/wiki/EVE_Energy",
+        "https://static.cninfo.com.cn/finalpage/2026-09-18/1225572678.PDF"
+      ],
+      "checked": "2026-09-29"
+    },
+    "Porton": {
+      "legal_name": "Porton Pharma Solutions Ltd. (重庆博腾制药科技股份有限公司), SZSE 300363",
+      "match_terms": ["PORTON PHARMA", "PORTON FINE CHEMICALS"],
+      "parents": [],
+      "note": "Listed in its own right. Named Porton Fine Chemicals Ltd. until January 2018.",
+      "sources": [
+        "https://finance.yahoo.com/quote/300363.SZ/",
+        "https://www.portonpharma.com/en"
+      ],
+      "checked": "2026-09-29"
+    },
+    "CNT": {
+      "legal_name": "CONTRAF-NICOTEX-TOBACCO GmbH, Heilbronn (Amtsgericht Stuttgart HRB 102623)",
+      "match_terms": ["CONTRAF NICOTEX TOBACCO", "CONTRAF NICOTEX"],
+      "parents": [],
+      "note": "The watchlist name CNT is three letters, too short to screen on its own; without this entry the supplier would go unscreened.",
+      "sources": [
+        "https://www.northdata.com/CONTRAF-NICOTEX-TOBACCO%20GmbH,%20Heilbronn/Amtsgericht%20Stuttgart%20HRB%20102623"
+      ],
+      "checked": "2026-09-29"
+    },
+    "IP Sun": {
+      "legal_name": "International Paper & Sun Cartonboard Co., Ltd., Yanzhou, Shandong",
+      "match_terms": ["INTERNATIONAL PAPER SUN", "IP SUN"],
+      "parents": [
+        {
+          "name": "Shandong Sun Holding Group Co., Ltd.",
+          "relationship": "owner since buying International Paper's 55% stake (agreed 8 October 2015)",
+          "match_terms": ["SHANDONG SUN HOLDING"]
+        }
+      ],
+      "note": "Despite the name, International Paper is no longer an owner, so it is deliberately not screened as a parent.",
+      "sources": [
+        "https://www.prnewswire.com/news-releases/international-paper-to-exit-chinese-coated-board-joint-venture-300157037.html",
+        "https://panjiva.com/International-Paper-Sun-Cartonboard-Co-Ltd/1503098"
+      ],
+      "checked": "2026-09-29"
+    },
+    "Tenowo": {
+      "legal_name": "TENOWO GmbH, Hof, Germany",
+      "match_terms": ["TENOWO"],
+      "parents": [
+        {
+          "name": "Hoftex Group AG",
+          "relationship": "parent holding company",
+          "match_terms": ["HOFTEX"]
+        }
+      ],
+      "sources": ["https://www.tenowo.com/en/about/member-of-hoftex-group-ag/"],
+      "checked": "2026-09-29"
+    },
+    "Weener": {
+      "legal_name": "Weener Plastics Group",
+      "match_terms": ["WEENER PLASTICS"],
+      "parents": [
+        {
+          "name": "Silgan Holdings Inc.",
+          "relationship": "owner since 15 October 2024",
+          "match_terms": ["SILGAN"]
+        }
+      ],
+      "sources": [
+        "https://www.silganholdings.com/news/news-details/2024/Silgan-Completes-Acquisition-of-Weener-Packaging/default.aspx"
+      ],
+      "checked": "2026-09-29"
+    },
+    "Rosti": {
+      "legal_name": "Rosti Group AB, Malmö",
+      "match_terms": ["ROSTI GROUP"],
+      "parents": [
+        {
+          "name": "Nordstjernan AB",
+          "relationship": "sole owner since 2010",
+          "match_terms": ["NORDSTJERNAN"]
+        }
+      ],
+      "sources": ["https://www.rosti.com/en-us/company/ownership/"],
+      "checked": "2026-09-29"
+    },
+    "SWM (Mativ)": {
+      "legal_name": "SWM International, Luxembourg",
+      "match_terms": ["SWM INTERNATIONAL", "SCHWEITZER MAUDUIT"],
+      "parents": [
+        {
+          "name": "Evergreen Hill Enterprise Pte. Ltd.",
+          "relationship": "owner since buying the business from Mativ Holdings (completed December 2023)",
+          "match_terms": ["EVERGREEN HILL"]
+        }
+      ],
+      "note": "Mativ Holdings sold its Engineered Papers business, the cigarette and tobacco papers, to Evergreen Hill Enterprise in 2023. The watchlist's MATV ticker and the harvester's MATIV alias therefore follow a company that no longer owns this supplier.",
+      "sources": [
+        "https://www.swmintl.com/newsroom/a-new-chapter-for-swm-international/",
+        "https://ir.mativ.com/news/news-details/2023/Mativ-Announces-Completion-of-Sale-of-Engineered-Papers-Business/default.aspx"
+      ],
+      "checked": "2026-09-29"
+    }
+  }
+}

@@ -45,3 +45,8 @@ def screening():
 @pytest.fixture(scope="session")
 def filings_asia():
     return _load_script("filings_asia")
+
+
+@pytest.fixture(scope="session")
+def ransom():
+    return _load_script("ransom")

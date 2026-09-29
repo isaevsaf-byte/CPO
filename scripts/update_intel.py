@@ -1593,10 +1593,17 @@ def fetch_cisa_kev():
             except ValueError:
                 continue
 
+        # Every KEV added in the window is screened against the watchlist,
+        # newest first whatever order the feed uses. Only the first ten were
+        # kept before, in feed order: the seven days to 14 Sep held fifteen, so
+        # five were never checked, and 19 of the last 120 days had more than
+        # ten. The list is only matched against suppliers here — it is never
+        # written to the snapshot — so the cut saved nothing.
+        recent_vulns.sort(key=lambda v: (v.get('dateAdded', ''), v.get('cveID', '')), reverse=True)
         catalog_size = len(data.get('vulnerabilities', []))
         harvest_stats.record_success(source_name)
         if catalog_size:
-            source_health.record("cisa", "ok", f"{len(recent_vulns)} KEVs added in the last 7 days (catalog of {catalog_size})")
+            source_health.record("cisa", "ok", f"{len(recent_vulns)} KEVs added in the last 7 days, all screened (catalog of {catalog_size})")
         else:
             source_health.record("cisa", "empty", "the KEV catalog came back with no entries")
         return {
@@ -1604,7 +1611,7 @@ def fetch_cisa_kev():
             "total_vulnerabilities": catalog_size,
             "recent_count": len(recent_vulns),
             "critical_count": len(critical_vulns),
-            "recent_vulnerabilities": recent_vulns[:10],  # Limit for size
+            "recent_vulnerabilities": recent_vulns,
             "last_fetched": utc_now_iso()
         }
     except Exception as e:

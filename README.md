@@ -21,7 +21,7 @@ to a fallback rather than failing the harvest, and says so in `source_health`
 
 | Signal | Source | Key |
 |---|---|---|
-| Cyber threats | CISA Known Exploited Vulnerabilities (KEV) catalog | — |
+| Cyber threats | CISA Known Exploited Vulnerabilities (KEV) catalog — every KEV added in the last 7 days is screened | — |
 | Sanctions | OFAC SDN list (`sanctionslistservice.ofac.treas.gov`) | — |
 | Safety recalls | CPSC recall database, last 90 days | — |
 | Macro FX | ECB euro reference rates | — |

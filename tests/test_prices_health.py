@@ -5,13 +5,14 @@ Each section pins a rule that was quietly wrong in production:
 - The FRED key travelled inside exception text into the harvest log.
 - Every pillar reported "success" whatever happened underneath, and no
   failure ever reached the exit code.
+- Only the first ten KEVs of the CISA window were screened.
 
 No network: yfinance, HTTP and the clock-dependent parts are all stubbed.
 """
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import pytest
 import requests
@@ -384,3 +385,35 @@ def test_a_listed_supplier_without_a_price_says_so(harvester, monkeypatch, healt
     assert row["risk_level"] == "LOW"
     assert row["last_signal"].startswith("No share-price move could be read for IFX.DE")
     assert "Normal operations" not in row["last_signal"]
+
+
+def test_every_kev_in_the_window_is_screened(harvester, monkeypatch, health):
+    """Only the first ten KEVs of the window were kept, in feed order. The
+    seven days to 14 Sep held fifteen."""
+    today = datetime.now(timezone.utc).date()
+    window = [
+        {"cveID": f"CVE-2026-{1000 + i}", "vendorProject": "Acme", "product": "Router",
+         "vulnerabilityName": "Acme Router flaw", "dateAdded": (today - timedelta(days=i % 5)).isoformat()}
+        for i in range(15)
+    ]
+    # Last in feed order, and older than the rest of the window.
+    infineon = {"cveID": "CVE-2026-9999", "vendorProject": "Infineon", "product": "OPTIGA TPM",
+                "vulnerabilityName": "Infineon OPTIGA TPM flaw", "dateAdded": (today - timedelta(days=5)).isoformat()}
+    outside = {"cveID": "CVE-2025-0001", "vendorProject": "Infineon", "product": "Old",
+               "vulnerabilityName": "old", "dateAdded": (today - timedelta(days=30)).isoformat()}
+    monkeypatch.setattr(harvester, "fetch_with_retry",
+                        lambda url, **k: FakeResponse({"vulnerabilities": window + [outside, infineon]}))
+
+    cyber = harvester.fetch_cisa_kev()
+
+    assert cyber["recent_count"] == 16
+    assert len(cyber["recent_vulnerabilities"]) == 16
+    dates = [v["dateAdded"] for v in cyber["recent_vulnerabilities"]]
+    assert dates == sorted(dates, reverse=True)
+    assert health.status("cisa") == "ok"
+
+    watch_one(harvester, monkeypatch, "Infineon", "IFX.DE", location="Germany")
+    stub_reading(harvester, monkeypatch)
+    row = harvester.process_suppliers(cyber)["suppliers"][0]
+    assert row["cyber_risk"] is True
+    assert [v["cveID"] for v in row["matching_vulnerabilities"]] == ["CVE-2026-9999"]

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import intel from '../../data/intel_snapshot.json';
 import type { IntelSnapshot, Supplier } from '../../types/intel';
@@ -43,6 +43,15 @@ function relativeAttempt(at: string): string {
   return `${Math.round(hours / 24)}d ago`;
 }
 
+// now is null until the page has mounted: the page is prerendered at build
+// time, and markup that depends on the clock would differ between that
+// render and the browser's first one.
+function isOlderThanWindow(fetchedAt: string, window: string | undefined, now: number | null): boolean {
+  if (now === null) return false;
+  const windowHours = window === '1d' ? 24 : 72;
+  return (now - new Date(fetchedAt).getTime()) / 3_600_000 > windowHours;
+}
+
 function freshnessLabel(fetchedAt: string | undefined): string {
   if (!fetchedAt) return '';
   const hours = (Date.now() - new Date(fetchedAt).getTime()) / 3_600_000;
@@ -56,6 +65,8 @@ export default function GeopoliticalIntelPage() {
   // this page (not persisted), since the rest of the site has no dark
   // mode to stay in sync with.
   const [isDark, setIsDark] = useState(false);
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => setNow(Date.now()), []);
 
   const geo = typedIntel.geopolitical_intel || {};
   const attempts = typedIntel.geopolitical_attempts || {};
@@ -142,8 +153,10 @@ export default function GeopoliticalIntelPage() {
                   </div>
                   <p className="text-sm text-gray-600 dark:text-slate-400 mt-1 max-w-3xl">
                     Early-warning signal, independent of the main risk score: news tone across
-                    65+ languages for every country where a watchlist supplier is based, updated
-                    every 15 min. A sharp negative shift here can show up days before it reaches a
+                    65+ languages for every country where a watchlist supplier is based. GDELT
+                    itself refreshes every 15 min but limits how often this board may ask, so each
+                    country is re-read when a request gets through and every card says how old its
+                    reading is. A sharp negative shift here can show up days before it reaches a
                     supplier&apos;s stock price or a named headline in the main dashboard.
                   </p>
                 </div>
@@ -256,6 +269,15 @@ export default function GeopoliticalIntelPage() {
                             : 'Awaiting a GDELT reading'}
                           {data?.fetched_at && ` · updated ${freshnessLabel(data.fetched_at)}`}
                         </div>
+                        {/* A reading older than the window it summarises is
+                            describing a different week. Said on the card, so
+                            a two-week-old tone is not read as today's. */}
+                        {data?.fetched_at && isOlderThanWindow(data.fetched_at, data.window, now) && (
+                          <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 -mt-1">
+                            Older than the {data.window === '1d' ? '24 hours' : '3 days'} it describes — GDELT has not
+                            answered for this country since.
+                          </div>
+                        )}
                         {/* Two different measurements, so say which. Most
                             countries are read from coverage that names them;
                             the USA is read from coverage published there,

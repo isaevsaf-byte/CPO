@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Analytics } from '@vercel/analytics/react'
 import './globals.css'
 
 const SITE_URL = 'https://cpo-watchtower.co.uk'
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
       'A demonstration board that reads macro conditions, competitor signals and a supplier watchlist as one picture, refreshed every six hours from public data.',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'Supply Chain Watchtower — demo risk board',
     description:
       'A demonstration board that reads macro conditions, competitor signals and a supplier watchlist as one picture.',
@@ -54,6 +55,10 @@ export default function RootLayout({
       <body>
         <SampleDataBanner />
         {children}
+        {/* Page views and the call-to-action clicks (see
+            app/components/board/track.ts). Records nothing until Web
+            Analytics is switched on for the project in Vercel. */}
+        <Analytics />
       </body>
     </html>
   )

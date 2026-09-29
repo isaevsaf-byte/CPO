@@ -24,7 +24,7 @@ to a fallback rather than failing the harvest.
 | Sanctions | OFAC SDN list (`sanctionslistservice.ofac.treas.gov`) | — |
 | Safety recalls | CPSC recall database, last 90 days | — |
 | Macro FX | ECB euro reference rates | — |
-| US & EU CPI / policy rates | FRED | `FRED_API_KEY` (shows "not connected" if unset) |
+| US & EU CPI / policy rates | FRED | `FRED_API_KEY` (shows "not connected" if unset; scrubbed from every log line and recorded error) |
 | Prices, market news | yfinance | — |
 | Competitor filings | SEC EDGAR 8-K | — |
 | Supplier & country news | Google News RSS | — |

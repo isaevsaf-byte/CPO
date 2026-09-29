@@ -58,12 +58,49 @@ STALE_THRESHOLD_HOURS = int(os.getenv("STALE_THRESHOLD", 24))
 # to those static values when unset so nothing breaks without it.
 FRED_API_KEY = os.getenv("FRED_API_KEY")
 
+# FRED only takes its key as a query parameter, and requests copies the whole
+# URL into its exception text: "400 Client Error: Bad Request for url:
+# https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&api_key=…".
+# That text reached the harvest log, which GitHub keeps with the run, and
+# anything recorded as an error is published in the snapshot. So every log line
+# and every recorded error passes through this first.
+_SECRET_QUERY_PARAM = re.compile(r'(api_key=)[^&\s\'"]+', re.IGNORECASE)
+
+
+def redact_secrets(text) -> str:
+    """text with API keys replaced by [redacted], by value and by parameter."""
+    text = str(text)
+    for secret in (FRED_API_KEY, os.getenv("ANTHROPIC_API_KEY")):
+        # A very short value would redact ordinary words out of every line.
+        if secret and len(secret) >= 8:
+            text = text.replace(secret, "[redacted]")
+    return _SECRET_QUERY_PARAM.sub(r'\1[redacted]', text)
+
+
+def describe_error(e: Exception) -> str:
+    """A failed request in a few words, with no URL and so no key in it."""
+    if isinstance(e, requests.HTTPError) and e.response is not None:
+        return f"HTTP {e.response.status_code}"
+    if isinstance(e, requests.Timeout):
+        return "timed out"
+    if isinstance(e, requests.ConnectionError):
+        return "unreachable"
+    text = redact_secrets(e).strip()
+    return f"{type(e).__name__}: {text[:80]}" if text else type(e).__name__
+
+
+class RedactingFormatter(logging.Formatter):
+    """Scrubs the whole formatted record, traceback included — third-party
+    loggers (urllib3 logs request paths at DEBUG) come through here too."""
+
+    def format(self, record):
+        return redact_secrets(super().format(record))
+
+
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stderr)]
-)
+_log_handler = logging.StreamHandler(sys.stderr)
+_log_handler.setFormatter(RedactingFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logging.basicConfig(level=logging.INFO, handlers=[_log_handler])
 logger = logging.getLogger('intel_harvester')
 
 # ============================================================================
@@ -81,7 +118,7 @@ class HarvestStats:
     def record_error(self, source: str, error: str):
         self.errors.append({
             "source": source,
-            "error": str(error)[:200],
+            "error": redact_secrets(error)[:200],
             "time": utc_now_iso()
         })
         logger.error(f"[{source}] {error}")
@@ -89,7 +126,7 @@ class HarvestStats:
     def record_warning(self, source: str, warning: str):
         self.warnings.append({
             "source": source,
-            "warning": str(warning)[:200],
+            "warning": redact_secrets(warning)[:200],
             "time": utc_now_iso()
         })
         logger.warning(f"[{source}] {warning}")
@@ -274,8 +311,10 @@ def fetch_fred_observation(series_id: str, units: str = "lin") -> dict | None:
                 )
                 return None
         return {"value": float(value), "date": date_str}
-    except (requests.RequestException, ValueError, KeyError) as e:
-        logger.warning(f"FRED fetch failed for {series_id}: {e}")
+    except Exception as e:
+        # Described, never interpolated: the exception text carries the full
+        # request URL, key included (see redact_secrets).
+        logger.warning(f"FRED fetch failed for {series_id}: {describe_error(e)}")
         return None
 
 def calculate_data_hash(data: dict) -> str:

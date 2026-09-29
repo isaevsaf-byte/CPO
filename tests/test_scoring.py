@@ -243,6 +243,111 @@ def test_gdelt_queue_still_puts_staleness_first(harvester):
 
 
 # ---------------------------------------------------------------------------
+# GDELT headline relevance
+# ---------------------------------------------------------------------------
+
+US_SUPPLIERS = [
+    {"name": "GPI", "category": "Printed Packaging"},
+    {"name": "Eastman", "category": "Filter Materials"},
+    {"name": "SWM (Mativ)", "category": "Fine Papers"},
+    {"name": "Texas Instruments", "category": "EE Component"},
+    {"name": "Jabil", "category": "Mechanical"},
+]
+SAPPI = [{"name": "Sappi", "category": "Printing Substrates"}]
+STORA_ENSO = [{"name": "Stora Enso", "category": "Printing Substrates"}]
+
+
+def _relevance(harvester, title, country, suppliers, domestic=False):
+    names, keywords = harvester.gdelt_relevance_terms(suppliers)
+    country_terms = None if domestic else harvester.gdelt_country_terms(country)
+    return harvester.gdelt_headline_relevance(title, names, keywords, country_terms)
+
+
+def test_outlet_credit_is_not_part_of_the_headline(harvester):
+    assert harvester.strip_source_credit(
+        "Blotter : Harshing the vibes - Charleston City Paper",
+        "https://charlestoncitypaper.com/2026/09/24/blotter-harshing-the-vibes/",
+    ) == "Blotter : Harshing the vibes"
+    assert harvester.strip_source_credit(
+        "Hanwha Ocean , HD Hyundai Remain Locked In Strike Disputes | Hellenic Shipping News Worldwide",
+        "https://www.hellenicshippingnews.com/hanwha-ocean-hd-hyundai/",
+    ) == "Hanwha Ocean , HD Hyundai Remain Locked In Strike Disputes"
+    # Without a URL, a short trailing segment is still read as the credit.
+    assert harvester.strip_source_credit(
+        "Blotter : Harshing the vibes - Charleston City Paper"
+    ) == "Blotter : Harshing the vibes"
+    assert harvester.strip_source_credit("SA manufacturing sector shrinks again") == (
+        "SA manufacturing sector shrinks again"
+    )
+
+
+def test_a_spaced_hyphen_inside_the_headline_is_not_a_credit(harvester):
+    """GDELT writes "post-quantum" as "Post - Quantum"; the words after it are
+    the story, not the outlet, unless they match the site the story is on."""
+    title = "Canton of Jura to Establish a Swiss Post - Quantum Semiconductor and Cybersecurity Center"
+    url = "https://www.finanznachrichten.de/nachrichten-2026-09/wisekey.htm"
+    assert harvester.strip_source_credit(title, url) == title
+
+
+@pytest.mark.parametrize(
+    "title,country,suppliers,domestic",
+    [
+        # Each of these shipped on the live /geopolitical page as
+        # supply-chain news.
+        ("Blotter : Harshing the vibes - Charleston City Paper", "USA", US_SUPPLIERS, True),
+        ("Chip Foose and Fox Factory Vehicles Are Teaming Up on a Custom Truck", "USA", US_SUPPLIERS, True),
+        ("Leading Wrongful Death Lawyer in Port St . Lucie , FL , Shares", "USA", US_SUPPLIERS, True),
+        ("Ed Davey serves chips on Brighton Pier ahead of conference", "South Africa", SAPPI, False),
+        ("Idaho has plenty at risk in our current trade war with Canada", "Switzerland",
+         [{"name": "AMCOR", "category": "Printed Packaging"}, {"name": "CNT", "category": "Nicotine"}], False),
+    ],
+)
+def test_live_false_positives_are_not_supply_chain_news(harvester, title, country, suppliers, domestic):
+    assert _relevance(harvester, title, country, suppliers, domestic) == 0
+
+
+@pytest.mark.parametrize(
+    "title,country,suppliers,expected",
+    [
+        ("Stora Enso to close paper mill in Oulu - Reuters", "Finland", STORA_ENSO, 3),
+        ("Pulp prices jump as Nordic mills cut output", "Finland", STORA_ENSO, 2),
+        ("China tightens export controls on rare earths - Reuters", "China", [], 1),
+        ("Dockworkers walk out at Rotterdam", "Netherlands", [], 1),
+        ("SA manufacturing sector shrinks 1 . 5 %... again . What comes next ?", "South Africa", [], 1),
+    ],
+)
+def test_real_supply_chain_news_still_ranks(harvester, title, country, suppliers, expected):
+    assert _relevance(harvester, title, country, suppliers) == expected
+
+
+def test_carried_forward_reading_drops_headlines_that_no_longer_qualify(harvester):
+    """A rate-limited country keeps its last reading for days, so the
+    relevance rules have to reach the headlines already stored in it."""
+    entry = {
+        "article_count": 700, "avg_tone": -0.9, "query_mode": "mentions", "has_relevant": True,
+        "articles": [
+            {"title": "Ed Davey serves chips on Brighton Pier ahead of conference", "url": "u1", "tone": -5},
+            {"title": "Sappi shuts pulp line at Saiccor mill", "url": "u2", "tone": -3},
+        ],
+    }
+    out = harvester.refilter_gdelt_articles(entry, "South Africa", SAPPI)
+    assert [a["url"] for a in out["articles"]] == ["u2"]
+    assert out["has_relevant"] is True
+    # The country reading itself is left alone.
+    assert out["avg_tone"] == -0.9 and out["article_count"] == 700
+
+
+def test_carried_forward_reading_with_nothing_left_says_so(harvester):
+    entry = {
+        "query_mode": "mentions", "has_relevant": True,
+        "articles": [{"title": "Ed Davey serves chips on Brighton Pier", "url": "u", "tone": -5}],
+    }
+    out = harvester.refilter_gdelt_articles(entry, "South Africa", SAPPI)
+    assert out["articles"] == []
+    assert out["has_relevant"] is False
+
+
+# ---------------------------------------------------------------------------
 # Macro data contract
 # ---------------------------------------------------------------------------
 

@@ -15,7 +15,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 import sys
 import time
 import random
@@ -609,17 +609,137 @@ def scan_country_geopolitical_news(country):
 GDELT_SUPPLY_KEYWORDS = [
     "supply chain", "supply chains", "export control", "export controls",
     "export ban", "import ban", "tariff", "tariffs", "sanction", "sanctions",
-    "embargo", "embargoes", "port", "ports", "shipping", "freight",
-    "container", "containers", "factory", "factories", "plant closure",
-    "production halt", "shortage", "shortages", "customs", "trade war",
-    "trade deal", "manufacturing", "logistics", "raw material",
-    "raw materials", "commodity", "commodities", "chip", "chips",
-    "semiconductor", "semiconductors",
+    "embargo", "embargoes", "shipping", "freight",
+    # Ports, containers, factories and chips only as phrases. The bare words
+    # put "Wrongful Death Lawyer in Port St. Lucie", "Chip Foose and Fox
+    # Factory Vehicles Are Teaming Up on a Custom Truck" and "Ed Davey serves
+    # chips on Brighton Pier" on the page as supply-chain news.
+    "port closure", "port closures", "port congestion", "port strike",
+    "port strikes", "seaport", "seaports", "container ship", "container ships",
+    "container shipping", "container rates", "factories", "factory fire",
+    "factory closure", "factory closures", "plant closure", "production halt",
+    "shortage", "shortages", "customs", "trade war", "trade deal",
+    "manufacturing", "logistics", "raw material", "raw materials",
+    "commodity", "commodities", "chipmaker", "chipmakers", "chip export",
+    "chip exports", "chip shortage", "semiconductor", "semiconductors",
     # Labour action only. Bare "strike" reads a missile strike as a factory
     # walkout — "strike on mall kills 16" scored as supply-chain relevant.
     "labor strike", "labour strike", "workers strike", "dockworkers",
     "walkout", "walkouts",
 ]
+
+# How a headline names each supplier country. The generic vocabulary above
+# says nothing about *where*: GDELT matches a country anywhere in the article
+# body, so a "Switzerland" query returned "Idaho has plenty at risk in our
+# current trade war with Canada" and it shipped under Switzerland. A generic
+# hit therefore also has to name the country in the headline. A country
+# missing here falls back to its own name, which is the safe direction.
+GDELT_COUNTRY_TERMS = {
+    "Austria": ["austria", "austrian", "vienna"],
+    "China": ["china", "chinese", "beijing"],
+    "Finland": ["finland", "finnish", "helsinki"],
+    "Germany": ["germany", "german", "berlin"],
+    "India": ["india", "indian", "new delhi"],
+    "Japan": ["japan", "japanese", "tokyo"],
+    "Netherlands": ["netherlands", "dutch", "amsterdam", "rotterdam"],
+    # "SA" is how South African business press heads its own economy
+    # ("SA manufacturing sector shrinks 1.5%"), and the query has already
+    # required the article to mention South Africa.
+    "South Africa": ["south africa", "south african", "sa", "pretoria", "johannesburg"],
+    "South Korea": ["south korea", "korea", "korean", "seoul"],
+    "Sweden": ["sweden", "swedish", "stockholm"],
+    "Switzerland": ["switzerland", "swiss", "zurich", "bern"],
+}
+
+
+def gdelt_country_terms(country: str) -> list:
+    return GDELT_COUNTRY_TERMS.get(country, [country.lower()])
+
+
+def strip_source_credit(title: str, url: str | None = None) -> str:
+    """The headline without its trailing " - Outlet Name" credit.
+
+    GDELT titles carry the syndicating outlet after a dash or a bar, and the
+    outlet's name was being matched as if it were the story: every
+    "... - Charleston City Paper" headline counted as paper-industry news for
+    the US suppliers, and "| Hellenic Shipping News Worldwide" made any story
+    from that site a shipping story.
+
+    GDELT also spaces out hyphens inside words ("Swiss Post - Quantum
+    Semiconductor Center"), so a trailing segment is only taken for a credit
+    when it matches the article's own site name. Without a URL, a segment of
+    four words or fewer is.
+    """
+    match = re.match(r'^(.*\S)\s+[-–—|]\s+([^-–—|]+?)\s*$', title)
+    if not match:
+        return title
+    body, credit = match.group(1), match.group(2)
+    credit_key = re.sub(r'[^a-z0-9]', '', credit.lower())
+    if url:
+        host = urlparse(url).netloc.lower().split(':')[0]
+        labels = [label for label in host.split('.') if label not in ('www', 'm', 'amp', 'news')]
+        site = re.sub(r'[^a-z0-9]', '', labels[0]) if labels else ''
+        is_credit = len(site) >= 3 and len(credit_key) >= 3 and (site in credit_key or credit_key in site)
+    else:
+        is_credit = len(credit.split()) <= 4
+    return body.strip() if is_credit else title
+
+
+def gdelt_relevance_terms(relevant_suppliers: list) -> tuple:
+    """(supplier name terms, category keyword terms) for one country's suppliers."""
+    name_terms = [
+        term.lower()
+        for s in (relevant_suppliers or []) if s.get("name")
+        for term in supplier_search_terms(s["name"])
+    ]
+    keyword_terms = [
+        kw for s in (relevant_suppliers or [])
+        for kw in CATEGORY_KEYWORDS.get(s.get("category"), [])
+    ]
+    return name_terms, keyword_terms
+
+
+def gdelt_headline_relevance(title: str, name_terms: list, keyword_terms: list,
+                             country_terms: list | None, url: str | None = None) -> int:
+    """Relevance tier of one GDELT headline: 3 names a supplier, 2 carries
+    that supplier's industry vocabulary, 1 carries general supply-chain
+    vocabulary and names the country, 0 is not supply-chain news.
+
+    country_terms is None for a domestic-press reading (the USA), where the
+    headline comes from the country's own press and rarely names it.
+    """
+    t = strip_source_credit(title, url).lower()
+    if any(_mentions_subject(t, term) for term in name_terms):
+        return 3
+    if any(_mentions_subject(t, term) for term in keyword_terms):
+        return 2
+    if any(_mentions_subject(t, term) for term in GDELT_SUPPLY_KEYWORDS):
+        if country_terms is None or any(_mentions_subject(t, c) for c in country_terms):
+            return 1
+    return 0
+
+
+def refilter_gdelt_articles(entry: dict, country: str, relevant_suppliers: list) -> dict:
+    """A carried-forward country reading with its headlines re-checked
+    against the current relevance rules.
+
+    Readings are carried from run to run until GDELT answers for that country
+    again, and a rate-limited country can go a fortnight without answering —
+    so a relevance fix would otherwise leave the old false positives on the
+    page for as long as the rate limit lasts.
+    """
+    articles = entry.get("articles") or []
+    name_terms, keyword_terms = gdelt_relevance_terms(relevant_suppliers)
+    country_terms = None if entry.get("query_mode") == "domestic_press" else gdelt_country_terms(country)
+    kept = [
+        a for a in articles
+        if gdelt_headline_relevance(
+            a.get("title", ""), name_terms, keyword_terms, country_terms, a.get("url")
+        ) > 0
+    ]
+    if len(kept) == len(articles):
+        return entry
+    return {**entry, "articles": kept, "has_relevant": bool(kept)}
 
 
 # How each country is asked for. The default is mention-based: articles that
@@ -768,25 +888,11 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
         # concern without naming any supplier — "China tightens export
         # controls on rare earths" is exactly what this page is for, and
         # the previous two tiers alone dropped it on the floor.
-        name_terms = [
-            term.lower()
-            for s in (relevant_suppliers or []) if s.get("name")
-            for term in supplier_search_terms(s["name"])
-        ]
-        keyword_terms = [
-            kw for s in (relevant_suppliers or [])
-            for kw in CATEGORY_KEYWORDS.get(s.get("category"), [])
-        ]
+        name_terms, keyword_terms = gdelt_relevance_terms(relevant_suppliers)
+        country_terms = None if query_mode == "domestic_press" else gdelt_country_terms(country)
 
-        def relevance(title: str) -> int:
-            t = title.lower()
-            if any(_mentions_subject(t, term) for term in name_terms):
-                return 3
-            if any(_mentions_subject(t, term) for term in keyword_terms):
-                return 2
-            if any(_mentions_subject(t, term) for term in GDELT_SUPPLY_KEYWORDS):
-                return 1
-            return 0
+        def relevance(title: str, url: str | None) -> int:
+            return gdelt_headline_relevance(title, name_terms, keyword_terms, country_terms, url)
 
         # Pull a wider candidate pool than we'll show (every toparts
         # example across every bin, most negative first) so there's
@@ -815,7 +921,7 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
                     "title": title,
                     "url": a.get("url", ""),
                     "tone": b.get("bin"),
-                    "_relevance": relevance(title),
+                    "_relevance": relevance(title, a.get("url")),
                 })
 
         # Only relevant headlines ship. Previously the top five by tone went
@@ -3637,7 +3743,7 @@ def main():
     # A country only disappears here if it's no longer a supplier location
     # at all, not because this one run happened to miss it.
     previous_geo = {
-        country: entry
+        country: refilter_gdelt_articles(entry, country, suppliers_by_country.get(country, []))
         for country, entry in (previous_state or {}).get("geopolitical_intel", {}).items()
         if country in all_gdelt_countries
     }

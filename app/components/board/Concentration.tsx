@@ -1,5 +1,4 @@
 import type { Supplier } from '../../../types/intel';
-import { categoryEconomics } from './economics';
 
 // The board reports what happened to a supplier. The first thing a procurement
 // lead asks is a different question: where do I have no second source? On the
@@ -86,39 +85,28 @@ export default function Concentration({ suppliers }: { suppliers: Supplier[] }) 
         </p>
       </div>
       <ul className="divide-y divide-gray-100">
-        {thin.map((row) => {
-          const econ = categoryEconomics(row.category);
-          return (
-            <li key={row.category} className="grid gap-2 px-6 py-3 md:grid-cols-[minmax(0,14rem)_1fr_minmax(0,16rem)] md:items-center">
-              <div className="min-w-0">
-                <div className="text-sm font-semibold text-gray-900">{row.category}</div>
-                <div className="text-xs text-gray-500">
-                  {row.suppliers.length} supplier{row.suppliers.length > 1 ? 's' : ''}, {row.countries.length} {row.countries.length === 1 ? 'country' : 'countries'}
-                </div>
+        {thin.map((row) => (
+          <li key={row.category} className="grid gap-2 px-6 py-3 md:grid-cols-[minmax(0,14rem)_1fr_minmax(0,16rem)] md:items-center">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-gray-900">{row.category}</div>
+              <div className="text-xs text-gray-500">
+                {row.suppliers.length} supplier{row.suppliers.length > 1 ? 's' : ''}, {row.countries.length} {row.countries.length === 1 ? 'country' : 'countries'}
               </div>
-              <div className="flex min-w-0 flex-wrap gap-1.5">{row.suppliers.map(tierChip)}</div>
-              <div className="min-w-0 text-xs">
-                <span className={`inline-block rounded-full px-2 py-0.5 font-semibold ${row.severe ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>
-                  {row.thinness === 'single-source' ? 'Single source' : `All in ${row.countries[0]}`}
-                </span>
-                {econ && (
-                  <div className="mt-1 text-gray-500">
-                    Stock lasts ~{econ.stock_cover_days} days; a new source takes ~{econ.requalify_days} to qualify.
-                  </div>
-                )}
-              </div>
-            </li>
-          );
-        })}
+            </div>
+            <div className="flex min-w-0 flex-wrap gap-1.5">{row.suppliers.map(tierChip)}</div>
+            <div className="min-w-0 text-xs">
+              <span className={`inline-block rounded-full px-2 py-0.5 font-semibold ${row.severe ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>
+                {row.thinness === 'single-source' ? 'Single source' : `All in ${row.countries[0]}`}
+              </span>
+            </div>
+          </li>
+        ))}
       </ul>
       {spread.length > 0 && (
         <div className="border-t border-gray-100 px-6 py-3 text-xs text-gray-500">
           Spread across countries: {spread.map((r) => `${r.category} (${r.suppliers.length} in ${r.countries.length})`).join(' · ')}.
         </div>
       )}
-      <div className="border-t border-gray-100 bg-gray-50 px-6 py-2 text-[11px] text-gray-500">
-        Stock cover and qualification times are illustrative figures set for this demonstration.
-      </div>
     </section>
   );
 }

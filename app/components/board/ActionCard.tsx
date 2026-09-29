@@ -1,11 +1,10 @@
 import Link from 'next/link';
 import type { Supplier, WorldSignals, WorldSignalItem } from '../../../types/intel';
-import { categoryEconomics } from './economics';
 
 // A colour tells a reader something is wrong; it does not tell them what to do
-// about it or who should. Paid platforms put an owner and a short playbook
-// behind every alert, and that is what a procurement lead acts on. This card
-// does the same for whatever is currently flagged on a supplier.
+// about it. Paid platforms put a short playbook behind every alert, and that
+// is what a procurement lead acts on. This card does the same for whatever is
+// currently flagged on a supplier.
 
 type SignalKind = 'sanctions' | 'cyber' | 'recall' | 'operational' | 'price' | 'geopolitical' | 'world';
 
@@ -104,7 +103,6 @@ export default function ActionCard({
   const kinds = signalKinds(supplier, worldItems);
   if (kinds.length === 0) return null;
 
-  const econ = categoryEconomics(supplier.category);
   const backups = suppliers.filter((s) => s.category === supplier.category && s.name !== supplier.name);
   const primary = PLAYBOOKS[kinds[0]];
 
@@ -115,21 +113,9 @@ export default function ActionCard({
         <span className="text-xs font-semibold uppercase tracking-wide text-amber-800">{primary.title}</span>
       </div>
 
-      <dl className="grid gap-3 sm:grid-cols-3 mb-4 text-sm">
-        <div>
-          <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Owner</dt>
-          <dd className="text-gray-900">{econ?.owner ?? 'Category manager'}</dd>
-        </div>
-        <div>
-          <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Why it matters</dt>
-          <dd className="text-gray-900">{supplier.bat_exposure} tier · {supplier.category}</dd>
-        </div>
-        {econ && (
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Time to survive / recover</dt>
-            <dd className="text-gray-900">~{econ.stock_cover_days} days of stock / ~{econ.requalify_days} to qualify a new source</dd>
-          </div>
-        )}
+      <dl className="mb-4 text-sm">
+        <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">Why it matters</dt>
+        <dd className="text-gray-900">{supplier.bat_exposure} tier · {supplier.category}</dd>
       </dl>
 
       {kinds.map((kind) => (
@@ -157,12 +143,9 @@ export default function ActionCard({
             </span>
           ))
         ) : (
-          <span className="text-red-800">
-            none on the watchlist{econ ? ` — qualifying one takes about ${econ.requalify_days} days` : ''}.
-          </span>
+          <span className="text-red-800">none on the watchlist.</span>
         )}
       </div>
-      <p className="mt-2 text-[11px] text-gray-500">Owners, stock cover and qualification times are illustrative for this demonstration.</p>
     </div>
   );
 }

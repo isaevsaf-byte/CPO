@@ -25,7 +25,7 @@ import { formatDate, formatDateTime, formatDay, formatDuration, parseSnapshotTim
 export const metadata: Metadata = {
   title: 'This week’s brief — Supply Chain Watchtower',
   description:
-    'A printable one-page summary of the demo supplier-risk board: the overall status and how long it has held, what changed in the last seven days, the top actions and standing country exposure. Illustrative data.',
+    'A printable one-page summary of the demo supplier-risk board: the overall status and how long it has held, what changed in the last seven days, the top actions and standing country exposure. A sample supplier list with live public signals.',
   alternates: { canonical: '/brief' },
 };
 
@@ -331,7 +331,7 @@ export default function BriefPage() {
 
           <footer className="pt-2 text-xs text-gray-500 space-y-1 print:pt-1">
             <p>
-              Supply Chain Watchtower is a demonstration board. Figures here are illustrative.
+              Supply Chain Watchtower is a demonstration board: the supplier list is a sample, the signals on it are live.
             </p>
             <p>
               <Link href="/" className="underline hover:text-gray-700 print:no-underline">

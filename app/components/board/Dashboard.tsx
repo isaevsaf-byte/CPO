@@ -21,7 +21,6 @@ import {
   RAG_LABELS,
 } from '../../../types/intel';
 import Concentration from './Concentration';
-import Scenarios from './Scenarios';
 import WorldSignals, { severityTone, worldSignalsAnswered } from './WorldSignals';
 import SourceHealthList, { SourceHealthBadge } from './SourceHealth';
 import RegulatoryCalendar from '../RegulatoryCalendar';
@@ -916,8 +915,6 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
 
         <Concentration suppliers={suppliersList} />
 
-        <Scenarios suppliers={suppliersList} />
-
         <div className="mb-8">
           <RegulatoryCalendar limit={4} compact />
         </div>
@@ -1277,8 +1274,8 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
       <footer className="mt-12 bg-gray-900 text-gray-300 py-8">
         <div className="max-w-[100rem] mx-auto px-6">
           <p className="text-xs text-gray-400 max-w-4xl">
-            A demonstration build. The supplier and peer lists, exposure tiers, spend and stock figures are illustrative.
-            Signals come from public sources: US Treasury sanctions and trade screening lists, CISA, CPSC, the ECB, FRED,
+            A demonstration build: the supplier and peer lists and their exposure tiers are a sample. The signals are
+            live, from public sources: US Treasury sanctions and trade screening lists, CISA, CPSC, the ECB, FRED,
             SEC EDGAR, IMF PortWatch, the German waterways authority (PEGELONLINE), GDACS, GDELT, Google News and Yahoo
             Finance, refreshed about every six hours.
           </p>

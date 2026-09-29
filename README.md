@@ -26,7 +26,7 @@ to a fallback rather than failing the harvest, and says so in `source_health`
 | Safety recalls | CPSC recall database, last 90 days | — |
 | Macro FX | ECB euro reference rates | — |
 | US & EU CPI / policy rates | FRED | `FRED_API_KEY` (shows "not connected" if unset; scrubbed from every log line and recorded error) |
-| Prices, market news | yfinance | — |
+| Prices, market news | yfinance; Yahoo search when yfinance's news comes back empty (see below) | — |
 | Competitor filings | SEC EDGAR 8-K | — |
 | Supplier & country news | Google News RSS | — |
 | Country news tone | GDELT (experimental, `/geopolitical`) | — |
@@ -175,6 +175,18 @@ to register at all (`classify_fx_move`):
 - **notable**: ≥3σ and a move of at least 0.5%
 
 Shares and the S&P 500 keep the rule above.
+
+### Listing news has a second source
+
+yfinance reads a listing's news from Yahoo's `/xhr/ncp` endpoint. On 29
+September 2026 it began answering HTTP 500 for every symbol, AAPL included,
+and yfinance returned an empty list, so the peer and supplier news layers went
+quiet. When `ticker.news` is empty the harvester now asks Yahoo's search
+endpoint (`yf.Search`), first by symbol, which only knows US listings, then by
+company name. Neither source returns only articles about the company asked
+for, so the name checks and the investor-content filter still decide what is
+kept. News is no longer fetched for indices and currency pairs, which never
+used it.
 
 ### A price reading says which session it is
 

@@ -1782,11 +1782,17 @@ def most_severe_supply_headline(headlines: list, supplier_name: str = None) -> t
 GOOGLE_SUPPLIER_RESULTS = 20
 
 
-def supplier_news_query(supplier_name: str) -> str:
-    """Google News query for an unlisted supplier: the names that identify it
-    (see SUPPLIER_NEWS_IDENTITIES), or its watchlist name when it has none."""
+def supplier_search_names(supplier_name: str) -> list:
+    """The names that identify a supplier in news (see
+    SUPPLIER_NEWS_IDENTITIES), or its watchlist name when it has none."""
     identity = SUPPLIER_NEWS_IDENTITIES.get(supplier_name)
-    names = identity.search_names if identity else [supplier_name]
+    return identity.search_names if identity else [supplier_name]
+
+
+def supplier_news_query(supplier_name: str) -> str:
+    """Google News query for an unlisted supplier, built from the names that
+    identify it (see supplier_search_names)."""
+    names = supplier_search_names(supplier_name)
     return "(" + " OR ".join(f'"{name}"' for name in names) + f") ({SUPPLY_SEARCH_KEYWORDS})"
 
 
@@ -1983,6 +1989,13 @@ PEER_CLICKBAIT_PATTERNS = [re.compile(p) for p in (
     r"\btop (?:\w+ )?picks?\b",
     r"\bstocks? to (?:buy|watch|own|hold)\b",
     r"\b(?:growth|value|income|dividend) investors\b",
+    # Yahoo's search endpoint, the news source since 29 September, adds its
+    # own valuation columns and head-to-heads.
+    r"\b(?:fully|fairly) valued\b",
+    r"\bstock looks\b",
+    r"\btrades? at an? (?:discount|premium)\b",
+    r"\bdividend analysis\b",
+    r"\bwhich (?:[\w-]+ ){0,3}(?:is|has) the better\b",
 )]
 
 
@@ -2923,7 +2936,48 @@ def daily_sigma_from_closes(closes: list) -> float | None:
     return sigma if sigma > 0 else None
 
 
-def fetch_price_reading(ticker_symbol, source_label: str = None, scope: str = None) -> dict:
+# Yahoo serves a listing's news from two places. yfinance reads /xhr/ncp,
+# which on 2026-09-29 began answering HTTP 500 for every symbol, AAPL
+# included; yfinance hands that back as an empty list, so both news layers
+# went quiet and the source health could only call them "empty". Yahoo's
+# search endpoint still serves news — by symbol for US listings, by company
+# name for the rest — so it is asked whenever the first returns nothing.
+# Relevance stays with the name checks downstream: neither endpoint returns
+# only articles about the company asked for.
+NEWS_SEARCH_COUNT = 10
+NEWS_SEARCH_TIMEOUT = 15
+
+
+def fetch_listing_news(ticker, symbol: str, names=()) -> tuple:
+    """(news items, error) for a listing: ticker.news, else Yahoo search by
+    the symbol, then by each name, until one returns something. error is
+    set only when nothing came back and a path raised."""
+    error = None
+    try:
+        news = ticker.news
+        if news:
+            return news, None
+    except Exception as e:
+        error = e
+    search = getattr(yf, "Search", None)
+    if search is None:
+        return [], error
+    for query in [symbol, *names]:
+        if not query:
+            continue
+        try:
+            news = search(query, news_count=NEWS_SEARCH_COUNT, max_results=0,
+                          timeout=NEWS_SEARCH_TIMEOUT).news
+        except Exception as e:
+            error = e
+            continue
+        if news:
+            return news, None
+    return [], error
+
+
+def fetch_price_reading(ticker_symbol, source_label: str = None, scope: str = None,
+                        news_names=(), news_limit: int = 5) -> dict:
     """
     Fetch a price reading for any listed instrument (supplier share, peer
     share, index, FX pair) using yfinance.
@@ -2997,22 +3051,15 @@ def fetch_price_reading(ticker_symbol, source_label: str = None, scope: str = No
             latest_row, current_price = usable[0]
             price_as_of = _session_date(hist.index[latest_row])
 
-        # Get up to 5 news headlines for broader risk scanning
+        # Up to news_limit headlines for broader risk scanning. An index's or
+        # a currency pair's headlines are never used, so none are fetched.
         headlines = []
-        try:
-            news = ticker.news
-            if news:
-                for item in news[:5]:
-                    # yfinance >= 0.2.46 wraps title under item['content']['title']
-                    # Fall back to top-level 'title' for older versions
-                    title = (
-                        item.get('content', {}).get('title')
-                        or item.get('title')
-                    )
-                    if title:
-                        headlines.append(title)
-        except Exception as e:
-            news_error = e
+        if scope != "markets":
+            try:
+                news, news_error = fetch_listing_news(ticker, ticker_symbol, news_names)
+                headlines = news_titles(news, limit=news_limit)
+            except Exception as e:
+                news_error = e
 
         yfinance_circuit_breaker.record_success()
         if current_price is None:
@@ -3397,7 +3444,8 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         carried_severity = None
         if stock_ticker and stock_ticker != "N/A":
             reading = fetch_price_reading(stock_ticker, source_label=f"supplier_stock_{stock_ticker}",
-                                          scope="listed suppliers")
+                                          scope="listed suppliers",
+                                          news_names=supplier_search_names(supplier_name)[:1])
             # A session older than the one last shown is set aside and the
             # previous reading, with its severity, carries forward.
             reading = prefer_latest_session(reading, previous_by_name.get(supplier_name), label=supplier_name)
@@ -4070,14 +4118,17 @@ def fetch_peer_group(previous_peers: list = None):
         rate_limiter.wait_if_needed()
         try:
             ticker_symbol = peer_config["ticker"]
-            ticker = yf.Ticker(ticker_symbol)
 
             # Price, volatility and headlines come from the same helper the
             # supplier pillar uses, so both pillars judge a move the same way.
             # ticker.info is no longer fetched here: it is a slow, frequently
             # failing endpoint and its only use was a fallback price for the
-            # case where no history exists at all.
-            reading = fetch_price_reading(ticker_symbol, source_label=f"peer_{ticker_symbol}", scope="peers")
+            # case where no history exists at all. The headlines used to be
+            # fetched a second time here, one more request per peer for the
+            # same list.
+            reading = fetch_price_reading(ticker_symbol, source_label=f"peer_{ticker_symbol}", scope="peers",
+                                          news_names=[peer_config["name"]], news_limit=10)
+            fetched = reading.get("headlines") or []
             reading = prefer_latest_session(
                 reading,
                 next((p for p in (previous_peers or []) if p.get("name") == peer_config["name"]), None),
@@ -4089,26 +4140,20 @@ def fetch_peer_group(previous_peers: list = None):
             price_as_of = reading.get("price_as_of")
             stock_move = f"{daily_change_pct:+.2f}%" if daily_change_pct is not None else "N/A"
 
-            # Get up to 5 news headlines for broader scanning. Only headlines
-            # that actually name this peer survive: an unrelated article is
-            # both a wrong headline to print and — because the keyword scan
-            # below runs over this same list — a false CRITICAL/WARNING
-            # signal for a company it isn't about.
-            named_headlines = []
+            # Only headlines that actually name this peer survive: an
+            # unrelated article is both a wrong headline to print and —
+            # because the keyword scan below runs over this same list — a
+            # false CRITICAL/WARNING signal for a company it isn't about.
             match_terms = peer_config.get("match_terms") or [peer_config["name"]]
-            try:
-                fetched = news_titles(ticker.news, limit=10)
-                named_headlines = [
-                    title for title in fetched
-                    if any(_mentions_subject(title.lower(), term) for term in match_terms)
-                ]
-                if fetched and not named_headlines:
-                    logger.info(
-                        f"  {peer_config['name']}: {len(fetched)} headline(s) fetched, "
-                        f"none named the company"
-                    )
-            except Exception as e:
-                logger.warning(f"News fetch error for {peer_config['name']}: {e}")
+            named_headlines = [
+                title for title in fetched
+                if any(_mentions_subject(title.lower(), term) for term in match_terms)
+            ]
+            if fetched and not named_headlines:
+                logger.info(
+                    f"  {peer_config['name']}: {len(fetched)} headline(s) fetched, "
+                    f"none named the company"
+                )
 
             # The most material named headline that is not investor content,
             # or None when nothing qualifies (see pick_peer_headline).

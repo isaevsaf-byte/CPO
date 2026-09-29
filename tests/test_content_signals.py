@@ -306,8 +306,19 @@ LIVE_PEER_CLICKBAIT = [
     "Should You Buy Japan Tobacco Before Earnings?",
 ]
 
+# What Yahoo's search endpoint served on 29 September, once it became the
+# news source (see fetch_listing_news).
+SEARCH_CLICKBAIT = [
+    "Is Philip Morris International (PM) Fully Valued Following Its Dividend Rise And Smoke Free Shift?",
+    "Philip Morris International (PM) Stock Looks About Right At Current Levels",
+    "MO vs. PM: Which Tobacco Giant Has the Better Growth Story?",
+    "Jabil (JBL) Stock Trades At a Discount Following Its 448% Run",
+    "Stora Enso Oyj's Dividend Analysis",
+    "Should Value Investors Buy Sappi (SPPJY) Stock?",
+]
 
-@pytest.mark.parametrize("headline", LIVE_PEER_CLICKBAIT)
+
+@pytest.mark.parametrize("headline", LIVE_PEER_CLICKBAIT + SEARCH_CLICKBAIT)
 def test_investor_content_is_recognised(harvester, headline):
     assert harvester.is_investor_clickbait(headline) is True
 
@@ -318,6 +329,9 @@ def test_investor_content_is_recognised(harvester, headline):
         "Philip Morris to cut 500 jobs at Dutch plant",
         "Imperial Brands profit falls on weaker UK volumes",
         "Japan Tobacco raises cigarette prices in Russia",
+        "British American Tobacco Maintains 2026 Outlook",
+        "Imperial Brands cutting thousands of jobs in U.S. and Europe",
+        "Amcor Names Tom Long as Chairman",
     ],
 )
 def test_news_is_not_mistaken_for_investor_content(harvester, headline):
@@ -361,23 +375,20 @@ def test_only_investor_content_means_no_headline(harvester):
 def test_the_peer_card_carries_no_placeholder_headline(harvester, monkeypatch):
     """With nothing but investor content in the feed, latest_headline is
     None and the Brazil lawsuit column no longer turns the pillar RED."""
-    class FakeTicker:
-        def __init__(self, symbol):
-            self.news = [{"content": {"title": title}} for title in LIVE_PEER_CLICKBAIT]
-
-    class FakeYf:
-        Ticker = FakeTicker
-
     class NoWait:
         def wait_if_needed(self):
             pass
 
-    monkeypatch.setattr(harvester, "yf", FakeYf)
+    calls = []
+
+    def reading(symbol, **kwargs):
+        calls.append((symbol, kwargs))
+        return {"daily_change_pct": 0.2, "current_price": 50.0,
+                "headlines": list(LIVE_PEER_CLICKBAIT), "daily_sigma_pct": 1.5}
+
     monkeypatch.setattr(harvester, "rate_limiter", NoWait())
     monkeypatch.setattr(harvester, "yfinance_circuit_breaker", harvester.CircuitBreaker())
-    monkeypatch.setattr(harvester, "fetch_price_reading", lambda *a, **k: {
-        "daily_change_pct": 0.2, "current_price": 50.0, "headlines": [], "daily_sigma_pct": 1.5,
-    })
+    monkeypatch.setattr(harvester, "fetch_price_reading", reading)
     monkeypatch.setattr(harvester, "fetch_sec_filings_for_peer", lambda name: {
         "status": "skipped", "reason": "Not US-listed, so there are no SEC filings to scan",
         "filings": [], "red_signals": 0, "amber_signals": 0,
@@ -388,6 +399,10 @@ def test_the_peer_card_carries_no_placeholder_headline(harvester, monkeypatch):
     assert [p["latest_headline"] for p in peers] == [None] * len(peers)
     assert all(p["risk_level"] == "LOW" for p in peers)
     assert harvester.fetch_peers_overview(peers)["rag_score"] == "GREEN"
+    # One news fetch per peer, searched by its name when the ticker is quiet.
+    assert [(symbol, kwargs["news_names"], kwargs["news_limit"]) for symbol, kwargs in calls] == [
+        (peer["ticker"], [peer["name"]], 10) for peer in harvester.PEERS_CONFIG
+    ]
 
 
 def _earnings_filing(filed: str) -> dict:

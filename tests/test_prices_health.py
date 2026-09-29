@@ -72,11 +72,30 @@ class FakeTicker:
 
 
 class FakeYF:
-    def __init__(self, ticker):
+    def __init__(self, ticker, search=None):
         self._ticker = ticker
+        if search is not None:
+            self.Search = search
 
     def Ticker(self, symbol):
         return self._ticker
+
+
+class FakeSearch:
+    """yf.Search stand-in: answers from a {query: titles} map and records
+    what it was asked."""
+
+    def __init__(self, answers, error=None):
+        self._answers = answers
+        self._error = error
+        self.queries = []
+
+    def __call__(self, query, **kwargs):
+        self.queries.append(query)
+        if self._error:
+            raise self._error
+        news = [{"title": title} for title in self._answers.get(query, [])]
+        return type("SearchResult", (), {"news": news})()
 
 
 class FakeResponse:
@@ -379,6 +398,82 @@ def test_market_listings_do_not_count_toward_news(harvester, monkeypatch, health
     monkeypatch.setattr(harvester, "yf", FakeYF(FakeTicker(rows=[("2026-09-17", 1.1), ("2026-09-18", 1.2)])))
     harvester.fetch_price_reading("EURUSD=X", scope="markets")
     assert "yfinance_news" not in health.tallies
+
+
+# ---------------------------------------------------------------------------
+# News when Yahoo's ticker feed goes quiet
+# ---------------------------------------------------------------------------
+# On 2026-09-29 the endpoint behind ticker.news began answering HTTP 500 for
+# every symbol, and yfinance returned an empty list: both news layers went
+# quiet with every source reading as healthy.
+
+TWO_CLOSES = [("2026-09-28", 9.85), ("2026-09-29", 9.31)]
+
+
+def test_quiet_ticker_news_falls_back_to_search_by_symbol(harvester, monkeypatch, health):
+    search = FakeSearch({"GPK": ["Graphic Packaging names a chief accounting officer"]})
+    monkeypatch.setattr(harvester, "yf", FakeYF(FakeTicker(rows=TWO_CLOSES), search))
+
+    reading = harvester.fetch_price_reading("GPK", scope="listed suppliers", news_names=["Graphic Packaging"])
+
+    assert reading["headlines"] == ["Graphic Packaging names a chief accounting officer"]
+    assert search.queries == ["GPK"]
+    assert health.status("yfinance_news", "listed suppliers") == "ok"
+
+
+def test_a_listing_search_has_no_news_for_is_searched_by_name(harvester, monkeypatch, health):
+    """Search by symbol only knows US listings; STERV.HE returns nothing."""
+    search = FakeSearch({"Stora Enso": ["Stora Enso names a deputy CFO"]})
+    monkeypatch.setattr(harvester, "yf", FakeYF(FakeTicker(rows=TWO_CLOSES), search))
+
+    reading = harvester.fetch_price_reading("STERV.HE", scope="listed suppliers", news_names=["Stora Enso"])
+
+    assert reading["headlines"] == ["Stora Enso names a deputy CFO"]
+    assert search.queries == ["STERV.HE", "Stora Enso"]
+
+
+def test_ticker_news_that_answers_is_used_without_a_search(harvester, monkeypatch, health):
+    search = FakeSearch({"GPK": ["a search result"]})
+    monkeypatch.setattr(harvester, "yf", FakeYF(FakeTicker(rows=TWO_CLOSES, headlines=["GPK cuts guidance"]), search))
+
+    reading = harvester.fetch_price_reading("GPK", scope="peers", news_names=["Graphic Packaging"])
+
+    assert reading["headlines"] == ["GPK cuts guidance"]
+    assert search.queries == []
+
+
+def test_news_that_fails_both_ways_is_a_failure(harvester, monkeypatch, health):
+    search = FakeSearch({}, error=requests.ConnectionError("search down"))
+    monkeypatch.setattr(harvester, "yf", FakeYF(FakeTicker(rows=TWO_CLOSES), search))
+
+    reading = harvester.fetch_price_reading("GPK", scope="listed suppliers", news_names=["Graphic Packaging"])
+
+    assert reading["headlines"] == []
+    assert health.status("yfinance_prices") == "ok"
+    assert health.status("yfinance_news", "listed suppliers") == "failed"
+    assert "GPK (" in health.detail("yfinance_news")
+
+
+def test_no_news_anywhere_is_empty_not_failed(harvester, monkeypatch, health):
+    search = FakeSearch({})
+    monkeypatch.setattr(harvester, "yf", FakeYF(FakeTicker(rows=TWO_CLOSES), search))
+
+    harvester.fetch_price_reading("GPK", scope="listed suppliers", news_names=["Graphic Packaging"])
+
+    assert search.queries == ["GPK", "Graphic Packaging"]
+    assert health.status("yfinance_news", "listed suppliers") == "empty"
+
+
+def test_markets_read_no_news_at_all(harvester, monkeypatch, health):
+    search = FakeSearch({"EURUSD=X": ["noise"]})
+    ticker = FakeTicker(rows=[("2026-09-28", 1.1), ("2026-09-29", 1.2)],
+                        news_error=AssertionError("news read for a currency pair"))
+    monkeypatch.setattr(harvester, "yf", FakeYF(ticker, search))
+
+    reading = harvester.fetch_price_reading("EURUSD=X", scope="markets")
+
+    assert reading["headlines"] == []
+    assert search.queries == []
 
 
 def test_a_failed_peer_reading_no_longer_resets_the_breaker(harvester, monkeypatch, health):

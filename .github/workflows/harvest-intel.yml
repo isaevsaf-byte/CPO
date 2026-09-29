@@ -94,7 +94,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add data/intel_snapshot.json data/intel_snapshot.backup.json 2>/dev/null || git add data/intel_snapshot.json
+          git add data/intel_snapshot.json data/intel_snapshot.backup.json data/events_archive.json 2>/dev/null || git add data/intel_snapshot.json
 
           # Check if there are changes to commit
           if git diff --staged --quiet; then

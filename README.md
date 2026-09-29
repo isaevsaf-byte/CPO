@@ -16,15 +16,16 @@ A zero-cost, sovereign intelligence engine using the "Flat Data" pattern. This d
 ## Data Sources
 
 All free, no contracts. Keys where noted are optional — every source degrades
-to a fallback rather than failing the harvest.
+to a fallback rather than failing the harvest, and says so in `source_health`
+(see [Source health](#source-health)).
 
 | Signal | Source | Key |
 |---|---|---|
-| Cyber threats | CISA Known Exploited Vulnerabilities (KEV) catalog | — |
+| Cyber threats | CISA Known Exploited Vulnerabilities (KEV) catalog — every KEV added in the last 7 days is screened | — |
 | Sanctions | OFAC SDN list (`sanctionslistservice.ofac.treas.gov`) | — |
 | Safety recalls | CPSC recall database, last 90 days | — |
 | Macro FX | ECB euro reference rates | — |
-| US & EU CPI / policy rates | FRED | `FRED_API_KEY` (shows "not connected" if unset) |
+| US & EU CPI / policy rates | FRED | `FRED_API_KEY` (shows "not connected" if unset; scrubbed from every log line and recorded error) |
 | Prices, market news | yfinance | — |
 | Competitor filings | SEC EDGAR 8-K | — |
 | Supplier & country news | Google News RSS | — |
@@ -51,6 +52,11 @@ Standing geographic exposure is deliberately excluded unless live news escalated
 it that cycle: it is true every day, so logging it as a change would pin the
 same entries at the top permanently.
 
+A price move is logged once per trading session, keyed on the supplier and the
+session the move belongs to (`price_as_of`), and dated by that session — "GPI
+-5.4% on Fri 18 Sep". It used to be once per 24 hours, which logged GPI's
+Friday fall three times as yfinance kept serving it through the weekend.
+
 ## Setup
 
 ### Local Development
@@ -66,9 +72,10 @@ python scripts/update_intel.py
 ```
 
 Without `FRED_API_KEY` and `ANTHROPIC_API_KEY` in the environment the harvest
-still completes, but CPI and policy rates read "not connected" and no executive
-summary is generated — so a locally produced snapshot is poorer than the one
-the workflow commits, and is not usually worth committing.
+still completes, but CPI and policy rates read "not connected", no executive
+summary is generated, and `source_health` records both as `empty` — which
+leaves the macro pillar `degraded`. A locally produced snapshot is poorer than
+the one the workflow commits, and is not usually worth committing.
 
 3. Run the tests:
 ```bash
@@ -160,6 +167,33 @@ hours. A price move with no corroborating news never turns the board RED: it is
 carried as `price_move_only` and named in the change feed as an unexplained
 move, which is what it is.
 
+Currency pairs have their own rule, because a 2% floor no major pair clears on
+an ordinary bad day made EUR/USD's -1.5% (5.6σ) read quiet and USD/CNY unable
+to register at all (`classify_fx_move`):
+
+- **severe**: ≥5σ and a move of at least 1.0%
+- **notable**: ≥3σ and a move of at least 0.5%
+
+Shares and the S&P 500 keep the rule above.
+
+### A price reading says which session it is
+
+Every price reading — supplier, peer, macro market — carries `price_as_of`,
+the date of the trading session its latest close belongs to. yfinance does not
+always serve the newest session, and a reading used to look the same whichever
+day it came from:
+
+- A move is described by its session when that is not today: "-5.4% on Fri 18
+  Sep", not "-5.4% today". A Friday fall may keep a supplier flagged over the
+  weekend — it is still the latest thing the market has said — but it is never
+  described or logged as new.
+- A reading from an *older* session than the one the previous snapshot showed
+  is set aside, and the previous reading and its severity carry forward.
+  Infineon's Monday -7.72% came back from a lagging copy of the series on the
+  Wednesday and took the supplier pillar GREEN → AMBER → GREEN.
+- A listed supplier whose price did not come back says so, rather than
+  "Normal operations. No risk signals."
+
 ### Cyber "Panic" Score
 - **RED**: Ransomware campaign use + added in last 48h
 - **AMBER**: Any new vulnerability in last 7 days
@@ -175,10 +209,13 @@ filing does not say which.
 
 ### Macro pillar
 Scored from how unusual each region's market move is (S&P 500, EUR/USD,
-USD/CNY), on the same volatility yardstick — one severe move is RED, one
-notable move is AMBER, otherwise GREEN. Official statistics (CPI, policy rate)
-come from FRED and carry the month they were observed; a region with no live
-feed that still updates shows "not connected" rather than a stale number.
+USD/CNY), on the same volatility yardstick — the S&P 500 on the share rule, the
+two currency pairs on the FX rule above. One severe move is RED, one notable
+move is AMBER, otherwise GREEN. The summary sentence follows from the z-score:
+"within its normal range" only under 1σ, otherwise "about 1.9× its normal daily
+move, below the level treated as unusual". Official statistics (CPI, policy
+rate) come from FRED and carry the month they were observed; a region with no
+live feed that still updates shows "not connected" rather than a stale number.
 
 ### Where a supplier sits is not the same as what happened to it
 
@@ -408,25 +445,55 @@ assault, fight, mass violence) and `goldstein_avg`. What changes underneath:
 files expected, read, missing and failed, bytes, seconds, the window actually
 covered, and a per-country status (`ok | empty | unmapped | failed`).
 
-## Graceful Fallback
+## Source health
 
-If any data source fails:
-- The dashboard continues to work with the last known good data
-- A timestamp badge shows data staleness
-- Zero downtime, zero errors
+A failing source degrades the harvest rather than stopping it, and it says so.
+Each external source records what it delivered this cycle — `ok`, `failed` or
+`empty` (answered, or not configured, but gave nothing usable) — with a line a
+person can read, written to the snapshot as `source_health`:
+
+```json
+"source_health": {
+  "yfinance_prices": {"status": "ok", "detail": "prices for 3/3 markets, 4/4 peers, 12/12 listed suppliers", "checked_at": "2026-09-29T08:28:20+00:00"},
+  "fred": {"status": "empty", "detail": "FRED_API_KEY not set, so CPI and policy rates read not connected", "checked_at": "2026-09-29T08:27:10+00:00"}
+}
+```
+
+The sources are `yfinance_prices`, `yfinance_news`, `google_news`, `fred`,
+`cisa`, `cpsc`, `ofac`, `ecb`, `sec`, `gdelt` and `claude`. Each pillar's
+`status` follows from its own sources — `success` only when every one of them
+is `ok`, `degraded` otherwise:
+
+| Pillar | Sources |
+|---|---|
+| macro | yfinance prices for the three markets, FRED, ECB |
+| peers | yfinance prices and headlines for the peers, SEC EDGAR |
+| suppliers | yfinance prices and headlines for listed suppliers, Google News, CISA, CPSC, OFAC |
+
+GDELT and Claude feed no pillar. GDELT counts as `ok` when any country returned
+a fresh reading — it is rotated and rate-limited by design — and `failed` only
+when none did.
+
+The harvest exits **2** when any source failed (or the older critical-error
+rules fire); the workflow treats that as a partial success, commits the
+snapshot and still runs the alert. Until this, every pillar said `success`
+whatever happened: failed Google News searches logged at DEBUG, FRED failures
+were not recorded, and an open yfinance circuit breaker returned empty readings
+without a word.
 
 ## Getting the brief where the reader already is
 
 A dashboard only works if someone opens it. `scripts/send_digest.py` pushes the
-same change feed the front page leads with to Slack or Telegram, and the
-harvest workflow calls it in two modes:
+same change feed the front page leads with to Slack or Telegram, in two modes:
 
-- **alert** — after every harvest, but only fires on a real escalation
-  (a confirmed CRITICAL/HIGH signal, or the overall status going RED).
-  Otherwise silent, so an alert keeps meaning something.
-- **daily** — one brief on the harvest that lands in the European morning,
-  whether or not anything moved. A quiet day gets one short line; that is the
-  point.
+- **alert** — run by the harvest workflow after every harvest, but only fires
+  on a real escalation (a confirmed CRITICAL/HIGH signal, or the overall status
+  going RED). Otherwise silent, so an alert keeps meaning something.
+- **daily** — one brief every morning from its own workflow,
+  `.github/workflows/daily-brief.yml` (05:30 UTC, or run it by hand), whether
+  or not anything moved. A quiet day gets one short line; that is the point.
+  It used to ride on whichever harvest landed between 05 and 08 UTC, and
+  scheduler drift meant none did after 1 Sep, so it never sent.
 
 Both are opt-in. With none of these set, the script prints what it would have
 sent and exits 0:
@@ -446,9 +513,10 @@ python scripts/send_digest.py --mode daily --dry-run
 ## Tests and CI
 
 `tests/` covers the rules that decide what the board shows — keyword matching,
-price-move classification, macro scoring, the split between event and
-structural risk, and what does and does not reach the change feed or the daily
-brief. No network, no yfinance required.
+price-move classification (shares and FX), which session a price reading
+belongs to, macro scoring, the split between event and structural risk, source
+health and the exit code, and what does and does not reach the change feed or
+the daily brief. No network, no yfinance required.
 
 ```bash
 pip install -r requirements-dev.txt && pytest tests/ -q

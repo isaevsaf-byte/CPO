@@ -1,0 +1,42 @@
+name: Daily Brief
+
+# One brief a day, whether or not anything moved. It used to be a step in the
+# harvest job, gated on the job's UTC hour falling between 05 and 08, but the
+# scheduler drifts the harvest to around 02, 10, 15 and 20 UTC and not one run
+# landed inside that window after 1 Sep — so the brief never went out. It has
+# its own schedule now and reads whatever snapshot the last harvest committed.
+on:
+  schedule:
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Delivery is opt-in: with no SLACK_WEBHOOK_URL / TELEGRAM_BOT_TOKEN set,
+      # this prints what it would have sent and exits 0.
+      - name: Morning brief
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}
+        run: python scripts/send_digest.py --mode daily

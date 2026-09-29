@@ -59,12 +59,49 @@ STALE_THRESHOLD_HOURS = int(os.getenv("STALE_THRESHOLD", 24))
 # to those static values when unset so nothing breaks without it.
 FRED_API_KEY = os.getenv("FRED_API_KEY")
 
+# FRED only takes its key as a query parameter, and requests copies the whole
+# URL into its exception text: "400 Client Error: Bad Request for url:
+# https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&api_key=…".
+# That text reached the harvest log, which GitHub keeps with the run, and
+# anything recorded as an error is published in the snapshot. So every log line
+# and every recorded error passes through this first.
+_SECRET_QUERY_PARAM = re.compile(r'(api_key=)[^&\s\'"]+', re.IGNORECASE)
+
+
+def redact_secrets(text) -> str:
+    """text with API keys replaced by [redacted], by value and by parameter."""
+    text = str(text)
+    for secret in (FRED_API_KEY, os.getenv("ANTHROPIC_API_KEY")):
+        # A very short value would redact ordinary words out of every line.
+        if secret and len(secret) >= 8:
+            text = text.replace(secret, "[redacted]")
+    return _SECRET_QUERY_PARAM.sub(r'\1[redacted]', text)
+
+
+def describe_error(e: Exception) -> str:
+    """A failed request in a few words, with no URL and so no key in it."""
+    if isinstance(e, requests.HTTPError) and e.response is not None:
+        return f"HTTP {e.response.status_code}"
+    if isinstance(e, requests.Timeout):
+        return "timed out"
+    if isinstance(e, requests.ConnectionError):
+        return "unreachable"
+    text = redact_secrets(e).strip()
+    return f"{type(e).__name__}: {text[:80]}" if text else type(e).__name__
+
+
+class RedactingFormatter(logging.Formatter):
+    """Scrubs the whole formatted record, traceback included — third-party
+    loggers (urllib3 logs request paths at DEBUG) come through here too."""
+
+    def format(self, record):
+        return redact_secrets(super().format(record))
+
+
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stderr)]
-)
+_log_handler = logging.StreamHandler(sys.stderr)
+_log_handler.setFormatter(RedactingFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logging.basicConfig(level=logging.INFO, handlers=[_log_handler])
 logger = logging.getLogger('intel_harvester')
 
 # ============================================================================
@@ -82,7 +119,7 @@ class HarvestStats:
     def record_error(self, source: str, error: str):
         self.errors.append({
             "source": source,
-            "error": str(error)[:200],
+            "error": redact_secrets(error)[:200],
             "time": utc_now_iso()
         })
         logger.error(f"[{source}] {error}")
@@ -90,7 +127,7 @@ class HarvestStats:
     def record_warning(self, source: str, warning: str):
         self.warnings.append({
             "source": source,
-            "warning": str(warning)[:200],
+            "warning": redact_secrets(warning)[:200],
             "time": utc_now_iso()
         })
         logger.warning(f"[{source}] {warning}")
@@ -174,8 +211,181 @@ class CircuitBreaker:
             return False
         return True  # half-open allows one attempt
 
+
+# ============================================================================
+# SOURCE HEALTH — what each external source actually delivered this harvest
+# ============================================================================
+# Every pillar used to report "success" whatever happened underneath. A failed
+# Google News search logged at DEBUG and read exactly like a quiet one, FRED
+# failures were never recorded, an open yfinance circuit breaker handed back
+# empty readings without a word, and the harvest exited 0 through all of it.
+# Each source now says what it delivered, the snapshot carries that as
+# source_health, a pillar's status follows from its own sources, and any
+# failure makes the harvest exit 2.
+#
+#   ok      answered, and gave what was asked for
+#   empty   answered, or was never asked (no key configured), but gave nothing
+#           usable — nothing broke, the board just shows less
+#   failed  a request errored, timed out, or was skipped by a circuit breaker
+SOURCE_NAMES = (
+    "yfinance_prices", "yfinance_news", "google_news", "fred", "cisa", "cpsc",
+    "ofac", "ecb", "sec", "gdelt", "claude",
+)
+
+# The sources each pillar is read from. "success" means every one was ok this
+# cycle; anything less is "degraded". A source shared between pillars is
+# scoped, because a supplier ticker that fails to price says nothing about
+# whether the S&P 500 reading behind the macro pillar is sound.
+PILLAR_SOURCES = {
+    "macro": [("yfinance_prices", "markets"), ("fred", None), ("ecb", None)],
+    "peers": [("yfinance_prices", "peers"), ("yfinance_news", "peers"), ("sec", None)],
+    "suppliers": [
+        ("yfinance_prices", "listed suppliers"), ("yfinance_news", "listed suppliers"),
+        ("google_news", None), ("cisa", None), ("cpsc", None), ("ofac", None),
+    ],
+}
+
+# How a counted source's tally reads: "prices for 12/12 listed suppliers".
+SOURCE_COUNT_PHRASES = {
+    "yfinance_prices": "prices for",
+    "yfinance_news": "headlines for",
+    "google_news": "headlines for",
+    "fred": "current readings for",
+    "sec": "8-K feed read for",
+}
+
+
+class SourceHealth:
+    """ok / failed / empty per source, with a detail a person can read.
+
+    A source asked once per harvest (CISA, OFAC, the ECB) record()s its
+    outcome. A source asked many times — a price per ticker, a search per
+    country — count()s every call under a scope, and its status comes from the
+    tally: failed if any call failed, empty if no call delivered, ok otherwise.
+    """
+
+    def __init__(self):
+        self.records = {}      # source -> {"status", "detail"}
+        self.tallies = {}      # source -> {scope: {"ok": n, "empty": n, "failed": n}}
+        self.notes = {}        # source -> {note: n}, for calls that did not deliver
+        self.checked_at = {}
+
+    def record(self, source: str, status: str, detail: str):
+        self.records[source] = {"status": status, "detail": redact_secrets(detail)}
+        self.checked_at[source] = utc_now_iso()
+
+    def count(self, source: str, scope: str, outcome: str, note: str = None):
+        counts = self.tallies.setdefault(source, {}).setdefault(
+            scope, {"ok": 0, "empty": 0, "failed": 0}
+        )
+        counts[outcome] += 1
+        if note and outcome != "ok":
+            notes = self.notes.setdefault(source, {})
+            note = redact_secrets(note)
+            notes[note] = notes.get(note, 0) + 1
+        self.checked_at[source] = utc_now_iso()
+
+    def status(self, source: str, scope: str = None) -> str:
+        if source in self.records:
+            return self.records[source]["status"]
+        tally = self.tallies.get(source, {})
+        scopes = list(tally.values()) if scope is None else [tally.get(scope, {})]
+        failed = sum(c.get("failed", 0) for c in scopes)
+        delivered = sum(c.get("ok", 0) for c in scopes)
+        if failed:
+            return "failed"
+        # Never asked at all reads as empty: the board has nothing from it.
+        return "ok" if delivered else "empty"
+
+    def detail(self, source: str) -> str:
+        if source in self.records:
+            return self.records[source]["detail"]
+        tally = self.tallies.get(source)
+        if not tally:
+            return "not checked this cycle"
+        counts = ", ".join(f"{c['ok']}/{sum(c.values())} {scope}" for scope, c in tally.items())
+        detail = f"{SOURCE_COUNT_PHRASES.get(source, 'answers for')} {counts}"
+        notes = sorted(self.notes.get(source, {}).items(), key=lambda kv: -kv[1])
+        if notes:
+            shown = [f"{note} ×{n}" if n > 1 else note for note, n in notes[:3]]
+            hidden = sum(n for _, n in notes[3:])
+            detail += "; " + ", ".join(shown) + (f" and {hidden} more" if hidden else "")
+        return detail
+
+    def sources(self) -> list:
+        extra = sorted((set(self.records) | set(self.tallies)) - set(SOURCE_NAMES))
+        return list(SOURCE_NAMES) + extra
+
+    def snapshot(self) -> dict:
+        return {
+            source: {
+                "status": self.status(source),
+                "detail": self.detail(source),
+                "checked_at": self.checked_at.get(source),
+            }
+            for source in self.sources()
+        }
+
+    def failed(self) -> list:
+        return [source for source in self.sources() if self.status(source) == "failed"]
+
+    def pillar_status(self, pillar: str) -> str:
+        sound = all(self.status(source, scope) == "ok" for source, scope in PILLAR_SOURCES[pillar])
+        return "success" if sound else "degraded"
+
+
+# How a GDELT attempt status reads in source_health.
+GDELT_STATUS_WORDS = {
+    "http_429": "rate-limited", "rate_limited": "rate-limited",
+    "timeout": "timed out", "gdelt_timeout": "timed out",
+    "empty": "no articles", "query_rejected": "query rejected",
+}
+
+
+def gdelt_source_health(fresh: dict, attempts: dict, previous_attempts: dict, countries: list) -> tuple:
+    """(status, detail) for this cycle's GDELT phase.
+
+    GDELT is rotated and budgeted by design (see fetch_gdelt_intel): a cycle
+    refreshes whichever countries get through and carries the rest, so any
+    fresh reading means the phase did its job. It has failed when nothing
+    came back at all.
+    """
+    attempted = [
+        country for country in countries
+        if (attempts.get(country) or {}).get("last_attempt")
+        and attempts[country]["last_attempt"] != (previous_attempts.get(country) or {}).get("last_attempt")
+    ]
+    missed = {}
+    for country in attempted:
+        if country not in fresh:
+            status = attempts[country].get("last_status") or "error"
+            word = GDELT_STATUS_WORDS.get(status, status)
+            missed[word] = missed.get(word, 0) + 1
+    summary = ", ".join(f"{n} {word}" for word, n in sorted(missed.items(), key=lambda kv: -kv[1]))
+    if fresh:
+        detail = f"fresh readings for {len(fresh)}/{len(countries)} countries"
+        return "ok", detail + (f"; {summary}" if summary else "") + "; earlier readings kept for the rest"
+    if not attempted:
+        return "empty", "no country attempted this cycle"
+    if set(missed) == {"no articles"}:
+        return "empty", f"no articles for the {len(attempted)} countries attempted"
+    return "failed", f"no country answered ({summary}); earlier readings kept"
+
+
+def harvest_exit_code(stats: HarvestStats, health: SourceHealth) -> int:
+    """2 when any source failed this cycle (or the old error rules fire), else 0.
+
+    Warnings never reached the exit code, so a harvest with no Google News, no
+    FRED and an open price breaker exited 0 and the workflow called it a
+    success. The workflow already treats 2 as a partial success: the snapshot
+    is still committed and the alert step still runs.
+    """
+    return 2 if (stats.should_alert() or health.failed()) else 0
+
+
 # Global instances
 harvest_stats = HarvestStats()
+source_health = SourceHealth()
 rate_limiter = RateLimiter(calls_per_minute=20)
 yfinance_circuit_breaker = CircuitBreaker(failure_threshold=5, reset_timeout=120)
 
@@ -247,9 +457,11 @@ def fetch_fred_observation(series_id: str, units: str = "lin") -> dict | None:
     older than FRED_MAX_OBSERVATION_AGE_DAYS are discarded as stale.
 
     Best-effort: returns None if FRED_API_KEY isn't set or the fetch/parse
-    fails, so the harvest never blocks on it.
+    fails, so the harvest never blocks on it. Every outcome is recorded against
+    the fred source (see SourceHealth); a failure used to be a log line only.
     """
     if not FRED_API_KEY:
+        source_health.record("fred", "empty", "FRED_API_KEY not set, so CPI and policy rates read not connected")
         return None
     try:
         url = (
@@ -260,10 +472,12 @@ def fetch_fred_observation(series_id: str, units: str = "lin") -> dict | None:
         response = fetch_with_retry(url, max_retries=1)
         observations = response.json().get("observations", [])
         if not observations:
+            source_health.count("fred", "series", "empty", f"{series_id} returned no observation")
             return None
         value = observations[0].get("value")
         date_str = observations[0].get("date", "")
         if value in (None, ".", ""):
+            source_health.count("fred", "series", "empty", f"{series_id} has no latest value")
             return None
         if date_str:
             observed = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
@@ -273,10 +487,16 @@ def fetch_fred_observation(series_id: str, units: str = "lin") -> dict | None:
                     f"FRED series {series_id} last observed {date_str} "
                     f"({age_days}d ago) — too stale to publish"
                 )
+                source_health.count("fred", "series", "empty", f"{series_id} last observed {date_str}")
                 return None
-        return {"value": float(value), "date": date_str}
-    except (requests.RequestException, ValueError, KeyError) as e:
-        logger.warning(f"FRED fetch failed for {series_id}: {e}")
+        reading = {"value": float(value), "date": date_str}
+        source_health.count("fred", "series", "ok")
+        return reading
+    except Exception as e:
+        # Described, never interpolated: the exception text carries the full
+        # request URL, key included (see redact_secrets).
+        logger.warning(f"FRED fetch failed for {series_id}: {describe_error(e)}")
+        source_health.count("fred", "series", "failed", f"{series_id} ({describe_error(e)})")
         return None
 
 def calculate_data_hash(data: dict) -> str:
@@ -288,6 +508,11 @@ def calculate_data_hash(data: dict) -> str:
         del data_copy['last_updated']
     if 'harvest_stats' in data_copy:
         del data_copy['harvest_stats']
+    # source_health stamps every source with the time it was checked, every
+    # run. What it changes on the board — a pillar's status — is hashed
+    # through the pillar itself.
+    if 'source_health' in data_copy:
+        del data_copy['source_health']
     # rag_history always gets a new timestamped entry appended every run
     # (see main()) — leaving it in means version changes on every harvest
     # regardless of whether anything else changed, which defeats the
@@ -586,10 +811,15 @@ def fetch_google_news_rss(query, max_results=5):
                 }
                 headlines.append(headline_data)
 
+        source_health.count("google_news", "searches", "ok" if headlines else "empty")
         return headlines
 
     except Exception as e:
-        logger.debug(f"Google News RSS fetch failed for query '{query[:50]}...': {e}")
+        # WARNING, not DEBUG, and recorded: a failed search returns the same
+        # empty list as a quiet one, so a supplier or country nobody could
+        # check read as one with nothing to report.
+        logger.warning(f"Google News RSS fetch failed for query '{query[:50]}...': {describe_error(e)}")
+        source_health.count("google_news", "searches", "failed", describe_error(e))
         return []
 
 
@@ -2012,17 +2242,30 @@ def fetch_cisa_kev():
             except ValueError:
                 continue
 
+        # Every KEV added in the window is screened against the watchlist,
+        # newest first whatever order the feed uses. Only the first ten were
+        # kept before, in feed order: the seven days to 14 Sep held fifteen, so
+        # five were never checked, and 19 of the last 120 days had more than
+        # ten. The list is only matched against suppliers here — it is never
+        # written to the snapshot — so the cut saved nothing.
+        recent_vulns.sort(key=lambda v: (v.get('dateAdded', ''), v.get('cveID', '')), reverse=True)
+        catalog_size = len(data.get('vulnerabilities', []))
         harvest_stats.record_success(source_name)
+        if catalog_size:
+            source_health.record("cisa", "ok", f"{len(recent_vulns)} KEVs added in the last 7 days, all screened (catalog of {catalog_size})")
+        else:
+            source_health.record("cisa", "empty", "the KEV catalog came back with no entries")
         return {
             "status": "success",
-            "total_vulnerabilities": len(data.get('vulnerabilities', [])),
+            "total_vulnerabilities": catalog_size,
             "recent_count": len(recent_vulns),
             "critical_count": len(critical_vulns),
-            "recent_vulnerabilities": recent_vulns[:10],  # Limit for size
+            "recent_vulnerabilities": recent_vulns,
             "last_fetched": utc_now_iso()
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
+        source_health.record("cisa", "failed", f"KEV catalog not read ({describe_error(e)})")
         return {
             "status": "error",
             "error": str(e),
@@ -2047,9 +2290,17 @@ def fetch_cpsc_recalls():
         url = f"https://www.saferproducts.gov/RestWebServices/Recall?RecallDateStart={cutoff}&format=json"
         response = fetch_with_retry(url)
         data = response.json()
-        recalls = data if isinstance(data, list) else []
+        # Anything but a list used to become an empty recall list reported as
+        # success — every supplier screened against nothing.
+        if not isinstance(data, list):
+            raise ValueError(f"expected a list of recalls, got {type(data).__name__}")
+        recalls = data
 
         harvest_stats.record_success(source_name)
+        if recalls:
+            source_health.record("cpsc", "ok", f"{len(recalls)} recalls from the last 90 days screened")
+        else:
+            source_health.record("cpsc", "empty", "no recalls returned for the last 90 days")
         return {
             "status": "success",
             "total_recalls": len(recalls),
@@ -2058,6 +2309,7 @@ def fetch_cpsc_recalls():
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
+        source_health.record("cpsc", "failed", f"recall database not read ({describe_error(e)})")
         return {
             "status": "error",
             "error": str(e),
@@ -2119,6 +2371,7 @@ def fetch_ofac_sdn():
                 raise ValueError("SDN list fetched but parsed to zero names")
 
             harvest_stats.record_success(source_name)
+            source_health.record("ofac", "ok", f"{len(names)} SDN entries screened")
             return {
                 "status": "success",
                 "total_entries": len(names),
@@ -2130,6 +2383,7 @@ def fetch_ofac_sdn():
             continue
 
     harvest_stats.record_error(source_name, str(last_error))
+    source_health.record("ofac", "failed", f"SDN list not read from either mirror ({describe_error(last_error)})")
     return {
         "status": "error",
         "error": str(last_error),
@@ -2208,6 +2462,10 @@ def fetch_macro_eu():
             break
 
         harvest_stats.record_success(source_name)
+        if usd_rate:
+            source_health.record("ecb", "ok", f"EUR/USD reference rate {usd_rate}")
+        else:
+            source_health.record("ecb", "empty", "reference rates published without a USD rate")
         return {
             "status": "success",
             "region": "EU",
@@ -2221,6 +2479,7 @@ def fetch_macro_eu():
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
+        source_health.record("ecb", "failed", f"reference rates not read ({describe_error(e)})")
         return {
             "status": "error",
             "region": "EU",
@@ -2303,7 +2562,10 @@ def fetch_macro_overview(macro_economy: dict = None):
     rag_score, drivers = score_macro_rag(macro_economy or {})
 
     return {
-        "status": "success",
+        # From the sources behind this pillar (see PILLAR_SOURCES), not a
+        # constant: it said "success" on harvests where FRED failed or the
+        # market readings never came back.
+        "status": source_health.pillar_status("macro"),
         "rag_score": rag_score,
         "rag_drivers": drivers,
         "regions": {
@@ -2429,6 +2691,7 @@ def fetch_sec_filings_for_peer(peer_name):
                     logger.info(f"Ignoring old amber signal from {filing_date}: {summary_text[:80]}")
 
         harvest_stats.record_success(source_name)
+        source_health.count("sec", "US-listed peers", "ok")
         return {
             "status": "success",
             "filings": filings,
@@ -2438,6 +2701,7 @@ def fetch_sec_filings_for_peer(peer_name):
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
+        source_health.count("sec", "US-listed peers", "failed", f"{peer_name} ({describe_error(e)})")
         return {
             "status": "error",
             "error": str(e),
@@ -2567,7 +2831,7 @@ def fetch_peers_overview(peer_group):
         rag_score = "GREEN"
 
     return {
-        "status": "success",
+        "status": source_health.pillar_status("peers"),
         "rag_score": rag_score,
         "total_peers": len(peer_group),
         "total_red_signals": total_red_signals,
@@ -2617,7 +2881,22 @@ EMPTY_STOCK_READING = {
     "current_price": None,
     "headlines": [],
     "daily_sigma_pct": None,
+    "price_as_of": None,
 }
+
+
+def _session_date(stamp) -> str | None:
+    """ISO date of one daily bar — yfinance indexes them at midnight in the
+    exchange's own zone, so this is the trading session, not the UTC day."""
+    try:
+        return stamp.date().isoformat()
+    except AttributeError:
+        return None
+
+
+def _count_price(scope: str | None, outcome: str, note: str = None):
+    if scope:
+        source_health.count("yfinance_prices", scope, outcome, note)
 
 
 def daily_sigma_from_closes(closes: list) -> float | None:
@@ -2644,23 +2923,40 @@ def daily_sigma_from_closes(closes: list) -> float | None:
     return sigma if sigma > 0 else None
 
 
-def fetch_price_reading(ticker_symbol, source_label: str = None) -> dict:
+def fetch_price_reading(ticker_symbol, source_label: str = None, scope: str = None) -> dict:
     """
     Fetch a price reading for any listed instrument (supplier share, peer
     share, index, FX pair) using yfinance.
 
     Returns a dict with daily_change_pct, current_price, headlines (up to 5
-    raw titles) and daily_sigma_pct (the listing's own recent daily
+    raw titles), daily_sigma_pct (the listing's own recent daily
     volatility, used to judge whether today's move is actually unusual —
-    see daily_sigma_from_closes). Every failure path returns the same shape
-    with None/empty values rather than raising.
+    see daily_sigma_from_closes) and price_as_of. Every failure path returns
+    the same shape with None/empty values rather than raising.
+
+    price_as_of is the ISO date of the session the latest close belongs to.
+    Without it an old pair of closes read exactly like a new one, and
+    yfinance does not always serve the newest: GPK's Friday -5.39% at $9.31
+    came back unchanged in ten snapshots from Saturday to Monday morning, and
+    IFX.DE's Monday -7.72% came back on Wednesday from a lagging copy of the
+    series. Both were described, and scored, as that day's move.
+
+    scope says what the listing is on the board ("listed suppliers", "peers",
+    "markets"), for the source-health tally; None leaves it out of the tally.
     """
     source_label = source_label or f"price_{ticker_symbol}"
-    if not ticker_symbol or ticker_symbol == "N/A" or yf is None:
+    if not ticker_symbol or ticker_symbol == "N/A":
+        return dict(EMPTY_STOCK_READING)
+    if yf is None:
+        _count_price(scope, "failed", f"{ticker_symbol} (yfinance not installed)")
         return dict(EMPTY_STOCK_READING)
 
-    # Check circuit breaker
+    # An open breaker used to hand back an empty reading and say nothing, so an
+    # outage looked like a quiet market. It is logged and recorded now, and the
+    # supplier row says it has no reading (see process_suppliers).
     if not yfinance_circuit_breaker.can_execute():
+        harvest_stats.record_warning(source_label, "skipped: yfinance circuit breaker open")
+        _count_price(scope, "failed", f"{ticker_symbol} (skipped, circuit breaker open)")
         return dict(EMPTY_STOCK_READING)
 
     try:
@@ -2674,6 +2970,8 @@ def fetch_price_reading(ticker_symbol, source_label: str = None) -> dict:
 
         daily_change_pct = None
         current_price = None
+        price_as_of = None
+        news_error = None
         closes = [float(c) for c in hist['Close'].tolist()] if len(hist) else []
         # Skip over gaps rather than giving up on them. yfinance routinely
         # returns a trailing NaN row for a session that hasn't printed a close
@@ -2683,15 +2981,21 @@ def fetch_price_reading(ticker_symbol, source_label: str = None) -> dict:
         # for news but silently had no price layer. Comparing the two most
         # recent *actual* closes keeps that layer alive; NaN was also what
         # previously leaked a literal "nan%" into signal text.
-        usable = [c for c in closes if math.isfinite(c)]
+        #
+        # Each close keeps its row, so the reading can say which session it
+        # is: after a trailing NaN the newest usable close is the previous
+        # session's, and that is the reading that used to pass for today's.
+        usable = [(row, c) for row, c in enumerate(closes) if math.isfinite(c)]
 
         if len(usable) >= 2:
-            current, previous = usable[-1], usable[-2]
+            (latest_row, current), (_, previous) = usable[-1], usable[-2]
             if previous:
                 daily_change_pct = ((current - previous) / previous) * 100
             current_price = current
+            price_as_of = _session_date(hist.index[latest_row])
         elif len(usable) == 1:
-            current_price = usable[0]
+            latest_row, current_price = usable[0]
+            price_as_of = _session_date(hist.index[latest_row])
 
         # Get up to 5 news headlines for broader risk scanning
         headlines = []
@@ -2707,20 +3011,35 @@ def fetch_price_reading(ticker_symbol, source_label: str = None) -> dict:
                     )
                     if title:
                         headlines.append(title)
-        except Exception:
-            pass
+        except Exception as e:
+            news_error = e
 
         yfinance_circuit_breaker.record_success()
+        if current_price is None:
+            _count_price(scope, "failed", f"{ticker_symbol} (no closes returned)")
+        else:
+            _count_price(scope, "ok")
+        # News is only read for suppliers and peers; an index's or a currency
+        # pair's headlines are never used. A fetch that raised used to be
+        # passed over in silence, leaving a news layer that read as quiet.
+        if scope and scope != "markets":
+            if news_error is not None:
+                source_health.count("yfinance_news", scope, "failed",
+                                    f"{ticker_symbol} ({describe_error(news_error)})")
+            else:
+                source_health.count("yfinance_news", scope, "ok" if headlines else "empty")
         return {
             "daily_change_pct": daily_change_pct,
             "current_price": current_price,
             "headlines": headlines,
             "daily_sigma_pct": daily_sigma_from_closes(closes),
+            "price_as_of": price_as_of,
         }
 
     except Exception as e:
         yfinance_circuit_breaker.record_failure()
         harvest_stats.record_warning(source_label, str(e)[:100])
+        _count_price(scope, "failed", f"{ticker_symbol} ({describe_error(e)})")
         return dict(EMPTY_STOCK_READING)
 
 
@@ -2781,14 +3100,83 @@ def classify_price_move(change_pct, sigma_pct=None, already_flagged: bool = Fals
     return "quiet"
 
 
-def describe_price_move(change_pct, sigma_pct) -> str:
-    """How unusual the move is, in the reader's terms — appended to signals."""
+def session_label(as_of: str) -> str:
+    """'2026-09-18' -> 'Fri 18 Sep'."""
+    try:
+        day = datetime.strptime(as_of, "%Y-%m-%d")
+    except (TypeError, ValueError):
+        return str(as_of)
+    return f"{day:%a} {day.day} {day:%b}"
+
+
+def session_phrase(as_of: str | None, today: str | None = None) -> str:
+    """'today' for the current session, 'on Fri 18 Sep' for an earlier one.
+
+    today is the harvest's UTC date. The board is read in the UK and Europe,
+    where a US close at 20:00 UTC is still today's news and by 02:00 UTC the
+    next morning is not. A reading with no session date keeps the old wording.
+    """
+    if not as_of:
+        return "today"
+    today = today or datetime.now(timezone.utc).date().isoformat()
+    return "today" if as_of >= today else f"on {session_label(as_of)}"
+
+
+def describe_price_move(change_pct, sigma_pct, as_of: str = None, today: str = None) -> str:
+    """How unusual the move is, in the reader's terms — appended to signals.
+
+    Dated by its session when that is not the current one: GPK's Friday fall
+    read "-5.4% today" on the board all weekend.
+    """
     if change_pct is None:
         return ""
+    when = session_phrase(as_of, today)
     if not sigma_pct:
-        return f"{change_pct:+.1f}% today"
+        return f"{change_pct:+.1f}% {when}"
     z = abs(change_pct) / sigma_pct
-    return f"{change_pct:+.1f}% today ({z:.1f}× its normal daily range of ±{sigma_pct:.1f}%)"
+    return f"{change_pct:+.1f}% {when} ({z:.1f}× its normal daily range of ±{sigma_pct:.1f}%)"
+
+
+# The row fields a carried-forward reading is rebuilt from. Supplier and peer
+# rows share one naming; macro rows name the same things after the market.
+PRICE_ROW_FIELDS = {
+    "daily_change_pct": "daily_change_pct",
+    "daily_sigma_pct": "daily_sigma_pct",
+    "current_price": "current_price",
+    "severity": "price_severity",
+}
+MARKET_ROW_FIELDS = {
+    "daily_change_pct": "market_change_pct",
+    "daily_sigma_pct": "market_sigma_pct",
+    "current_price": None,
+    "severity": "market_severity",
+}
+
+
+def prefer_latest_session(reading: dict, previous_row: dict | None,
+                          row_fields: dict = PRICE_ROW_FIELDS, label: str = "") -> dict:
+    """The reading, unless its session is older than the one the previous
+    snapshot already showed for this entity.
+
+    yfinance answers some requests from a lagging copy of a series. IFX.DE's
+    Monday -7.72% came back at the Wednesday 02:05 UTC harvest, after
+    Tuesday's +0.54% had already been read, and the supplier pillar went
+    GREEN → AMBER → GREEN on it while the change feed logged the fall again.
+    An older session says nothing the board has not already shown, so it is
+    set aside and the previous reading carries forward: its values, its
+    session and the severity it was given. The reading's headlines stay; they
+    do not come from the price series.
+    """
+    stored = (previous_row or {}).get("price_as_of")
+    fresh = reading.get("price_as_of")
+    if not stored or not fresh or fresh >= stored:
+        return reading
+    logger.info(f"  {label or 'price'}: yfinance served the {fresh} session after {stored} "
+                f"was already shown — keeping {stored}")
+    carried = dict(reading, price_as_of=stored)
+    for key, row_key in row_fields.items():
+        carried[key] = previous_row.get(row_key) if row_key else None
+    return carried
 
 
 GEO_ESCALATION_STICKY_HOURS = 48
@@ -3005,11 +3393,19 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         risk_reason = ""
 
         daily_sigma_pct = None
+        price_as_of = None
+        carried_severity = None
         if stock_ticker and stock_ticker != "N/A":
-            reading = fetch_price_reading(stock_ticker, source_label=f"supplier_stock_{stock_ticker}")
+            reading = fetch_price_reading(stock_ticker, source_label=f"supplier_stock_{stock_ticker}",
+                                          scope="listed suppliers")
+            # A session older than the one last shown is set aside and the
+            # previous reading, with its severity, carries forward.
+            reading = prefer_latest_session(reading, previous_by_name.get(supplier_name), label=supplier_name)
             daily_change_pct = reading["daily_change_pct"]
             current_price = reading["current_price"]
             daily_sigma_pct = reading["daily_sigma_pct"]
+            price_as_of = reading.get("price_as_of")
+            carried_severity = reading.get("severity")
 
             # Only headlines that actually name this supplier are attributed to
             # it. yfinance's ticker.news returns sector-adjacent coverage, not
@@ -3096,6 +3492,17 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         # is a strong enough signal on its own regardless of exposure.
         price_move_only = False
 
+        # The price layer's verdict, worked out before the chain below so it
+        # can be kept on the row even when a stronger signal takes precedence.
+        # A later harvest that sets aside an older session carries it forward
+        # as it was (see prefer_latest_session) instead of re-deriving it from
+        # the rounded figures on the row.
+        price_severity = carried_severity or classify_price_move(
+            daily_change_pct,
+            daily_sigma_pct,
+            already_flagged=previous_by_name.get(supplier_name, {}).get("price_move_only", False),
+        )
+
         # Priority 0: Sanctions match — automatic CRITICAL, takes priority
         # over everything else. Transacting with a sanctioned party is a
         # legal blocker, not a graded operational risk.
@@ -3144,13 +3551,13 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         # hysteresis so a supplier already flagged last cycle doesn't clear on
         # a marginal move (see classify_price_move for what the old fixed
         # thresholds cost).
-        elif (price_severity := classify_price_move(
-            daily_change_pct,
-            daily_sigma_pct,
-            already_flagged=previous_by_name.get(supplier_name, {}).get("price_move_only", False),
-        )) != "quiet":
+        #
+        # The move is dated by its session. A Friday fall may keep a supplier
+        # flagged through the weekend — it is still the latest thing the market
+        # has said — but it reads "on Fri 18 Sep", not "today".
+        elif price_severity != "quiet":
             price_move_only = True
-            move_text = describe_price_move(daily_change_pct, daily_sigma_pct)
+            move_text = describe_price_move(daily_change_pct, daily_sigma_pct, price_as_of)
             if price_severity == "severe":
                 supplier_risk_level = "CRITICAL"
                 last_signal = f"📉 Severe unexplained drop: {move_text}"
@@ -3180,9 +3587,23 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             if daily_change_pct is not None:
                 direction = "+" if daily_change_pct >= 0 else ""
                 last_signal = f"✓ Normal operations. Stock: {direction}{daily_change_pct:.1f}%"
+            elif stock_ticker and stock_ticker != "N/A":
+                last_signal = (
+                    f"No share-price move could be read for {stock_ticker} this cycle. "
+                    f"No other risk signals."
+                )
             else:
                 last_signal = "✓ Normal operations. No risk signals."
             risk_analysis = f"No supply chain risks identified. {supplier_name} ({category}) operating normally. BAT exposure: {bat_exposure}."
+            # A listed supplier whose price never came back used to read
+            # "✓ Normal operations. No risk signals." — a layer that could not
+            # see anything, reported as one that saw nothing wrong.
+            if daily_change_pct is None and stock_ticker and stock_ticker != "N/A":
+                risk_analysis = (
+                    f"No share-price reading came back for {stock_ticker} this cycle, so a price "
+                    f"move would not show here. The other layers found no supply chain risk for "
+                    f"{supplier_name} ({category}). Exposure tier: {bat_exposure}."
+                )
 
         # ================================================================
         # LAYER 3.5: SIGNALS GATHERED OUTSIDE THIS FUNCTION
@@ -3275,6 +3696,12 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             # printing a bare percentage the reader has no yardstick for.
             "daily_sigma_pct": round(daily_sigma_pct, 2) if daily_sigma_pct is not None else None,
             "current_price": round(current_price, 2) if current_price is not None else None,
+            # ISO date of the session the price and move belong to — not
+            # necessarily today's (see fetch_price_reading) — and the verdict
+            # the price layer gave it, carried forward with it when a later
+            # harvest is served an older session.
+            "price_as_of": price_as_of,
+            "price_severity": price_severity if daily_change_pct is not None else None,
             "risk_analysis": risk_analysis,
             "risk_level": supplier_risk_level,
             # Level excluding a standing country floor — what actually happened
@@ -3365,7 +3792,9 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         logger.warning(f"⚠️ {suppliers_at_sanctions_risk} supplier(s) matched OFAC SDN screening — requires immediate manual compliance review")
 
     return {
-        "status": "success",
+        # "degraded" when any layer behind the pillar could not be read this
+        # cycle (see PILLAR_SOURCES) — a blind layer scores GREEN by default.
+        "status": source_health.pillar_status("suppliers"),
         "rag_score": rag_score,
         "total_suppliers": len(suppliers),
         "suppliers_at_sanctions_risk": suppliers_at_sanctions_risk,
@@ -3396,11 +3825,71 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
 # MACRO ECONOMY DATA GENERATION (LIVE DATA)
 # ============================================================================
 
-def classify_move(change_pct, sigma_pct=None) -> str:
-    """Severity of a daily move in either direction: 'quiet' | 'notable' | 'severe'."""
+# Currency pairs are judged on their own scale. They used to go through the
+# share-price rule, whose 2% floor (PRICE_MIN_PCT) a major pair almost never
+# clears: EUR/USD -1.5%, a 5.6σ day for it, scored quiet, and USD/CNY, whose
+# normal day is under 0.1%, could not register at all. A currency move counts
+# when it is far outside the pair's own range *and* big enough in absolute
+# terms to reach what a buyer pays.
+FX_SIGMA_NOTABLE = 3.0     # σ for "unusual for this pair"…
+FX_MIN_PCT_NOTABLE = 0.5   # …and at least this large a move
+FX_SIGMA_SEVERE = 5.0
+FX_MIN_PCT_SEVERE = 1.0
+
+
+def classify_fx_move(change_pct, sigma_pct=None) -> str:
+    """Severity of a currency pair's daily move, either direction.
+
+    Needs the pair's own σ: without one (under 21 closes of history) nothing
+    says a move is unusual for that pair, so it reads quiet.
+    """
+    if change_pct is None or not sigma_pct:
+        return "quiet"
+    move = abs(change_pct)
+    z = move / sigma_pct
+    if z >= FX_SIGMA_SEVERE and move >= FX_MIN_PCT_SEVERE:
+        return "severe"
+    if z >= FX_SIGMA_NOTABLE and move >= FX_MIN_PCT_NOTABLE:
+        return "notable"
+    return "quiet"
+
+
+def classify_move(change_pct, sigma_pct=None, kind: str = "index") -> str:
+    """Severity of a daily move in either direction: 'quiet' | 'notable' | 'severe'.
+
+    A currency pair (kind "fx" / "fx_inverted") is judged by classify_fx_move;
+    an index keeps the share-price rule, floor included.
+    """
     if change_pct is None:
         return "quiet"
+    if kind in ("fx", "fx_inverted"):
+        return classify_fx_move(change_pct, sigma_pct)
     return classify_price_move(-abs(change_pct), sigma_pct)
+
+
+def describe_market_move(label: str, change_pct, sigma_pct, severity: str,
+                         as_of: str = None, today: str = None) -> str:
+    """One sentence on a market's move, worded from its z-score.
+
+    It used to say "inside its normal daily range" whenever the move scored
+    quiet, which for a currency meant whenever it stayed under the share
+    floor: "USD/CNY -0.15% today, inside its normal daily range of ±0.1%" was
+    a move of about 1.9σ. "Within its normal range" now means under 1σ.
+    """
+    if change_pct is None:
+        return f"{label}: no reading available this cycle."
+    head = f"{label} {change_pct:+.2f}% {session_phrase(as_of, today)}"
+    if not sigma_pct:
+        return f"{head}."
+    z = abs(change_pct) / sigma_pct
+    if z < 1:
+        return f"{head}, within its normal range (±{sigma_pct:.2f}% a day)."
+    size = f"about {z:.1f}× its normal daily move"
+    if severity == "severe":
+        return f"{head}, {size}, a sharp move for this market."
+    if severity == "notable":
+        return f"{head}, {size}, an unusual move for this market."
+    return f"{head}, {size}, below the level treated as unusual."
 
 
 # The one genuinely live number each region has, and what it is.
@@ -3463,7 +3952,7 @@ def _region_trend(kind: str, change_pct, severity: str) -> str:
     return "Declining" if falling else "Growing"
 
 
-def fetch_macro_economy():
+def fetch_macro_economy(previous_economy: dict = None):
     """Live market reading plus official statistics for US, EU and China.
 
     Everything here is either measured or explicitly absent. The previous
@@ -3474,32 +3963,28 @@ def fetch_macro_economy():
     It rendered under an "Analyst Summary" heading on the region pages, which
     made invented sentences read as sourced intelligence — the single most
     damaging thing a board like this can do to its own credibility.
+
+    previous_economy is the last snapshot's macro_economy: a market reading
+    from an older session than the one it shows is set aside and the shown one
+    carries forward (see prefer_latest_session).
     """
     regions = {}
 
     for region_key, market in MACRO_MARKETS.items():
-        reading = fetch_price_reading(market["ticker"], source_label=f"macro_{region_key}")
+        reading = fetch_price_reading(market["ticker"], source_label=f"macro_{region_key}", scope="markets")
+        reading = prefer_latest_session(reading, (previous_economy or {}).get(region_key),
+                                        MARKET_ROW_FIELDS, label=market["label"])
         change_pct = reading["daily_change_pct"]
         sigma_pct = reading["daily_sigma_pct"]
-        severity = classify_move(change_pct, sigma_pct)
+        price_as_of = reading.get("price_as_of")
+        severity = reading.get("severity") or classify_move(change_pct, sigma_pct, market["kind"])
         trend = _region_trend(market["kind"], change_pct, severity)
 
         series = MACRO_SERIES[region_key]
         cpi_obs = fetch_fred_observation(*series["cpi"]) if series["cpi"] else None
         rate_obs = fetch_fred_observation(*series["rate"]) if series["rate"] else None
 
-        if change_pct is None:
-            market_sentence = f"{market['label']}: no reading available this cycle."
-        else:
-            if sigma_pct:
-                band = f"its normal daily range of ±{sigma_pct:.1f}%"
-                comparison = (
-                    f"inside {band}" if severity == "quiet"
-                    else f"{abs(change_pct) / sigma_pct:.1f}× {band}"
-                )
-                market_sentence = f"{market['label']} {change_pct:+.2f}% today, {comparison}."
-            else:
-                market_sentence = f"{market['label']} {change_pct:+.2f}% today."
+        market_sentence = describe_market_move(market["label"], change_pct, sigma_pct, severity, price_as_of)
 
         stat_parts = []
         if cpi_obs:
@@ -3522,6 +4007,9 @@ def fetch_macro_economy():
             "market_change_pct": round(change_pct, 2) if change_pct is not None else None,
             "market_sigma_pct": round(sigma_pct, 2) if sigma_pct else None,
             "market_severity": severity,
+            # Session the move belongs to — the page should date it rather
+            # than label every reading "Today".
+            "price_as_of": price_as_of,
             "trend": trend,
             "summary": f"{market_sentence} {stat_sentence}".strip(),
             "sources": ["Yahoo Finance"] + (["FRED"] if (cpi_obs or rate_obs) else []),
@@ -3538,10 +4026,13 @@ def fetch_macro_economy():
 # PEER GROUP DATA GENERATION (LIVE DATA)
 # ============================================================================
 
-def fetch_peer_group():
+def fetch_peer_group(previous_peers: list = None):
     """
     Fetch real peer group intelligence using yfinance.
     MORE SENSITIVE risk detection - stock movements are a primary signal.
+
+    previous_peers is the last snapshot's peer_group: a price reading from an
+    older session than the one it shows is set aside (see prefer_latest_session).
     """
     peer_data = []
 
@@ -3554,6 +4045,8 @@ def fetch_peer_group():
         harvest_stats.record_warning("peer_group", "Circuit breaker open - using fallback data")
         # Return fallback data
         for peer_config in PEERS_CONFIG:
+            source_health.count("yfinance_prices", "peers", "failed",
+                                f"{peer_config['ticker']} (skipped, circuit breaker open)")
             peer_data.append({
                 "name": peer_config["name"],
                 "ticker": peer_config["ticker"],
@@ -3563,6 +4056,7 @@ def fetch_peer_group():
                 "stock_move": "N/A",
                 "current_price": None,
                 "daily_change_pct": None,
+                "price_as_of": None,
                 "risk_level": "LOW",
                 "last_signal": peer_config.get("default_text", "Circuit breaker active."),
                 "sec_red_signals": 0,
@@ -3583,10 +4077,16 @@ def fetch_peer_group():
             # ticker.info is no longer fetched here: it is a slow, frequently
             # failing endpoint and its only use was a fallback price for the
             # case where no history exists at all.
-            reading = fetch_price_reading(ticker_symbol, source_label=f"peer_{ticker_symbol}")
+            reading = fetch_price_reading(ticker_symbol, source_label=f"peer_{ticker_symbol}", scope="peers")
+            reading = prefer_latest_session(
+                reading,
+                next((p for p in (previous_peers or []) if p.get("name") == peer_config["name"]), None),
+                label=peer_config["name"],
+            )
             current_price = reading["current_price"]
             daily_change_pct = reading["daily_change_pct"]
             daily_sigma_pct = reading["daily_sigma_pct"]
+            price_as_of = reading.get("price_as_of")
             stock_move = f"{daily_change_pct:+.2f}%" if daily_change_pct is not None else "N/A"
 
             # Get up to 5 news headlines for broader scanning. Only headlines
@@ -3634,10 +4134,12 @@ def fetch_peer_group():
             # a point or two on an ordinary day isn't procurement-relevant.
             # Judged against the listing's own volatility, same as suppliers,
             # so a jumpy small-cap and a defensive large-cap aren't held to
-            # one shared percentage.
-            peer_severity = classify_price_move(daily_change_pct, daily_sigma_pct)
+            # one shared percentage. A reading carried forward over an older
+            # session keeps the severity it was given (prefer_latest_session),
+            # and the move is dated by its own session.
+            peer_severity = reading.get("severity") or classify_price_move(daily_change_pct, daily_sigma_pct)
             if peer_severity != "quiet":
-                move_text = describe_price_move(daily_change_pct, daily_sigma_pct)
+                move_text = describe_price_move(daily_change_pct, daily_sigma_pct, price_as_of)
                 if peer_severity == "severe":
                     if risk_level != "CRITICAL":
                         risk_level = "CRITICAL"
@@ -3674,8 +4176,12 @@ def fetch_peer_group():
                 else:
                     sentiment = "Neutral"
 
-            yfinance_circuit_breaker.record_success()
-            harvest_stats.record_success(f"peer_{peer_config['ticker']}")
+            # fetch_price_reading has already told the breaker how the request
+            # went. Recording a success here as well wiped its failure count
+            # after every failed reading, so a yfinance outage could never
+            # open it from the peer loop.
+            if current_price is not None:
+                harvest_stats.record_success(f"peer_{peer_config['ticker']}")
 
             # Fold in SEC 8-K filing signals (was previously a second,
             # independently-fetched "peers" pillar over a differently-named
@@ -3705,6 +4211,8 @@ def fetch_peer_group():
                 "current_price": current_price,
                 "daily_change_pct": round(daily_change_pct, 2) if daily_change_pct is not None else None,
                 "daily_sigma_pct": round(daily_sigma_pct, 2) if daily_sigma_pct else None,
+                "price_as_of": price_as_of,
+                "price_severity": peer_severity if daily_change_pct is not None else None,
                 "risk_level": risk_level,
                 "last_signal": last_signal,
                 "news_risk": news_risk_detected,
@@ -3727,6 +4235,7 @@ def fetch_peer_group():
                 "stock_move": "N/A",
                 "current_price": None,
                 "daily_change_pct": None,
+                "price_as_of": None,
                 "risk_level": "LOW",
                 "last_signal": peer_config.get("default_text", "Data fetch error."),
                 "news_risk": False,
@@ -3859,18 +4368,29 @@ def _rag_direction(before: str, after: str) -> str:
     return "up" if order.get(after, 0) > order.get(before, 0) else "down"
 
 
-# A supplier whose price already produced an entry inside this window does not
-# produce another. ITC printed three in twenty-four hours on the live board
-# (-4.0%, +4.3%, -4.0%) — the same stock breathing, reported as three events.
-PRICE_MOVE_QUIET_HOURS = 24
+# Entries written before price moves carried their session have nothing to key
+# on, so they keep the rule they were written under — one per supplier per 24
+# hours. That stops the first harvest after the change from logging a second
+# time a move the feed reported hours earlier; after a day it stops mattering.
+LEGACY_PRICE_MOVE_QUIET_HOURS = 24
 
 
-def _recent_price_move_entities(previous_log: list, now: datetime) -> set:
-    """Suppliers already reported for a price move inside the quiet window."""
-    cutoff = now - timedelta(hours=PRICE_MOVE_QUIET_HOURS)
+def _reported_price_sessions(previous_log: list, now: datetime) -> set:
+    """(entity, session) pairs the feed has already reported a price move for.
+
+    Keyed on the session the move belongs to, not on when it was logged. The
+    24-hour window this replaces let one move through as often as yfinance
+    kept serving it: GPI's Friday fall was logged at 20:06 UTC that Friday,
+    again at 02:04 on Sunday and again at 02:05 on Monday. An entry with no
+    session is kept as (entity, None) for LEGACY_PRICE_MOVE_QUIET_HOURS.
+    """
+    cutoff = now - timedelta(hours=LEGACY_PRICE_MOVE_QUIET_HOURS)
     seen = set()
     for entry in previous_log or []:
-        if entry.get("kind") != "price_move":
+        if entry.get("kind") != "price_move" or not entry.get("entity"):
+            continue
+        if entry.get("price_as_of"):
+            seen.add((entry["entity"], entry["price_as_of"]))
             continue
         raw = entry.get("at")
         if not raw:
@@ -3881,8 +4401,8 @@ def _recent_price_move_entities(previous_log: list, now: datetime) -> set:
             continue
         if stamp.tzinfo is None:
             stamp = stamp.replace(tzinfo=timezone.utc)
-        if stamp >= cutoff and entry.get("entity"):
-            seen.add(entry["entity"])
+        if stamp >= cutoff:
+            seen.add((entry["entity"], None))
     return seen
 
 
@@ -3912,30 +4432,36 @@ def compute_changes(previous_state: dict | None, suppliers_data: dict,
             "href": href,
         })
 
-    recently_reported = _recent_price_move_entities(
+    reported_sessions = _reported_price_sessions(
         previous_state.get("change_log"), datetime.now(timezone.utc)
     )
 
     def report_price_move(supplier, name, href):
-        """One entry per unexplained fall, at most one per supplier per day.
+        """One entry per unexplained fall, and one per session.
 
         Two rules learned from the live feed. Only falls: a supplier's share
         price rising is not a supply risk, and "ITC +4.3%" in a feed headed
-        "what changed" is noise wearing the clothes of a signal. And once a
-        day: ITC printed three entries in twenty-four hours (-4.0%, +4.3%,
-        -4.0%) — the same stock breathing, reported as three events.
+        "what changed" is noise wearing the clothes of a signal. And once per
+        session: a fall belongs to the day the market made it, however many
+        harvests go on reading it (see _reported_price_sessions). The entry is
+        dated by that session, since it is read long after the harvest — the
+        daily brief the next morning included.
         """
         move = supplier.get("daily_change_pct")
         if not isinstance(move, (int, float)) or move >= 0:
             return
-        if name in recently_reported:
+        session = supplier.get("price_as_of")
+        if (name, session) in reported_sessions or (name, None) in reported_sessions:
             return
-        recently_reported.add(name)
+        reported_sessions.add((name, session))
         sigma = supplier.get("daily_sigma_pct")
         yardstick = f" ({abs(move) / sigma:.1f}× its normal daily range)" if sigma else ""
+        when = f" on {session_label(session)}" if session else ""
         add("price_move", "info", name,
-            f"{name} {move:+.1f}%{yardstick}, no corroborating signal",
+            f"{name} {move:+.1f}%{when}{yardstick}, no corroborating signal",
             f"BAT exposure: {supplier.get('bat_exposure')}. Cause unconfirmed.", href)
+        # The session this entry covers — what the next harvest dedupes on.
+        changes[-1]["price_as_of"] = session
 
     # --- Overall and per-pillar RAG -------------------------------------
     prev_overall = (previous_state.get("overall_rag") or {}).get("score")
@@ -4540,6 +5066,38 @@ def gdelt_event_relevance(suppliers_by_country: dict) -> dict:
     return callables
 
 
+def gdelt_files_health(status: dict, fresh: dict, countries) -> tuple:
+    """(status, detail) for the GDELT event-file phase. The reader returns
+    nothing when it could read less than three quarters of its window, in
+    which case the previous readings are kept and the phase has failed."""
+    status = status or {}
+    if status.get("status") == "failed" or not fresh:
+        return "failed", f"{status.get('detail') or 'no event files read'}; earlier readings kept"
+    read = status.get("files_read")
+    expected = status.get("files_expected")
+    files = f", {read}/{expected} event files" if read is not None and expected else ""
+    return "ok", f"events for {len(fresh)}/{len(countries)} countries over {status.get('window', '1d')}{files}"
+
+
+def module_health(result: dict | None, label: str) -> tuple:
+    """(status, detail) for a data module that reports its own sources as
+    {name: {"status", "detail"}}: failed when every source failed, ok when all
+    answered, and ok naming the failed ones when some did."""
+    sources = (result or {}).get("sources") or {}
+    if not result or not sources:
+        return "failed", f"{label}: no reading this cycle"
+    failed = [name for name, src in sources.items() if src.get("status") == "failed"]
+    empty = [name for name, src in sources.items() if src.get("status") == "empty"]
+    if len(failed) == len(sources):
+        return "failed", f"{label}: no source answered ({', '.join(failed)})"
+    detail = f"{label}: {len(sources) - len(failed)}/{len(sources)} sources answered"
+    if failed:
+        detail += f"; failed: {', '.join(failed)}"
+    if empty:
+        detail += f"; empty: {', '.join(empty)}"
+    return "ok", detail
+
+
 def gdelt_attempts_from_files(status: dict, previous: dict, now_iso: str) -> dict:
     """Per-country bookkeeping in the shape /geopolitical reads, from the
     event-file reader's per-country outcome."""
@@ -4582,8 +5140,9 @@ def main():
 
     # PILLAR 1: Macro Overview. The live market readings are fetched first
     # because the pillar's RAG score is derived from them (see score_macro_rag)
-    # rather than from a region-count that could never reach GREEN.
-    macro_economy = fetch_macro_economy()
+    # rather than from a region-count that could never reach GREEN. Last
+    # cycle's readings let a lagging, older session be set aside.
+    macro_economy = fetch_macro_economy((previous_state or {}).get("macro_economy"))
     macro_data = fetch_macro_overview(macro_economy)
 
     # PILLAR 2: Peers & Competitors — peer_group (live stock/news + SEC
@@ -4591,7 +5150,7 @@ def main():
     # source of truth; fetch_peers_overview just rolls it up into the
     # pillar-level status the dashboard card needs. No separate fetch, no
     # separate cross-pillar escalation merge required anymore.
-    peer_group = fetch_peer_group()
+    peer_group = fetch_peer_group((previous_state or {}).get("peer_group"))
     peers_data = fetch_peers_overview(peer_group)
 
     # Trade-list screening, leak-site claims and Asian exchange filings feed a
@@ -4624,6 +5183,9 @@ def main():
         _run_layer("asia_filings", lambda: filings_mod.fetch_asia_filings(), {})
         if filings_mod else {}
     )
+    source_health.record("screening", *module_health(screening_result, "US trade lists and Federal Register"))
+    source_health.record("asia_filings", *module_health(filings_result, "HKEXnews and CNINFO"))
+    source_health.record("ransom", *module_health(ransom_result, "RansomLook"))
     extra_signals = build_extra_signals(screening_result, ransom_result, filings_result)
 
     # PILLAR 3: Supplier Watchlist
@@ -4670,6 +5232,7 @@ def main():
         if gdelt_mod else gdelt_failed
     )
     gdelt_attempts = gdelt_attempts_from_files(gdelt_status, previous_attempts, utc_now_iso())
+    source_health.record("gdelt", *gdelt_files_health(gdelt_status, fresh_geo, all_gdelt_countries))
     # Merge onto last run's results instead of replacing wholesale — GDELT's
     # rate limiting means only a handful of countries succeed on any given
     # run, and which ones is essentially random (whichever get through
@@ -4697,6 +5260,7 @@ def main():
         _run_layer("world_signals", lambda: world_mod.collect_world_signals(watchlist_rows), None)
         if world_mod else None
     )
+    source_health.record("world_signals", *module_health(world_signals, "chokepoints, Rhine, hazards, input prices"))
 
     # The macro pillar's RAG score is computed in score_macro_rag from these
     # same readings (fetched at the top of main), so there is no second
@@ -4799,6 +5363,12 @@ def main():
         changes_this_cycle=new_changes, change_log=change_log,
         world_signals=world_signals,
     )
+    if executive_summary:
+        source_health.record("claude", "ok", "executive summary written")
+    elif not os.getenv("ANTHROPIC_API_KEY"):
+        source_health.record("claude", "empty", "ANTHROPIC_API_KEY not set, so no executive summary")
+    else:
+        source_health.record("claude", "failed", "no executive summary came back (the harvest log says why)")
 
     # Build dashboard state with three core pillars + additional intelligence
     dashboard_state = {
@@ -4821,6 +5391,9 @@ def main():
         "asia_filings": filings_result or None,
         "ransom_claims": ransom_result or None,
         "harvest_stats": harvest_stats.summary(),
+        # What every external source delivered this cycle — ok, failed or
+        # empty, with a line saying what that means. See SourceHealth.
+        "source_health": source_health.snapshot(),
         "health": {
             "pillars": {
                 "macro": macro_data.get('status', 'unknown'),
@@ -4846,6 +5419,7 @@ def main():
             previous_state["last_updated"] = utc_now_iso()
             previous_state["status"] = "fallback"
             previous_state["harvest_stats"] = harvest_stats.summary()
+            previous_state["source_health"] = source_health.snapshot()
             dashboard_state = previous_state
 
     # Save to data directory
@@ -4864,25 +5438,29 @@ def main():
     logger.info(f"  2. Peers: {peers_data.get('rag_score', 'UNKNOWN')} ({peers_data.get('status', 'unknown')})")
     logger.info(f"  3. Suppliers: {suppliers_data.get('rag_score', 'UNKNOWN')} ({suppliers_data.get('status', 'unknown')})")
 
-    # Print detailed summaries
-    if peers_data.get('status') == 'success':
-        logger.info(f"  Peers: {peers_data.get('total_peers', 0)} tracked, {peers_data.get('total_red_signals', 0)} red, {peers_data.get('total_amber_signals', 0)} amber signals")
+    # Print detailed summaries. A degraded pillar still carries its figures.
+    logger.info(f"  Peers: {peers_data.get('total_peers', 0)} tracked, {peers_data.get('total_red_signals', 0)} red, {peers_data.get('total_amber_signals', 0)} amber signals")
+    logger.info(f"  Suppliers: {suppliers_data.get('total_suppliers', 0)} total, {suppliers_data.get('suppliers_at_cyber_risk', 0)} cyber risk, {suppliers_data.get('suppliers_at_news_risk', 0)} news risk")
 
-    if suppliers_data.get('status') == 'success':
-        logger.info(f"  Suppliers: {suppliers_data.get('total_suppliers', 0)} total, {suppliers_data.get('suppliers_at_cyber_risk', 0)} cyber risk, {suppliers_data.get('suppliers_at_news_risk', 0)} news risk")
+    logger.info("Source health:")
+    for source, entry in source_health.snapshot().items():
+        logger.info(f"  {source}: {entry['status']} — {entry['detail']}")
 
     # Harvest stats summary
     stats = harvest_stats.summary()
     logger.info(f"Harvest Stats: {stats['total_successes']} successes, {stats['total_errors']} errors, {stats['total_warnings']} warnings")
     logger.info(f"Duration: {stats['duration_seconds']:.2f}s")
 
-    # Check if we should alert
-    if harvest_stats.should_alert():
-        logger.warning("ALERT: Critical errors detected during harvest!")
+    # Exit 2 on any failed source, not only on the old error rules — see
+    # harvest_exit_code. The snapshot is already saved either way.
+    exit_code = harvest_exit_code(harvest_stats, source_health)
+    if exit_code:
+        logger.warning("ALERT: the harvest completed with failures")
+        for source in source_health.failed():
+            logger.warning(f"  - {source}: {source_health.detail(source)}")
         for error in harvest_stats.errors:
             logger.warning(f"  - [{error['source']}] {error['error']}")
-        # Exit with error code to trigger GitHub Actions failure notification
-        sys.exit(2)
+        sys.exit(exit_code)
 
 
 if __name__ == "__main__":

@@ -203,6 +203,110 @@ the situation behind it did, flipping suppliers up and back down again. A live
 escalation is now held for `GEO_ESCALATION_STICKY_HOURS` after it was last
 corroborated, and labelled as held.
 
+## Screening lists, exchange filings and leak-site claims
+
+Three data modules in `scripts/`, not yet called by the harvester. All are
+free and keyless, hold to their own time budget and never raise: each source
+reports `ok`, `empty` (it answered but nothing could be read, which usually
+means a layout change) or `failed`, with a reason. A supplier missing from
+`hits` means "no match" only while its sources are `ok`.
+
+| Module | Reads | Entry point |
+|---|---|---|
+| `screening.py` | US Consolidated Screening List (one ~17 MB CSV merging twelve lists: OFAC SDN, BIS Entity List, Military End User, Treasury's Chinese military companies and more); DHS UFLPA Entity List; Federal Register, last 30 days | `screen_suppliers(suppliers, name_terms, now=None)` |
+| `filings_asia.py` | HKEXnews (Smoore 06969, BYD Electronic 00285) and CNINFO (EVE Energy 300014, Porton 300363), last 14 days | `fetch_asia_filings(now=None)` |
+| `ransom.py` | RansomLook `/api/recent` and `/api/search`, last 30 days | `fetch_ransom_claims(name_terms, now=None)` |
+
+`name_terms` is `{name: supplier_search_terms(name)}` from `update_intel.py`,
+which the modules cannot import because it loads the watchlist at import.
+`scripts/name_matching.py` applies the harvester's rules to it:
+
+- **Whole words, after folding punctuation to spaces.** "SPORTON International
+  Inc." is not Porton, "PESA Bydgoszcz" is not BYD and "Amcore" is not Amcor,
+  while a leak post titled "jabil.com" is Jabil and the DHS page's
+  `Xinjiang&nbsp;Goens` is "Xinjiang Goens".
+- **No term under five characters on its own.** On the screening list "GPI"
+  is a Russian physics institute and "ITC" a Cypriot consultancy. A supplier
+  left with no longer name is listed under `unscreened` (today, Fuji).
+- **Companies only.** Screening-list people, vessels and aircraft are skipped:
+  one SDN individual's alias ends in "Jabil".
+- **Leak-site titles only.** RansomLook's search also matches descriptions; for
+  "jabil" it returned an electronics distributor whose leak lists "sales
+  orders to Jabil Defense".
+
+### Legal names and parent companies
+
+`data/supplier_parents.json` adds the legal names and parent companies that
+`screening.py` checks as well, each with its sources and the date it was
+checked. Huizhou BYD Electronic, for example, is screened as itself and
+through BYD Precision Manufacture, BYD Electronic (International) (HKEX 0285)
+and BYD Company. A hit through a parent carries `"via": "parent"` and the
+parent's name, so a reviewer sees it is the group that is listed, not the
+plant. Legal names also cover suppliers whose watchlist name is too short:
+CNT is screened as CONTRAF-NICOTEX-TOBACCO. To use them on leak sites too,
+pass `screening.expand_name_terms(name_terms)` to `fetch_ransom_claims`.
+
+Checking the parents turned up two changes the watchlist has not caught up
+with: International Paper sold its stake in the IP Sun joint venture in 2015,
+and Mativ sold SWM's cigarette-paper business to Evergreen Hill Enterprise in
+2023, so the `MATV` ticker no longer follows that supplier.
+
+### Federal Register topics
+
+A plain full-text search is mostly noise ("section 301" is also a section of
+the Food, Drug, and Cosmetic Act, and every Foreign-Trade Zone notice cites the
+Section 301 duties), so each topic is limited to the agencies that act on it
+and kept only when the title says what the document is about.
+"Agency Information Collection Activities" paperwork is always dropped.
+
+| `topic` | Agencies | Kept when the title names | `affected_categories` |
+|---|---|---|---|
+| `bis_entity_list` | BIS | the Entity List | EMS, Batteries, EE Component |
+| `section_301` | USTR | a country where a watchlist supplier is, or "various economies" | the categories sourced from that country; `[]` for "various economies" |
+| `section_232` | BIS, the President | a watchlist material: aluminium, steel, copper, polysilicon, semiconductors, critical minerals, lithium, graphite, timber, pulp | by material |
+| `uflpa` | DHS | UFLPA or forced labor | Batteries, EMS, EE Component |
+| `fda_ends` | FDA | ENDS, e-cigarettes, vaping, nicotine or tobacco products | EMS, Batteries, Nicotine, Oral Fleece |
+| `adcvd` | ITA, ITC | cellulose acetate, acetate tow, cigarette or tipping paper, lithium-ion, lithium hexafluorophosphate, anode material, paperboard, cartonboard, folding cartons | by product |
+
+### Exchange filing flags
+
+| Severity | Flag |
+|---|---|
+| high | profit warning, trading halt, suspension, 停产 production halt, 停牌 trading suspended, 立案 regulator investigation, 预亏 expected loss |
+| medium | inside information, 质押 share pledge, 诉讼 litigation, 业绩预告 earnings pre-announcement, 减持 shareholder selling |
+
+For HKEX the headline category and the Chinese title are checked with the
+English title: Smoore's 2026-07-03 notice of its controlling shareholder
+selling down only says so in Chinese (減持) and in its category (Inside
+Information). Chinese terms are matched in simplified (CNINFO) and traditional
+(HKEX) characters, and a pledge being released (解除质押) is not a pledge.
+The exchanges' internal ids (HKEX stockId, CNINFO orgId) are looked up on
+every run, falling back to the ones found on 2026-09-29.
+
+### Output
+
+```text
+screen_suppliers  -> {fetched_at, hits, notices, sources, unscreened, duration_seconds}
+  hits[supplier]  -> [{list, entity, programs, country, source_url, listed_since,
+                       matched_term, via: "name"|"parent", parent}]
+  notices         -> [{title, date, url, agencies, topic, affected_categories, type, document_number}]
+fetch_asia_filings -> {fetched_at, window_days, filings, listings, sources, duration_seconds}
+  filings[supplier] -> [{title, date, url, flags, severity: "high"|"medium"|"none", exchange, stock_code}]
+fetch_ransom_claims -> {fetched_at, hits, sources, unscreened, duration_seconds}
+  hits[supplier]  -> [{group, title, date, url}]   # url: RansomLook's group page, never the leak site
+```
+
+Dates are `YYYY-MM-DD`; `fetched_at` carries its UTC offset. Try them by hand:
+
+```bash
+python - <<'PY'
+import json, sys
+sys.path.insert(0, "scripts")
+import filings_asia
+print(json.dumps(filings_asia.fetch_asia_filings(), ensure_ascii=False, indent=1))
+PY
+```
+
 ## Graceful Fallback
 
 If any data source fails:

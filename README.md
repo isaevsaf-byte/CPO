@@ -203,6 +203,66 @@ the situation behind it did, flipping suppliers up and back down again. A live
 escalation is now held for `GEO_ESCALATION_STICKY_HOURS` after it was last
 corroborated, and labelled as held.
 
+## World signals
+
+On 28 Sep 2026 the board said "All clear" while the Strait of Hormuz was
+carrying 3.9 ships a day against 87.9 a year earlier, Brent stood at $114.89 and
+the Rhine at Kaub read 0 cm. None of that is news about a named supplier, and
+every sensor the board had was pointed at named suppliers.
+`scripts/world_signals.py` reads those conditions from the bodies that measure
+them. It is not yet called by `update_intel.py`.
+
+| Signal | Source (all keyless) | Notable / severe |
+|---|---|---|
+| Daily transits: Hormuz, Bab el-Mandeb, Suez, Malacca, Taiwan Strait, Panama, Cape of Good Hope | IMF PortWatch | last 7 days of data vs the same days a year earlier: ≤ −30% / ≤ −60% |
+| Rhine at Kaub and Maxau, Kaub 48-hour forecast | PEGELONLINE (WSV, licence DL-DE Zero 2.0) | Kaub below 80 / 40 cm; Maxau below 375 / 335 cm |
+| Orange and red disaster alerts, last 14 days | GDACS | the alert on the event's latest episode: orange / red |
+| Brent (daily) | FRED `DCOILBRENTEU` | a rise of 2σ / 3.5σ against three months of daily moves, or +25% / +50% on its one-year median |
+| EU gas, US wood pulp PPI, aluminium (monthly) | FRED `PNGASEUUSDM`, `WPU0911`, `PALUMUSDM` | +20% / +40% on the same month a year earlier |
+
+Which suppliers each signal reaches lives in `data/world_links.json`, edited by
+hand like `suppliers.json`: commodities map to supplier categories (Brent to
+filter materials, mechanical, EMS and batteries), chokepoints to supplier
+countries (the Asia–Europe lanes to China, Japan, South Korea and India) or,
+for Hormuz, to every category that follows the oil price, and the Rhine to
+Cerdia, AMCOR and CNT by name. The tests check the file against the watchlist.
+
+```python
+collect_world_signals(suppliers: list[dict], now: datetime | None = None) -> dict
+```
+
+```json
+{
+  "fetched_at": "2026-09-29T09:22:20+00:00",
+  "level": "quiet | notable | severe",
+  "drivers": ["Strait of Hormuz: transits down 96% on a year earlier (week to 20 Sep)"],
+  "commodities": [item], "chokepoints": [item], "rivers": [item], "hazards": [item],
+  "sources": {"imf_portwatch": {"status": "ok | failed | empty", "detail": "..."}}
+}
+```
+
+Every item carries `id`, `label`, `value`, `unit`, `as_of`, `baseline`,
+`change_pct`, `severity`, a one-sentence `headline`, `affected_categories`,
+`affected_suppliers`, `source` and `source_url`. Rivers add the forecast range,
+Brent its daily move, hazards their event type, alert levels and countries.
+
+Every source fails soft: one that is down, answers nonsense or has stopped
+updating is reported under `sources` and contributes nothing, and the whole call
+returns within 35 seconds. Things to know when reading it:
+
+- **Nothing here is today's number.** PortWatch runs about a week behind, Brent
+  reaches FRED a week late and the monthly series two months late. Every item
+  says what date it describes.
+- **A year-on-year comparison cannot see a disruption that was already running a
+  year ago.** The Suez Canal averaged 41.9 transits a day in the week to 20 Sep
+  2026 and 41.3 a year before, which reads as normal; the same week of 2023
+  averaged 72.0.
+- **A gauge reading is a height above an arbitrary zero, not a depth.** Kaub at
+  4 cm still has about 1.2 m in the channel, so gauges carry the long-run mean
+  as a reference but no percentage change.
+- **Only rises in a price count as risk.** A sharp fall in Brent is relief for
+  every buyer of acetate tow and plastics.
+
 ## Graceful Fallback
 
 If any data source fails:

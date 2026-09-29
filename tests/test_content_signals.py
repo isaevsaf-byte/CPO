@@ -746,3 +746,79 @@ def test_truncation_never_splits_an_entity_or_a_tag(digest):
 )
 def test_a_new_sanctions_match_always_pages(digest, kind, direction, headline, expected):
     assert digest.is_escalation({"kind": kind, "direction": direction, "headline": headline}) is expected
+
+
+# ---------------------------------------------------------------------------
+# 7. Only http(s) links from feeds
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "url",
+    ["https://www.reuters.com/markets/story?id=1&ref=feed", "http://example.com", " https://example.com/x "],
+)
+def test_ordinary_links_are_kept(harvester, url):
+    assert harvester.safe_http_url(url) == url.strip()
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "javascript:alert(1)", " JAVASCRIPT:alert(1)", "vbscript:msgbox(1)",
+        "data:text/html,<script>alert(1)</script>", "//evil.example/x", "https:///path",
+        "ftp://files.example/x", "https://exa mple.com", 'https://example.com/"onmouseover=x',
+        "https://example.com\\@evil.example", "", None, 42,
+    ],
+)
+def test_anything_else_is_dropped(harvester, url):
+    assert harvester.safe_http_url(url) is None
+
+
+def test_a_recall_keeps_its_record_but_not_a_bad_link(harvester):
+    recalls = [
+        {"RecallNumber": "26-001", "Manufacturers": [{"Name": "Jabil Inc"}],
+         "Products": [{"Name": "Charger"}], "URL": "javascript:alert(1)"},
+        {"RecallNumber": "26-002", "Manufacturers": [{"Name": "Jabil Inc"}],
+         "Products": [{"Name": "Dock"}], "URL": "https://www.cpsc.gov/Recalls/2026/26-002"},
+    ]
+    matches = harvester.match_supplier_recalls("Jabil", recalls)
+    assert [(m["recallNumber"], m["url"]) for m in matches] == [
+        ("26-001", None), ("26-002", "https://www.cpsc.gov/Recalls/2026/26-002")]
+
+
+def test_a_gdelt_article_without_an_http_link_is_not_stored(harvester, monkeypatch):
+    body = json.dumps({"tonechart": [{"bin": -5, "count": 3, "toparts": [
+        {"title": "Sappi shuts pulp line at Saiccor mill", "url": "javascript:alert(1)"},
+        {"title": "Sappi cuts output at Ngodwana mill", "url": "https://example.com/sappi"},
+        {"title": "Sappi mill fire in KwaZulu-Natal", "url": "data:text/html,x"},
+    ]}]})
+    response = SimpleNamespace(text=body, json=lambda: json.loads(body))
+    monkeypatch.setattr(harvester, "fetch_with_retry", lambda *a, **k: response)
+
+    intel, status = harvester.fetch_gdelt_country_intel(
+        "South Africa", relevant_suppliers=[{"name": "Sappi", "category": "Printing Substrates"}])
+
+    assert status == "ok"
+    assert [a["url"] for a in intel["articles"]] == ["https://example.com/sappi"]
+
+
+def test_a_carried_reading_loses_its_unsafe_links(harvester):
+    entry = {"has_relevant": True, "articles": [
+        {"title": "Sappi shuts pulp line", "url": "javascript:alert(1)", "tone": -5},
+        {"title": "Sappi cuts output", "url": "https://example.com/sappi", "tone": -3},
+    ]}
+    out = harvester.keep_linkable_articles(entry)
+    assert [a["url"] for a in out["articles"]] == ["https://example.com/sappi"]
+    assert out["has_relevant"] is True
+    only_bad = {"has_relevant": True, "articles": [entry["articles"][0]]}
+    assert harvester.keep_linkable_articles(only_bad) == {"has_relevant": False, "articles": []}
+
+
+def test_a_supplier_link_must_be_http_too(harvester, tmp_path):
+    path = tmp_path / "suppliers.json"
+    path.write_text(json.dumps({"suppliers": [
+        {"name": "Acme", "category": "Nicotine", "location": "Germany", "url": "javascript:alert(1)"},
+        {"name": "Beta", "category": "Nicotine", "location": "Germany", "url": "https://beta.example"},
+    ]}))
+    _, profiles, _ = harvester._load_watchlist(path)
+    assert profiles["Acme"]["url"] is None
+    assert profiles["Beta"]["url"] == "https://beta.example"

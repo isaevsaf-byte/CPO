@@ -517,6 +517,29 @@ def _recent_headlines(headlines: list, max_age_days: int = 5) -> list:
             recent.append(h)
     return recent
 
+
+def safe_http_url(value) -> str | None:
+    """value if it is a well-formed http(s) URL, else None.
+
+    Feed URLs are rendered as links, and React 18 still renders a
+    "javascript:" href. A URL from GDELT or CPSC is kept only as an absolute
+    http(s) address with a host and nothing a browser would reinterpret:
+    no whitespace, quotes, angle brackets or backslashes.
+    """
+    if not isinstance(value, str):
+        return None
+    url = value.strip()
+    if not url or re.search(r'[\s"\'<>\\`]', url) or any(ord(ch) < 32 for ch in url):
+        return None
+    try:
+        parsed = urlparse(url)
+        host = parsed.hostname
+    except ValueError:
+        return None
+    if parsed.scheme.lower() not in ("http", "https") or not host:
+        return None
+    return url
+
 # ============================================================================
 # GOOGLE NEWS RSS — Broader news source for geopolitical & supplier scanning
 # Free, no API key, runs on GitHub Actions at $0
@@ -864,6 +887,17 @@ def refilter_gdelt_articles(entry: dict, country: str, relevant_suppliers: list)
     return {**entry, "articles": kept, "has_relevant": bool(kept)}
 
 
+def keep_linkable_articles(entry: dict) -> dict:
+    """A carried-forward country reading without any article whose link is
+    not http(s) (see safe_http_url). Readings are carried from run to run
+    until GDELT answers again, so ones stored before the check need it too."""
+    articles = entry.get("articles") or []
+    kept = [a for a in articles if safe_http_url(a.get("url"))]
+    if len(kept) == len(articles):
+        return entry
+    return {**entry, "articles": kept, "has_relevant": bool(kept) and bool(entry.get("has_relevant"))}
+
+
 # How each country is asked for. The default is mention-based: articles that
 # name the country. Two things made that impossible for the USA, which is the
 # joint-largest supplier country on the watchlist and had never once returned
@@ -1038,12 +1072,17 @@ def fetch_gdelt_country_intel(country: str, relevant_suppliers: list = None, max
                 key = re.split(r'\s+[-–—]\s+', title)[0].strip().lower()
                 if not key or key in seen_titles:
                     continue
+                # Only an article with an http(s) link is kept; the page
+                # renders it as one (see safe_http_url).
+                url = safe_http_url(a.get("url"))
+                if url is None:
+                    continue
                 seen_titles.add(key)
                 candidates.append({
                     "title": title,
-                    "url": a.get("url", ""),
+                    "url": url,
                     "tone": b.get("bin"),
-                    "_relevance": relevance(title, a.get("url")),
+                    "_relevance": relevance(title, url),
                 })
 
         # Only relevant headlines ship. Previously the top five by tone went
@@ -1389,7 +1428,7 @@ def _load_watchlist(path: Path) -> tuple:
             "location": entry.get("location", "Unknown"),
             "hq_country": entry.get("hq_country"),
             "stock_ticker": entry.get("stock_ticker", "N/A"),
-            "url": entry.get("url"),
+            "url": safe_http_url(entry.get("url")),
         }
     return watchlist, profiles, keywords
 
@@ -1814,7 +1853,8 @@ def match_supplier_recalls(supplier_name: str, recalls: list) -> list:
                 "recallDate": recall.get("RecallDate", ""),
                 "description": (recall.get("Description") or "")[:200],
                 "product": product_name,
-                "url": recall.get("URL", ""),
+                # null rather than a non-http(s) link (see safe_http_url).
+                "url": safe_http_url(recall.get("URL")),
             })
     return matches
 
@@ -4199,7 +4239,9 @@ def main():
     # A country only disappears here if it's no longer a supplier location
     # at all, not because this one run happened to miss it.
     previous_geo = {
-        country: refilter_gdelt_articles(entry, country, suppliers_by_country.get(country, []))
+        country: keep_linkable_articles(
+            refilter_gdelt_articles(entry, country, suppliers_by_country.get(country, []))
+        )
         for country, entry in (previous_state or {}).get("geopolitical_intel", {}).items()
         if country in all_gdelt_countries
     }

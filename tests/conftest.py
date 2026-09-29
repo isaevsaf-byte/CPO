@@ -40,3 +40,8 @@ def _load_script(name: str):
 @pytest.fixture(scope="session")
 def screening():
     return _load_script("screening")
+
+
+@pytest.fixture(scope="session")
+def filings_asia():
+    return _load_script("filings_asia")

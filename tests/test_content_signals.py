@@ -281,3 +281,135 @@ def test_a_misspelt_news_key_is_refused(harvester, tmp_path):
     path.write_text('{"suppliers": [{"name": "Fuji", "news": {"names": ["Fuji Capsule"], "exlude": ["Mount Fuji"]}}]}')
     with pytest.raises(ValueError, match="unknown keys"):
         harvester._load_news_identities(path)
+
+
+# ---------------------------------------------------------------------------
+# 3. Peers
+# ---------------------------------------------------------------------------
+
+# The four peer headlines on the board on 28 September, all investor content.
+LIVE_PEER_CLICKBAIT = [
+    "British American Tobacco Following Cash Flow And Buyback Hopes While Fair Value Stays Higher",
+    "3 Reasons Growth Investors Will Love Philip Morris (PM)",
+    "Are Investors Undervaluing Imperial Tobacco Group (IMBBY) Right Now?",
+    "Asian Dividend Stocks Featuring Japan Tobacco And Two More Top Picks",
+    # And the one that held the peers pillar RED for days in August.
+    "Philip Morris International (PM) Faces Brazil Lawsuit Pressure, Is The Upside Already Priced In?",
+    "Philip Morris Stock Price Prediction 2027",
+    "Should You Buy Japan Tobacco Before Earnings?",
+]
+
+
+@pytest.mark.parametrize("headline", LIVE_PEER_CLICKBAIT)
+def test_investor_content_is_recognised(harvester, headline):
+    assert harvester.is_investor_clickbait(headline) is True
+
+
+@pytest.mark.parametrize(
+    "headline",
+    [
+        "Philip Morris to cut 500 jobs at Dutch plant",
+        "Imperial Brands profit falls on weaker UK volumes",
+        "Japan Tobacco raises cigarette prices in Russia",
+    ],
+)
+def test_news_is_not_mistaken_for_investor_content(harvester, headline):
+    assert harvester.is_investor_clickbait(headline) is False
+
+
+@pytest.mark.parametrize(
+    "headline,expected",
+    [
+        # Routine litigation is context, not a risk signal...
+        ("Philip Morris faces lawsuit over IQOS marketing", "LOW"),
+        ("Regulators open investigation into heated tobacco claims", "MEDIUM"),
+        ("Imperial Brands named in investigation of distributor", "LOW"),
+        # ...and never CRITICAL, even when material.
+        ("Philip Morris hit with $2bn damages verdict in lawsuit", "MEDIUM"),
+        ("Imperial Brands under criminal investigation in Spain", "MEDIUM"),
+        # The rest of the vocabulary is unchanged.
+        ("Philip Morris recalls IQOS devices over overheating", "CRITICAL"),
+        ("Imperial Brands issues profit warning", "MEDIUM"),
+    ],
+)
+def test_litigation_needs_materiality_and_stays_below_critical(harvester, headline, expected):
+    level, _ = harvester.score_peer_headline(headline)
+    assert level == expected
+
+
+def test_the_most_material_headline_is_picked(harvester):
+    headline, level = harvester.pick_peer_headline([
+        "3 Reasons Growth Investors Will Love Philip Morris (PM)",
+        "Philip Morris opens new plant in Greece",
+        "Philip Morris issues profit warning on Asian demand",
+    ])
+    assert headline == "Philip Morris issues profit warning on Asian demand"
+    assert level == "MEDIUM"
+
+
+def test_only_investor_content_means_no_headline(harvester):
+    assert harvester.pick_peer_headline(LIVE_PEER_CLICKBAIT) == (None, "LOW")
+
+
+def test_the_peer_card_carries_no_placeholder_headline(harvester, monkeypatch):
+    """With nothing but investor content in the feed, latest_headline is
+    None and the Brazil lawsuit column no longer turns the pillar RED."""
+    class FakeTicker:
+        def __init__(self, symbol):
+            self.news = [{"content": {"title": title}} for title in LIVE_PEER_CLICKBAIT]
+
+    class FakeYf:
+        Ticker = FakeTicker
+
+    class NoWait:
+        def wait_if_needed(self):
+            pass
+
+    monkeypatch.setattr(harvester, "yf", FakeYf)
+    monkeypatch.setattr(harvester, "rate_limiter", NoWait())
+    monkeypatch.setattr(harvester, "yfinance_circuit_breaker", harvester.CircuitBreaker())
+    monkeypatch.setattr(harvester, "fetch_price_reading", lambda *a, **k: {
+        "daily_change_pct": 0.2, "current_price": 50.0, "headlines": [], "daily_sigma_pct": 1.5,
+    })
+    monkeypatch.setattr(harvester, "fetch_sec_filings_for_peer", lambda name: {
+        "status": "skipped", "reason": "Not US-listed, so there are no SEC filings to scan",
+        "filings": [], "red_signals": 0, "amber_signals": 0,
+    })
+
+    peers = harvester.fetch_peer_group()
+
+    assert [p["latest_headline"] for p in peers] == [None] * len(peers)
+    assert all(p["risk_level"] == "LOW" for p in peers)
+    assert harvester.fetch_peers_overview(peers)["rag_score"] == "GREEN"
+
+
+def _earnings_filing(filed: str) -> dict:
+    return {
+        "title": "8-K - Current report",
+        "summary": f"<b>Filed:</b> {filed} <b>AccNo:</b> 0001413329-26-000001 <b>Size:</b> 1 MB"
+                   "<br>Item 2.02: Results of Operations and Financial Condition",
+        "published": f"{filed}T06:05:00-04:00",
+    }
+
+
+@pytest.mark.parametrize(
+    "filed,quarter",
+    [("2026-07-22", "Q2 2026"), ("2026-10-21", "Q3 2026"),
+     ("2026-02-05", "Q4 2025"), ("2026-04-23", "Q1 2026")],
+)
+def test_the_earnings_quarter_comes_from_the_filing(harvester, filed, quarter):
+    summary = harvester.generate_peer_summary(
+        "Philip Morris Int.",
+        {"status": "success", "filings": [_earnings_filing(filed)], "red_signals": 0, "amber_signals": 0},
+    )
+    assert f"{quarter} results reported" in summary
+    assert "Q3 earnings" not in summary or quarter == "Q3 2026"
+
+
+def test_british_american_tobacco_is_not_called_unlisted(harvester):
+    filings = harvester.fetch_sec_filings_for_peer("British American Tobacco")
+    summary = harvester.generate_peer_summary("British American Tobacco", filings)
+    assert "NYSE-listed as BTI" in summary
+    assert "not US-listed" not in summary.lower()
+    # Nothing reads non-US filings, so the summary no longer claims to.
+    assert "international filings" not in summary

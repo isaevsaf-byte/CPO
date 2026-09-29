@@ -1397,6 +1397,107 @@ PEERS_CONFIG = [
     }
 ]
 
+# ----------------------------------------------------------------------------
+# Peer headlines: which one to show, and what it may mean
+# ----------------------------------------------------------------------------
+# Litigation and investigations are routine for a tobacco company. "Philip
+# Morris International (PM) Faces Brazil Lawsuit Pressure, Is The Upside
+# Already Priced In?", a valuation column, read as CRITICAL on "lawsuit" and
+# held the peers pillar RED for days in August. A lawsuit or an investigation
+# is now context on its own, and MEDIUM at most with a word that makes it
+# material: a verdict, damages, a fine, criminal charges, a regulator.
+PEER_CRITICAL_KEYWORDS = [
+    "fraud", "sanctioned", "bankruptcy", "recall", "labor strike", "labour strike",
+    "workers strike", "import ban", "export ban", "trade ban", "seized", "breach", "hacked",
+]
+# Single common words carried no information about a competitor and read as
+# risk anyway: "down" and "drop" fire on every routine "shares down 1%" market
+# wrap (the price move is scored separately), "cut" on a dividend raise that
+# mentions cutting costs, "fine" on "finest", "miss" on "emissions". Each is
+# replaced by the phrase that actually means something for a peer.
+PEER_WARNING_KEYWORDS = [
+    "profit warning", "guidance cut", "cuts guidance", "cuts forecast",
+    "earnings miss", "misses estimates", "missed estimates",
+    "supply shortage", "production delay", "regulatory fine", "fined",
+    "layoff", "layoffs", "job cuts", "restructur", "downgrade",
+    "market share loss", "sales decline", "profit fall", "profits fall",
+]
+PEER_LEGAL_KEYWORDS = ["lawsuit", "investigation", "probe", "litigation", "sued", "sues"]
+PEER_MATERIALITY = re.compile(
+    r"[$€£]\s?\d|\b\d[\d.,]*\s?(?:bn|billion|mn|million)\b"
+    r"|\b(?:billion|million|damages|verdict|jury|penalt(?:y|ies)|fine[ds]?|criminal"
+    r"|indict(?:ed|ment)|charged|charges|raid(?:ed|s)?|subpoena(?:ed|s)?|class[\s-]action"
+    r"|antitrust|cartel|brib(?:e|ery)|corruption|injunction|doj|ftc|fda|sec|regulators?)\b"
+)
+
+# Investor content rather than news: listicles, valuation columns, price
+# predictions. They name the company and report nothing that happened to it,
+# yet all four peer headlines on the board on 28 September were of this kind.
+PEER_CLICKBAIT_PATTERNS = [re.compile(p) for p in (
+    r"^\s*(?:\d+|two|three|four|five|six|seven|eight|nine|ten)\s+(?:reasons?|things|ways|stocks?|dividend)\b",
+    r"\bare investors (?:undervaluing|overvaluing|overlooking|missing|ignoring)\b",
+    r"\b(?:under|over)valued\b",
+    r"\bdividend (?:stocks?|picks?|aristocrats?|kings?|champions?)\b",
+    r"\bprice prediction\b",
+    r"\bprice target\b",
+    r"\bshould you (?:buy|sell|hold)\b",
+    r"\bis it (?:time|too late) to (?:buy|sell)\b",
+    r"\bbuy,? (?:sell,? )?or (?:sell|hold)\b",
+    r"\bfair value\b",
+    r"\bbuyback hopes?\b",
+    r"\bpriced in\b",
+    r"\btop (?:\w+ )?picks?\b",
+    r"\bstocks? to (?:buy|watch|own|hold)\b",
+    r"\b(?:growth|value|income|dividend) investors\b",
+)]
+
+
+def is_investor_clickbait(headline: str) -> bool:
+    text = headline.lower()
+    return any(pattern.search(text) for pattern in PEER_CLICKBAIT_PATTERNS)
+
+
+def score_peer_headline(headline: str) -> tuple:
+    """(level, keyword) for one peer headline: CRITICAL, MEDIUM or ("LOW", None)."""
+    text = headline.lower()
+    for keyword in PEER_CRITICAL_KEYWORDS:
+        if _keyword_hit(text, keyword):
+            return "CRITICAL", keyword
+    for keyword in PEER_WARNING_KEYWORDS:
+        if _keyword_hit(text, keyword):
+            return "MEDIUM", keyword
+    if PEER_MATERIALITY.search(text):
+        for keyword in PEER_LEGAL_KEYWORDS:
+            if _keyword_hit(text, keyword):
+                return "MEDIUM", keyword
+    return "LOW", None
+
+
+def pick_peer_headline(headlines: list) -> tuple:
+    """(headline, level) for the most material headline that is not investor
+    content, the most recent winning a tie; (None, "LOW") when none is left.
+    None rather than the config's placeholder text, which used to be printed
+    where a headline belongs."""
+    best, best_level = None, "LOW"
+    for headline in headlines:
+        if is_investor_clickbait(headline):
+            continue
+        level, _ = score_peer_headline(headline)
+        if best is None or RISK_PRIORITY[level] > RISK_PRIORITY[best_level]:
+            best, best_level = headline, level
+    return best, best_level
+
+
+def news_titles(news: list, limit: int = 10) -> list:
+    """Headline strings from a yfinance news list (>= 0.2.46 nests the title
+    under item['content'])."""
+    titles = []
+    for item in (news or [])[:limit]:
+        title = (item.get("content") or {}).get("title") or item.get("title")
+        if title:
+            titles.append(title)
+    return titles
+
 # ============================================================================
 # SUPPLIER NAME ALIASES — shared across CISA, CPSC recall, and sanctions
 # matching so a supplier registered under a trading name or subsidiary
@@ -1917,17 +2018,28 @@ def fetch_sec_filings_for_peer(peer_name):
     # canonical name used in PEERS_CONFIG so this can be called directly
     # from fetch_peer_group() without a second name-mapping table.
     cik_map = {
-        "British American Tobacco": None,  # not US listed
+        "British American Tobacco": None,  # NYSE-listed, but files 20-F/6-K, not 8-K
         "Philip Morris Int.": "0001413329",  # Philip Morris International
         "Imperial Brands": None,  # not US listed
         "Japan Tobacco": None,  # not US listed
+    }
+    # Why a peer has no 8-K feed to scan. British American Tobacco trades on
+    # the NYSE as BTI, and was labelled "not US-listed"; as a foreign private
+    # issuer it files 20-F and 6-K reports, which carry no 8-K item codes.
+    no_8k_reasons = {
+        "British American Tobacco": (
+            "NYSE-listed as BTI, but files 20-F and 6-K reports as a foreign "
+            "private issuer, which carry no 8-K item codes to scan"
+        ),
+        "Imperial Brands": "Not US-listed, so there are no SEC filings to scan",
+        "Japan Tobacco": "Not US-listed, so there are no SEC filings to scan",
     }
 
     cik = cik_map.get(peer_name)
     if not cik:
         return {
             "status": "skipped",
-            "reason": "Not US-listed or placeholder",
+            "reason": no_8k_reasons.get(peer_name, "No SEC 8-K filer on record"),
             "filings": [],
             "red_signals": 0,
             "amber_signals": 0,
@@ -2024,6 +2136,28 @@ def fetch_sec_filings_for_peer(peer_name):
             "last_fetched": utc_now_iso()
         }
 
+def filing_date(filing: dict):
+    """Date an EDGAR 8-K entry was filed, from its "Filed:" line or else its
+    published timestamp; None when neither parses."""
+    match = re.search(r'Filed:(?:</b>)?\s*(\d{4}-\d{2}-\d{2})', filing.get("summary") or "")
+    try:
+        if match:
+            return datetime.strptime(match.group(1), "%Y-%m-%d").date()
+        published = filing.get("published") or ""
+        if published:
+            return datetime.fromisoformat(published.replace("Z", "+00:00")).date()
+    except ValueError:
+        pass
+    return None
+
+
+def reported_quarter(filed) -> str:
+    """The calendar quarter an earnings release filed on this date reports:
+    the last one to have ended. "Q2 2026" for a filing on 22 July 2026."""
+    quarter = (filed.month - 1) // 3
+    return f"Q4 {filed.year - 1}" if quarter == 0 else f"Q{quarter} {filed.year}"
+
+
 def generate_peer_summary(peer_name, filings_data):
     """Generate a summary text for a peer, always providing meaningful content"""
     # Check for critical risks first
@@ -2055,7 +2189,15 @@ def generate_peer_summary(peer_name, filings_data):
         if recent_filing:
             filing_summary = recent_filing.get("summary", "")
             if "ITEM 2.02" in filing_summary.upper():
-                return f"Neutral: Q3 earnings results reported. No material risks identified in last 30 days."
+                # The quarter comes from the filing date. It was a hardcoded
+                # "Q3", printed for three weeks in August under a Q2 release.
+                filed = filing_date(recent_filing)
+                if filed is None:
+                    return "Neutral: Earnings results reported (8-K Item 2.02). No material risks identified in last 30 days."
+                return (
+                    f"Neutral: {reported_quarter(filed)} results reported (8-K Item 2.02, "
+                    f"filed {filed:%d %b %Y}). No material risks identified in last 30 days."
+                )
             elif "ITEM 7.01" in filing_summary.upper():
                 return f"Neutral: Regulation FD disclosure filed. Routine operational update."
             elif "ITEM 1.01" in filing_summary.upper():
@@ -2069,13 +2211,12 @@ def generate_peer_summary(peer_name, filings_data):
         return f"Neutral: No material filings in last 30 days. Standard operational status."
     
     elif status == "skipped":
-        reason = filings_data.get("reason", "Not US-listed")
+        reason = filings_data.get("reason", "No SEC 8-K filer on record")
         if peer_name == "Our Company":
             return f"Neutral: Self-reference placeholder. Internal monitoring active."
-        elif "Not US-listed" in reason:
-            return f"Neutral: Company not US-listed. Monitoring international filings and news sources."
-        else:
-            return f"Neutral: {reason}. Alternative monitoring sources active."
+        # Said as it is: nothing reads non-US filings, so the summary no
+        # longer claims "monitoring international filings".
+        return f"Neutral: {reason}. Signals come from news and the share price."
     
     elif status == "error":
         error_msg = filings_data.get("error", "Unknown error")
@@ -3074,26 +3215,8 @@ def fetch_peer_group():
     """
     peer_data = []
 
-    # Risk keywords for news analysis. Bare "strike"/"ban"/"seize" were
-    # dropped in favor of specific phrases — they matched too much
-    # unrelated coverage ("strike a deal", "bans plastic packaging",
-    # "seize the opportunity").
-    CRITICAL_KEYWORDS = ["investigation", "fraud", "sanctioned", "bankruptcy", "recall",
-                          "labor strike", "workers strike", "import ban", "export ban",
-                          "trade ban", "seized", "breach", "hacked", "lawsuit"]
-    # Single common words carried no information about a competitor and read
-    # as risk anyway: "down" and "drop" fire on every routine "shares down 1%"
-    # market wrap (the price move is already scored separately, below), "cut"
-    # on a dividend raise headline that happens to mention cutting costs,
-    # "fine" on "finest", "miss" on "emissions". Each is replaced by the
-    # phrase that actually means something for a peer.
-    WARNING_KEYWORDS = [
-        "profit warning", "guidance cut", "cuts guidance", "cuts forecast",
-        "earnings miss", "misses estimates", "missed estimates",
-        "supply shortage", "production delay", "regulatory fine", "fined",
-        "layoff", "layoffs", "job cuts", "restructur", "downgrade",
-        "market share loss", "sales decline", "profit fall", "profits fall",
-    ]
+    # Headline vocabulary: PEER_CRITICAL_KEYWORDS, PEER_WARNING_KEYWORDS and
+    # the materiality rule for litigation, next to PEERS_CONFIG.
 
     # Check circuit breaker before making yfinance calls
     if not yfinance_circuit_breaker.can_execute():
@@ -3141,40 +3264,25 @@ def fetch_peer_group():
             # both a wrong headline to print and — because the keyword scan
             # below runs over this same list — a false CRITICAL/WARNING
             # signal for a company it isn't about.
-            latest_headline = None
-            all_headlines = []
-            real_headline_found = False
+            named_headlines = []
             match_terms = peer_config.get("match_terms") or [peer_config["name"]]
             try:
-                news = ticker.news
-                if news:
-                    fetched = 0
-                    for item in news[:10]:
-                        # yfinance >= 0.2.46 wraps title under item['content']['title']
-                        title = (
-                            item.get('content', {}).get('title')
-                            or item.get('title')
-                        )
-                        if not title:
-                            continue
-                        fetched += 1
-                        title_lower = title.lower()
-                        if any(_mentions_subject(title_lower, term) for term in match_terms):
-                            all_headlines.append(title)
-                    if all_headlines:
-                        latest_headline = all_headlines[0]
-                        real_headline_found = True
-                    elif fetched:
-                        logger.info(
-                            f"  {peer_config['name']}: {fetched} headline(s) fetched, "
-                            f"none named the company — falling back to default text"
-                        )
+                fetched = news_titles(ticker.news, limit=10)
+                named_headlines = [
+                    title for title in fetched
+                    if any(_mentions_subject(title.lower(), term) for term in match_terms)
+                ]
+                if fetched and not named_headlines:
+                    logger.info(
+                        f"  {peer_config['name']}: {len(fetched)} headline(s) fetched, "
+                        f"none named the company"
+                    )
             except Exception as e:
                 logger.warning(f"News fetch error for {peer_config['name']}: {e}")
 
-            # Use default_text if no real headline found
-            if not real_headline_found:
-                latest_headline = peer_config.get("default_text", "Monitoring active.")
+            # The most material named headline that is not investor content,
+            # or None when nothing qualifies (see pick_peer_headline).
+            latest_headline, news_level = pick_peer_headline(named_headlines)
 
             # ========================================
             # RISK SCORING - Stock movement is PRIMARY
@@ -3184,29 +3292,12 @@ def fetch_peer_group():
             news_risk_detected = False
             stock_risk_detected = False
 
-            # STEP 1: Check ALL news headlines for risk keywords
-            if real_headline_found:
-                for hl in all_headlines:
-                    hl_lower = hl.lower()
-
-                    # Check for CRITICAL keywords
-                    has_critical = any(_keyword_hit(hl_lower, keyword) for keyword in CRITICAL_KEYWORDS)
-                    if has_critical:
-                        risk_level = "CRITICAL"
-                        last_signal = f"🚨 News Alert: {hl[:120]}"
-                        news_risk_detected = True
-                        break
-
-                    # Check for WARNING keywords
-                    has_warning = any(_keyword_hit(hl_lower, keyword) for keyword in WARNING_KEYWORDS)
-                    if has_warning:
-                        risk_level = "MEDIUM"
-                        last_signal = f"⚠️ News Alert: {hl[:120]}"
-                        news_risk_detected = True
-                        # Don't break — keep scanning for CRITICAL in remaining headlines
-
-                if not news_risk_detected:
-                    pass  # No risk keywords found in any headline
+            # STEP 1: the chosen headline sets the news level
+            if news_level != "LOW":
+                risk_level = news_level
+                marker = "🚨" if news_level == "CRITICAL" else "⚠️"
+                last_signal = f"{marker} News Alert: {latest_headline[:120]}"
+                news_risk_detected = True
 
             # STEP 2: Check stock movement (ALWAYS check, can escalate risk)
             # Peers are competitors, not suppliers — a peer's stock wobbling
@@ -3234,7 +3325,7 @@ def fetch_peer_group():
 
             # STEP 3: Default signal if no risk detected
             if not last_signal:
-                if real_headline_found:
+                if latest_headline:
                     # Show headline even if no risk keywords
                     last_signal = f"📰 {latest_headline[:100]}"
                 elif daily_change_pct is not None:
@@ -3279,7 +3370,7 @@ def fetch_peer_group():
                 "ticker": ticker_symbol,
                 "region": peer_config.get("region", "Unknown"),
                 "sentiment": sentiment,
-                "latest_headline": latest_headline if real_headline_found else peer_config.get("default_text", "Monitoring active."),
+                "latest_headline": latest_headline,
                 "stock_move": stock_move,
                 "current_price": current_price,
                 "daily_change_pct": round(daily_change_pct, 2) if daily_change_pct is not None else None,

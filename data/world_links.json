@@ -1,0 +1,81 @@
+{
+  "_comment": "How each world signal read by scripts/world_signals.py reaches the watchlist. Hand-maintained like suppliers.json, and every category and supplier name here must match that file exactly (tests/test_world_signals.py checks). A commodity reaches every supplier in its categories. A chokepoint reaches every supplier located in its countries, plus every supplier in the categories of the commodity named in exposure_from_commodity. A river reaches the suppliers named under it. Chokepoint names are IMF PortWatch portname values, verbatim. Thresholds live in the script, not here. route and feeds are read into headlines, so they are written to follow 'exposed through' and 'feeds into'.",
+  "commodities": {
+    "brent": {
+      "series": "DCOILBRENTEU",
+      "label": "Brent crude",
+      "unit": "USD/bbl",
+      "frequency": "daily",
+      "feeds": "acetate tow, plastics, electronics and battery materials",
+      "categories": ["Filter Materials", "Mechanical", "EMS", "Batteries"]
+    },
+    "eu_gas": {
+      "series": "PNGASEUUSDM",
+      "label": "EU natural gas",
+      "unit": "USD/MMBtu",
+      "frequency": "monthly",
+      "feeds": "the energy bill of pulp and paper mills",
+      "categories": ["Printing Substrates", "Fine Papers"]
+    },
+    "pulp": {
+      "series": "WPU0911",
+      "label": "Wood pulp (US producer prices)",
+      "unit": "index 1982=100",
+      "frequency": "monthly",
+      "feeds": "board, printing substrates and fine papers",
+      "categories": ["Printing Substrates", "Fine Papers", "Printed Packaging"]
+    },
+    "aluminium": {
+      "series": "PALUMUSDM",
+      "label": "Aluminium",
+      "unit": "USD/t",
+      "frequency": "monthly",
+      "feeds": "foil and metallised packaging",
+      "categories": ["Printed Packaging"]
+    }
+  },
+  "chokepoints": {
+    "Strait of Hormuz": {
+      "countries": [],
+      "exposure_from_commodity": "brent",
+      "route": "the oil price, which every oil-derived input follows",
+      "why": "No watchlist supplier ships through Hormuz, but a fifth of the world's oil does, so every input priced off oil moves with it."
+    },
+    "Bab el-Mandeb Strait": {
+      "countries": ["China", "Japan", "South Korea", "India"],
+      "route": "the Red Sea leg of the Asia-Europe route",
+      "why": "Asia-Europe cargo that uses Suez enters the Red Sea here."
+    },
+    "Suez Canal": {
+      "countries": ["China", "Japan", "South Korea", "India"],
+      "route": "the Asia-Europe route",
+      "why": "The short Asia-Europe route."
+    },
+    "Malacca Strait": {
+      "countries": ["China", "Japan", "South Korea"],
+      "route": "the Asia-Europe route out of East Asia",
+      "why": "East Asian cargo bound for Europe leaves the Pacific here. India sits west of it."
+    },
+    "Taiwan Strait": {
+      "countries": ["China", "Japan", "South Korea"],
+      "route": "the main lane out of north-east Asia",
+      "why": "A judgement call: cargo from Japanese, Korean and north Chinese ports heading south or west uses this lane or skirts it, so a closure would reach those suppliers first. Suppliers in Guangdong ship from south of it."
+    },
+    "Panama Canal": {
+      "countries": ["USA"],
+      "route": "US exports to Asia",
+      "why": "A judgement call: US Gulf and East Coast exports to Asian factories go through the canal."
+    },
+    "Cape of Good Hope": {
+      "countries": ["China", "Japan", "South Korea", "India", "South Africa"],
+      "route": "the Asia-Europe diversion round Africa",
+      "why": "A judgement call: much of the Asia-Europe container traffic has gone round the Cape since Red Sea attacks began in late 2023, and it is Sappi's route to Europe."
+    }
+  },
+  "rivers": {
+    "Rhine": {
+      "suppliers": ["Cerdia", "AMCOR", "CNT"],
+      "why": "Cerdia's acetate tow comes out of Freiburg, and AMCOR's and CNT's Swiss sites ship through the Basel Rhine ports, so all three depend on barges passing Kaub and Maxau."
+    }
+  }
+}

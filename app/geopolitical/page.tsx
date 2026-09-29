@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import intel from '../../data/intel_snapshot.json';
 import type { IntelSnapshot, Supplier } from '../../types/intel';
+import { safeHref } from '../components/board/links';
 
 const typedIntel = intel as unknown as IntelSnapshot;
 
@@ -43,13 +44,37 @@ function relativeAttempt(at: string): string {
   return `${Math.round(hours / 24)}d ago`;
 }
 
+function windowLabel(window: string | undefined): string {
+  if (!window) return '3 days';
+  const m = /^(\d+)\s*([dh])$/.exec(window);
+  if (!m) return window;
+  const n = Number(m[1]);
+  if (m[2] === 'h') return n === 24 ? '24 hours' : `${n} hours`;
+  return n === 1 ? '24 hours' : `${n} days`;
+}
+
+function windowHours(window: string | undefined): number {
+  if (!window) return 72;
+  const m = /^(\d+)\s*([dh])$/.exec(window);
+  if (!m) return 72;
+  return m[2] === 'h' ? Number(m[1]) : Number(m[1]) * 24;
+}
+
+const EVENT_LABELS: Record<string, string> = {
+  protest: 'protests',
+  sanctions: 'sanctions or embargoes',
+  coerce: 'coercion',
+  assault: 'assaults',
+  fight: 'armed clashes',
+  mass_violence: 'mass violence',
+};
+
 // now is null until the page has mounted: the page is prerendered at build
 // time, and markup that depends on the clock would differ between that
 // render and the browser's first one.
 function isOlderThanWindow(fetchedAt: string, window: string | undefined, now: number | null): boolean {
   if (now === null) return false;
-  const windowHours = window === '1d' ? 24 : 72;
-  return (now - new Date(fetchedAt).getTime()) / 3_600_000 > windowHours;
+  return (now - new Date(fetchedAt).getTime()) / 3_600_000 > windowHours(window);
 }
 
 function freshnessLabel(fetchedAt: string | undefined): string {
@@ -252,7 +277,7 @@ export default function GeopoliticalIntelPage() {
                             {countrySuppliers.map((s) => (
                               <span
                                 key={s.slug}
-                                title={`${s.category} · ${s.bat_exposure} BAT exposure`}
+                                title={`${s.category} · ${s.bat_exposure} exposure tier`}
                                 className="px-2 py-0.5 rounded text-[11px] bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700"
                               >
                                 {s.name}
@@ -263,9 +288,7 @@ export default function GeopoliticalIntelPage() {
 
                         <div className="text-xs text-gray-500 dark:text-slate-400">
                           {data
-                            ? `${data.article_count.toLocaleString()} articles · last ${
-                                data.window === '1d' ? '24 hours' : '3 days'
-                              }`
+                            ? `${data.article_count.toLocaleString()} ${data.query_mode === 'events' ? 'events' : 'articles'} · last ${windowLabel(data.window)}`
                             : 'Awaiting a GDELT reading'}
                           {data?.fetched_at && ` · updated ${freshnessLabel(data.fetched_at)}`}
                         </div>
@@ -274,14 +297,31 @@ export default function GeopoliticalIntelPage() {
                             a two-week-old tone is not read as today's. */}
                         {data?.fetched_at && isOlderThanWindow(data.fetched_at, data.window, now) && (
                           <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 -mt-1">
-                            Older than the {data.window === '1d' ? '24 hours' : '3 days'} it describes — GDELT has not
-                            answered for this country since.
+                            Older than the {windowLabel(data.window)} it describes — no newer reading has come in for
+                            this country since.
                           </div>
                         )}
                         {/* Two different measurements, so say which. Most
                             countries are read from coverage that names them;
                             the USA is read from coverage published there,
                             because a mention query that large never returns. */}
+                        {/* Read from GDELT's raw event files: what happened in
+                            the country (protests, sanctions, coercion, fighting),
+                            each event carrying the tone of the coverage it got. */}
+                        {data?.query_mode === 'events' && data.event_mix && (
+                          <div className="flex flex-wrap gap-1.5 -mt-1">
+                            {Object.entries(data.event_mix)
+                              .filter(([, n]) => n > 0)
+                              .map(([kind, n]) => (
+                                <span
+                                  key={kind}
+                                  className="px-1.5 py-0.5 rounded text-[11px] bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700"
+                                >
+                                  {n} {EVENT_LABELS[kind] ?? kind.replace(/_/g, ' ')}
+                                </span>
+                              ))}
+                          </div>
+                        )}
                         {data?.query_mode === 'domestic_press' && (
                           <div
                             className="text-[11px] text-gray-400 dark:text-slate-500 -mt-1"
@@ -301,7 +341,7 @@ export default function GeopoliticalIntelPage() {
                             data.articles.map((a, idx) => (
                               <a
                                 key={idx}
-                                href={a.url}
+                                href={safeHref(a.url)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="block text-xs group"

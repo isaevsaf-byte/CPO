@@ -178,3 +178,106 @@ def test_the_unlisted_scan_shares_the_same_vocabulary(harvester, monkeypatch):
     _, level, reason = harvester.scan_supplier_news_google("Delfort", "Austria")
     assert level == "CRITICAL"
     assert "workers strike" in reason
+
+
+# ---------------------------------------------------------------------------
+# 2. Other companies' news under unlisted suppliers
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "supplier,headline",
+    [
+        # Each of these was stored and shown as the supplier's news.
+        ("Fuji", "Japan to charge unprepared Mount Fuji climbers $51 every 5 minutes - WION"),
+        ("Fuji", "Fuji Electric HMI Configurator Flaws Expose Industrial Organizations to Hacking"),
+        ("Fuji", "Fujifilm raises full-year forecast"),
+        ("Porton", "Secret Bases: Porton Down (U.K.) - Grey Dynamics"),
+        ("Porton", "UK Defense Ministry Unveils Porton Down Biological Threat Lab"),
+        ("CNT", "Centurion price today, CNT to USD live price, marketcap and chart - CoinMarketCap"),
+        ("CNT", "CNT union calls strike at tobacco factory in Seville"),
+        ("IP Sun", "'India's IT missed the leap': AI threat after Sun Pharma's big bet"),
+        ("Huizhou BYD Electronic", "BYD recalls 100,000 EVs over battery fault"),
+        ("Tae Young Filters", "Taeyoung E&C enters debt workout"),
+        ("Rosti", "Swiss rosti recipe for the weekend"),
+        ("Weener", "Police investigate fire in Weener town centre"),
+    ],
+)
+def test_a_namesake_is_not_the_supplier(harvester, supplier, headline):
+    assert harvester.headline_names_supplier(headline, supplier) is False
+
+
+@pytest.mark.parametrize(
+    "supplier,headline",
+    [
+        ("Fuji", "Fuji Capsule plant fire halts output in Fujinomiya"),
+        ("Fuji", "Fuji to expand seamless capsule line"),
+        ("Porton", "Porton Pharma halts nicotine line after explosion"),
+        ("CNT", "CNT nicotine supply disrupted after Siegfried plant fire"),
+        ("CNT", "Contraf-Nicotex-Tobacco files for insolvency"),
+        ("IP Sun", "IP-Sun cartonboard mill shutdown"),
+        ("Huizhou BYD Electronic", "BYD Electronic shares jump on Apple orders"),
+        ("Tae Young Filters", "Tae Young Filters plant fire"),
+        ("Rosti", "Rosti closes Gislaved plant"),
+        ("Weener", "Weener Plastics opens new dispensing plant"),
+    ],
+)
+def test_the_supplier_itself_is_still_found(harvester, supplier, headline):
+    assert harvester.headline_names_supplier(headline, supplier) is True
+
+
+def test_the_search_asks_for_the_supplier_by_its_identifying_names(harvester, monkeypatch):
+    asked = []
+    monkeypatch.setattr(harvester, "fetch_google_news_rss",
+                        lambda query, max_results=5: asked.append(query) or [])
+    harvester.scan_supplier_news_google("Porton", "China")
+    assert '"Porton Pharma"' in asked[0]
+    # A supplier without a news block is searched by its watchlist name.
+    harvester.scan_supplier_news_google("Delfort", "Austria")
+    assert asked[1].startswith('("Delfort")')
+
+
+def test_only_headlines_about_the_supplier_are_stored(harvester, monkeypatch):
+    monkeypatch.setattr(harvester, "fetch_google_news_rss", lambda query, max_results=5: [
+        rss_item("Japan to charge unprepared Mount Fuji climbers $51 every 5 minutes"),
+        rss_item("Fuji to add seamless capsule capacity"),
+        rss_item("Fuji Capsule plant fire halts output"),
+    ])
+    headlines, level, _ = harvester.scan_supplier_news_google("Fuji", "Japan")
+    # The headline that carried the signal comes first; the mountain is gone.
+    assert headlines == ["Fuji Capsule plant fire halts output",
+                         "Fuji to add seamless capsule capacity"]
+    assert level == "CRITICAL"
+
+
+def test_nothing_about_the_supplier_means_nothing_stored(harvester, monkeypatch):
+    monkeypatch.setattr(harvester, "fetch_google_news_rss", lambda query, max_results=5: [
+        rss_item("Explosion reported at Porton Down laboratory"),
+    ])
+    assert harvester.scan_supplier_news_google("Porton", "China") == ([], "LOW", "")
+
+
+def test_country_headlines_must_name_the_country(harvester, monkeypatch):
+    """Sappi carried DR Congo, Iran and Tigray headlines as South Africa's."""
+    monkeypatch.setattr(harvester, "fetch_google_news_rss", lambda query, max_results=8: [
+        rss_item("DR Congo, Sudan and Mali lead Africa's military drone imports"),
+        rss_item("How the U.S. war with Iran is impacting African economies"),
+        rss_item("War has returned to Ethiopia's Tigray"),
+        rss_item("South Africa's Transnet dockworkers strike enters second week"),
+    ])
+    _, _, headlines, _ = harvester.scan_country_geopolitical_news("South Africa")
+    assert [h["title"] for h in headlines] == [
+        "South Africa's Transnet dockworkers strike enters second week"]
+
+
+def test_a_country_is_named_by_its_adjective_too(harvester):
+    assert harvester.headline_names_country("chinese exports slump in august", "China")
+    assert harvester.headline_names_country("seoul demands an apology", "South Korea")
+    # ...but North Korea is not South Korea.
+    assert not harvester.headline_names_country("north korea fires missile", "South Korea")
+
+
+def test_a_misspelt_news_key_is_refused(harvester, tmp_path):
+    path = tmp_path / "suppliers.json"
+    path.write_text('{"suppliers": [{"name": "Fuji", "news": {"names": ["Fuji Capsule"], "exlude": ["Mount Fuji"]}}]}')
+    with pytest.raises(ValueError, match="unknown keys"):
+        harvester._load_news_identities(path)

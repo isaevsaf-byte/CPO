@@ -591,6 +591,28 @@ GEO_DEESCALATION_KW = [
 ]
 
 
+# How a headline names a supplier country: its name, its adjective and its
+# capital. Deliberately stricter than GDELT_COUNTRY_TERMS: a bare "korea"
+# would file North Korea stories under South Korea. A country missing here is
+# named by its own name only.
+COUNTRY_HEADLINE_TERMS = {
+    "China": ["china", "chinese", "beijing"],
+    "Finland": ["finland", "finnish", "helsinki"],
+    "India": ["india", "indian", "new delhi"],
+    "South Africa": ["south africa", "south african", "pretoria"],
+    "South Korea": ["south korea", "south korean", "seoul"],
+    "Taiwan": ["taiwan", "taiwanese", "taipei"],
+}
+
+
+def country_headline_terms(country: str) -> list:
+    return COUNTRY_HEADLINE_TERMS.get(country, [country.lower()])
+
+
+def headline_names_country(title_lower: str, country: str) -> bool:
+    return any(_mentions_subject(title_lower, term) for term in country_headline_terms(country))
+
+
 def scan_country_geopolitical_news(country):
     """
     Scan Google News for geopolitical risk signals directly affecting a
@@ -601,9 +623,17 @@ def scan_country_geopolitical_news(country):
       - CRITICAL requires 2+ independent corroborating headlines; a single
         sensational headline is downgraded to HIGH instead
     Returns (risk_detected: bool, risk_level: str, headlines: list, reason: str)
+
+    headlines holds only results that name the country; they are stored and
+    shown under every supplier located there. The raw search result used to
+    be returned, which put DR Congo, Iran and Tigray headlines under Sappi as
+    South Africa's geopolitical news.
     """
     query = f'"{country}" ({GEO_SEARCH_KEYWORDS})'
-    headlines = _recent_headlines(fetch_google_news_rss(query, max_results=8))
+    headlines = [
+        h for h in _recent_headlines(fetch_google_news_rss(query, max_results=8))
+        if headline_names_country(h["title"].lower(), country)
+    ]
 
     if not headlines:
         return False, "LOW", [], ""
@@ -613,8 +643,6 @@ def scan_country_geopolitical_news(country):
     for h in headlines:
         title_lower = h["title"].lower()
 
-        if not _mentions_subject(title_lower, country):
-            continue
         if any(kw in title_lower for kw in GEO_DEESCALATION_KW):
             continue
 
@@ -1214,29 +1242,50 @@ def most_severe_supply_headline(headlines: list) -> tuple:
     return best
 
 
+# Search results read per unlisted supplier. A short or common name ("Fuji",
+# "CNT") brings back mostly other entities, which the identity check then
+# drops, so more are read than will ever be kept. One request either way.
+GOOGLE_SUPPLIER_RESULTS = 20
+
+
+def supplier_news_query(supplier_name: str) -> str:
+    """Google News query for an unlisted supplier: the names that identify it
+    (see SUPPLIER_NEWS_IDENTITIES), or its watchlist name when it has none."""
+    identity = SUPPLIER_NEWS_IDENTITIES.get(supplier_name)
+    names = identity.search_names if identity else [supplier_name]
+    return "(" + " OR ".join(f'"{name}"' for name in names) + f") ({SUPPLY_SEARCH_KEYWORDS})"
+
+
 def scan_supplier_news_google(supplier_name, country):
     """
     Scan Google News for supply chain risk signals for a specific supplier.
-    Used for suppliers WITHOUT a stock ticker (no yfinance news). Requires
-    the supplier's name to actually appear in the headline and ignores
+    Used for suppliers WITHOUT a stock ticker (no yfinance news). Ignores
     negated hits ("avoids bankruptcy", "denies fraud").
     Returns (headlines: list, risk_level: str, risk_reason: str)
-    """
-    query = f'"{supplier_name}" ({SUPPLY_SEARCH_KEYWORDS})'
-    headlines = _recent_headlines(fetch_google_news_rss(query, max_results=5))
 
-    if not headlines:
+    headlines holds only results that are about this supplier (see
+    headline_names_supplier), the one carrying the signal first. It used to
+    be the raw search result, which is how "Japan to charge unprepared Mount
+    Fuji climbers", "Secret Bases: Porton Down" and a CNT crypto-token price
+    page were stored and shown as these suppliers' news.
+    """
+    query = supplier_news_query(supplier_name)
+    results = _recent_headlines(fetch_google_news_rss(query, max_results=GOOGLE_SUPPLIER_RESULTS))
+    naming = [h["title"] for h in results if headline_names_supplier(h["title"], supplier_name)]
+
+    if not naming:
         return [], "LOW", ""
 
-    naming = [h["title"] for h in headlines if _mentions_subject(h["title"].lower(), supplier_name)]
-    max_level, keyword, _ = most_severe_supply_headline(naming)
+    max_level, keyword, flagged = most_severe_supply_headline(naming)
+    if flagged:
+        naming = [flagged] + [title for title in naming if title != flagged]
     reason = {
         "CRITICAL": f"Critical supply risk from news: '{keyword}'",
         "HIGH": f"High supply risk from news: '{keyword}'",
         "MEDIUM": f"Supply concern from news: '{keyword}'",
     }.get(max_level, "")
 
-    return [h["title"] for h in headlines], max_level, reason
+    return naming, max_level, reason
 
 
 # Category -> industry keywords, used only to rank news and GDELT headlines
@@ -1463,6 +1512,9 @@ class NewsIdentity:
         def compiled(key):
             return [re.compile(_phrase_regex(p)) for p in spec.get(key, []) if p.strip()]
 
+        # What to ask a search engine for: every name, qualified or bare. The
+        # bare ones bring back namesakes too, which matches() then drops.
+        self.search_names = [p for p in spec.get("names", []) + spec.get("bare", []) if p.strip()]
         self.names = compiled("names")
         self.bare = compiled("bare")
         self.context = compiled("context")

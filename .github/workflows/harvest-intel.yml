@@ -42,9 +42,10 @@ jobs:
           exit_code=$?
           echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
 
-          # Exit code 2 means critical errors but data was still saved
+          # Exit code 2: data was saved, but a source failed this cycle
+          # (source_health in the snapshot says which) or critical errors fired
           if [ $exit_code -eq 2 ]; then
-            echo "::warning::Harvest completed with critical errors"
+            echo "::warning::Harvest completed with failed sources — see source_health in the snapshot"
           elif [ $exit_code -ne 0 ]; then
             echo "::error::Harvest failed completely"
             exit $exit_code

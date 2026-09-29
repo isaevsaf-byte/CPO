@@ -16,7 +16,8 @@ A zero-cost, sovereign intelligence engine using the "Flat Data" pattern. This d
 ## Data Sources
 
 All free, no contracts. Keys where noted are optional — every source degrades
-to a fallback rather than failing the harvest.
+to a fallback rather than failing the harvest, and says so in `source_health`
+(see [Source health](#source-health)).
 
 | Signal | Source | Key |
 |---|---|---|
@@ -66,9 +67,10 @@ python scripts/update_intel.py
 ```
 
 Without `FRED_API_KEY` and `ANTHROPIC_API_KEY` in the environment the harvest
-still completes, but CPI and policy rates read "not connected" and no executive
-summary is generated — so a locally produced snapshot is poorer than the one
-the workflow commits, and is not usually worth committing.
+still completes, but CPI and policy rates read "not connected", no executive
+summary is generated, and `source_health` records both as `empty` — which
+leaves the macro pillar `degraded`. A locally produced snapshot is poorer than
+the one the workflow commits, and is not usually worth committing.
 
 3. Run the tests:
 ```bash
@@ -203,12 +205,41 @@ the situation behind it did, flipping suppliers up and back down again. A live
 escalation is now held for `GEO_ESCALATION_STICKY_HOURS` after it was last
 corroborated, and labelled as held.
 
-## Graceful Fallback
+## Source health
 
-If any data source fails:
-- The dashboard continues to work with the last known good data
-- A timestamp badge shows data staleness
-- Zero downtime, zero errors
+A failing source degrades the harvest rather than stopping it, and it says so.
+Each external source records what it delivered this cycle — `ok`, `failed` or
+`empty` (answered, or not configured, but gave nothing usable) — with a line a
+person can read, written to the snapshot as `source_health`:
+
+```json
+"source_health": {
+  "yfinance_prices": {"status": "ok", "detail": "prices for 3/3 markets, 4/4 peers, 12/12 listed suppliers", "checked_at": "2026-09-29T08:28:20+00:00"},
+  "fred": {"status": "empty", "detail": "FRED_API_KEY not set, so CPI and policy rates read not connected", "checked_at": "2026-09-29T08:27:10+00:00"}
+}
+```
+
+The sources are `yfinance_prices`, `yfinance_news`, `google_news`, `fred`,
+`cisa`, `cpsc`, `ofac`, `ecb`, `sec`, `gdelt` and `claude`. Each pillar's
+`status` follows from its own sources — `success` only when every one of them
+is `ok`, `degraded` otherwise:
+
+| Pillar | Sources |
+|---|---|
+| macro | yfinance prices for the three markets, FRED, ECB |
+| peers | yfinance prices and headlines for the peers, SEC EDGAR |
+| suppliers | yfinance prices and headlines for listed suppliers, Google News, CISA, CPSC, OFAC |
+
+GDELT and Claude feed no pillar. GDELT counts as `ok` when any country returned
+a fresh reading — it is rotated and rate-limited by design — and `failed` only
+when none did.
+
+The harvest exits **2** when any source failed (or the older critical-error
+rules fire); the workflow treats that as a partial success, commits the
+snapshot and still runs the alert. Until this, every pillar said `success`
+whatever happened: failed Google News searches logged at DEBUG, FRED failures
+were not recorded, and an open yfinance circuit breaker returned empty readings
+without a word.
 
 ## Getting the brief where the reader already is
 
@@ -243,8 +274,8 @@ python scripts/send_digest.py --mode daily --dry-run
 
 `tests/` covers the rules that decide what the board shows — keyword matching,
 price-move classification, macro scoring, the split between event and
-structural risk, and what does and does not reach the change feed or the daily
-brief. No network, no yfinance required.
+structural risk, source health and the exit code, and what does and does not
+reach the change feed or the daily brief. No network, no yfinance required.
 
 ```bash
 pip install -r requirements-dev.txt && pytest tests/ -q

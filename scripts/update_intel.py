@@ -210,8 +210,181 @@ class CircuitBreaker:
             return False
         return True  # half-open allows one attempt
 
+
+# ============================================================================
+# SOURCE HEALTH — what each external source actually delivered this harvest
+# ============================================================================
+# Every pillar used to report "success" whatever happened underneath. A failed
+# Google News search logged at DEBUG and read exactly like a quiet one, FRED
+# failures were never recorded, an open yfinance circuit breaker handed back
+# empty readings without a word, and the harvest exited 0 through all of it.
+# Each source now says what it delivered, the snapshot carries that as
+# source_health, a pillar's status follows from its own sources, and any
+# failure makes the harvest exit 2.
+#
+#   ok      answered, and gave what was asked for
+#   empty   answered, or was never asked (no key configured), but gave nothing
+#           usable — nothing broke, the board just shows less
+#   failed  a request errored, timed out, or was skipped by a circuit breaker
+SOURCE_NAMES = (
+    "yfinance_prices", "yfinance_news", "google_news", "fred", "cisa", "cpsc",
+    "ofac", "ecb", "sec", "gdelt", "claude",
+)
+
+# The sources each pillar is read from. "success" means every one was ok this
+# cycle; anything less is "degraded". A source shared between pillars is
+# scoped, because a supplier ticker that fails to price says nothing about
+# whether the S&P 500 reading behind the macro pillar is sound.
+PILLAR_SOURCES = {
+    "macro": [("yfinance_prices", "markets"), ("fred", None), ("ecb", None)],
+    "peers": [("yfinance_prices", "peers"), ("yfinance_news", "peers"), ("sec", None)],
+    "suppliers": [
+        ("yfinance_prices", "listed suppliers"), ("yfinance_news", "listed suppliers"),
+        ("google_news", None), ("cisa", None), ("cpsc", None), ("ofac", None),
+    ],
+}
+
+# How a counted source's tally reads: "prices for 12/12 listed suppliers".
+SOURCE_COUNT_PHRASES = {
+    "yfinance_prices": "prices for",
+    "yfinance_news": "headlines for",
+    "google_news": "headlines for",
+    "fred": "current readings for",
+    "sec": "8-K feed read for",
+}
+
+
+class SourceHealth:
+    """ok / failed / empty per source, with a detail a person can read.
+
+    A source asked once per harvest (CISA, OFAC, the ECB) record()s its
+    outcome. A source asked many times — a price per ticker, a search per
+    country — count()s every call under a scope, and its status comes from the
+    tally: failed if any call failed, empty if no call delivered, ok otherwise.
+    """
+
+    def __init__(self):
+        self.records = {}      # source -> {"status", "detail"}
+        self.tallies = {}      # source -> {scope: {"ok": n, "empty": n, "failed": n}}
+        self.notes = {}        # source -> {note: n}, for calls that did not deliver
+        self.checked_at = {}
+
+    def record(self, source: str, status: str, detail: str):
+        self.records[source] = {"status": status, "detail": redact_secrets(detail)}
+        self.checked_at[source] = utc_now_iso()
+
+    def count(self, source: str, scope: str, outcome: str, note: str = None):
+        counts = self.tallies.setdefault(source, {}).setdefault(
+            scope, {"ok": 0, "empty": 0, "failed": 0}
+        )
+        counts[outcome] += 1
+        if note and outcome != "ok":
+            notes = self.notes.setdefault(source, {})
+            note = redact_secrets(note)
+            notes[note] = notes.get(note, 0) + 1
+        self.checked_at[source] = utc_now_iso()
+
+    def status(self, source: str, scope: str = None) -> str:
+        if source in self.records:
+            return self.records[source]["status"]
+        tally = self.tallies.get(source, {})
+        scopes = list(tally.values()) if scope is None else [tally.get(scope, {})]
+        failed = sum(c.get("failed", 0) for c in scopes)
+        delivered = sum(c.get("ok", 0) for c in scopes)
+        if failed:
+            return "failed"
+        # Never asked at all reads as empty: the board has nothing from it.
+        return "ok" if delivered else "empty"
+
+    def detail(self, source: str) -> str:
+        if source in self.records:
+            return self.records[source]["detail"]
+        tally = self.tallies.get(source)
+        if not tally:
+            return "not checked this cycle"
+        counts = ", ".join(f"{c['ok']}/{sum(c.values())} {scope}" for scope, c in tally.items())
+        detail = f"{SOURCE_COUNT_PHRASES.get(source, 'answers for')} {counts}"
+        notes = sorted(self.notes.get(source, {}).items(), key=lambda kv: -kv[1])
+        if notes:
+            shown = [f"{note} ×{n}" if n > 1 else note for note, n in notes[:3]]
+            hidden = sum(n for _, n in notes[3:])
+            detail += "; " + ", ".join(shown) + (f" and {hidden} more" if hidden else "")
+        return detail
+
+    def sources(self) -> list:
+        extra = sorted((set(self.records) | set(self.tallies)) - set(SOURCE_NAMES))
+        return list(SOURCE_NAMES) + extra
+
+    def snapshot(self) -> dict:
+        return {
+            source: {
+                "status": self.status(source),
+                "detail": self.detail(source),
+                "checked_at": self.checked_at.get(source),
+            }
+            for source in self.sources()
+        }
+
+    def failed(self) -> list:
+        return [source for source in self.sources() if self.status(source) == "failed"]
+
+    def pillar_status(self, pillar: str) -> str:
+        sound = all(self.status(source, scope) == "ok" for source, scope in PILLAR_SOURCES[pillar])
+        return "success" if sound else "degraded"
+
+
+# How a GDELT attempt status reads in source_health.
+GDELT_STATUS_WORDS = {
+    "http_429": "rate-limited", "rate_limited": "rate-limited",
+    "timeout": "timed out", "gdelt_timeout": "timed out",
+    "empty": "no articles", "query_rejected": "query rejected",
+}
+
+
+def gdelt_source_health(fresh: dict, attempts: dict, previous_attempts: dict, countries: list) -> tuple:
+    """(status, detail) for this cycle's GDELT phase.
+
+    GDELT is rotated and budgeted by design (see fetch_gdelt_intel): a cycle
+    refreshes whichever countries get through and carries the rest, so any
+    fresh reading means the phase did its job. It has failed when nothing
+    came back at all.
+    """
+    attempted = [
+        country for country in countries
+        if (attempts.get(country) or {}).get("last_attempt")
+        and attempts[country]["last_attempt"] != (previous_attempts.get(country) or {}).get("last_attempt")
+    ]
+    missed = {}
+    for country in attempted:
+        if country not in fresh:
+            status = attempts[country].get("last_status") or "error"
+            word = GDELT_STATUS_WORDS.get(status, status)
+            missed[word] = missed.get(word, 0) + 1
+    summary = ", ".join(f"{n} {word}" for word, n in sorted(missed.items(), key=lambda kv: -kv[1]))
+    if fresh:
+        detail = f"fresh readings for {len(fresh)}/{len(countries)} countries"
+        return "ok", detail + (f"; {summary}" if summary else "") + "; earlier readings kept for the rest"
+    if not attempted:
+        return "empty", "no country attempted this cycle"
+    if set(missed) == {"no articles"}:
+        return "empty", f"no articles for the {len(attempted)} countries attempted"
+    return "failed", f"no country answered ({summary}); earlier readings kept"
+
+
+def harvest_exit_code(stats: HarvestStats, health: SourceHealth) -> int:
+    """2 when any source failed this cycle (or the old error rules fire), else 0.
+
+    Warnings never reached the exit code, so a harvest with no Google News, no
+    FRED and an open price breaker exited 0 and the workflow called it a
+    success. The workflow already treats 2 as a partial success: the snapshot
+    is still committed and the alert step still runs.
+    """
+    return 2 if (stats.should_alert() or health.failed()) else 0
+
+
 # Global instances
 harvest_stats = HarvestStats()
+source_health = SourceHealth()
 rate_limiter = RateLimiter(calls_per_minute=20)
 yfinance_circuit_breaker = CircuitBreaker(failure_threshold=5, reset_timeout=120)
 
@@ -283,9 +456,11 @@ def fetch_fred_observation(series_id: str, units: str = "lin") -> dict | None:
     older than FRED_MAX_OBSERVATION_AGE_DAYS are discarded as stale.
 
     Best-effort: returns None if FRED_API_KEY isn't set or the fetch/parse
-    fails, so the harvest never blocks on it.
+    fails, so the harvest never blocks on it. Every outcome is recorded against
+    the fred source (see SourceHealth); a failure used to be a log line only.
     """
     if not FRED_API_KEY:
+        source_health.record("fred", "empty", "FRED_API_KEY not set, so CPI and policy rates read not connected")
         return None
     try:
         url = (
@@ -296,10 +471,12 @@ def fetch_fred_observation(series_id: str, units: str = "lin") -> dict | None:
         response = fetch_with_retry(url, max_retries=1)
         observations = response.json().get("observations", [])
         if not observations:
+            source_health.count("fred", "series", "empty", f"{series_id} returned no observation")
             return None
         value = observations[0].get("value")
         date_str = observations[0].get("date", "")
         if value in (None, ".", ""):
+            source_health.count("fred", "series", "empty", f"{series_id} has no latest value")
             return None
         if date_str:
             observed = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
@@ -309,12 +486,16 @@ def fetch_fred_observation(series_id: str, units: str = "lin") -> dict | None:
                     f"FRED series {series_id} last observed {date_str} "
                     f"({age_days}d ago) — too stale to publish"
                 )
+                source_health.count("fred", "series", "empty", f"{series_id} last observed {date_str}")
                 return None
-        return {"value": float(value), "date": date_str}
+        reading = {"value": float(value), "date": date_str}
+        source_health.count("fred", "series", "ok")
+        return reading
     except Exception as e:
         # Described, never interpolated: the exception text carries the full
         # request URL, key included (see redact_secrets).
         logger.warning(f"FRED fetch failed for {series_id}: {describe_error(e)}")
+        source_health.count("fred", "series", "failed", f"{series_id} ({describe_error(e)})")
         return None
 
 def calculate_data_hash(data: dict) -> str:
@@ -326,6 +507,11 @@ def calculate_data_hash(data: dict) -> str:
         del data_copy['last_updated']
     if 'harvest_stats' in data_copy:
         del data_copy['harvest_stats']
+    # source_health stamps every source with the time it was checked, every
+    # run. What it changes on the board — a pillar's status — is hashed
+    # through the pillar itself.
+    if 'source_health' in data_copy:
+        del data_copy['source_health']
     # rag_history always gets a new timestamped entry appended every run
     # (see main()) — leaving it in means version changes on every harvest
     # regardless of whether anything else changed, which defeats the
@@ -540,10 +726,15 @@ def fetch_google_news_rss(query, max_results=5):
                 }
                 headlines.append(headline_data)
 
+        source_health.count("google_news", "searches", "ok" if headlines else "empty")
         return headlines
 
     except Exception as e:
-        logger.debug(f"Google News RSS fetch failed for query '{query[:50]}...': {e}")
+        # WARNING, not DEBUG, and recorded: a failed search returns the same
+        # empty list as a quiet one, so a supplier or country nobody could
+        # check read as one with nothing to report.
+        logger.warning(f"Google News RSS fetch failed for query '{query[:50]}...': {describe_error(e)}")
+        source_health.count("google_news", "searches", "failed", describe_error(e))
         return []
 
 
@@ -1402,10 +1593,15 @@ def fetch_cisa_kev():
             except ValueError:
                 continue
 
+        catalog_size = len(data.get('vulnerabilities', []))
         harvest_stats.record_success(source_name)
+        if catalog_size:
+            source_health.record("cisa", "ok", f"{len(recent_vulns)} KEVs added in the last 7 days (catalog of {catalog_size})")
+        else:
+            source_health.record("cisa", "empty", "the KEV catalog came back with no entries")
         return {
             "status": "success",
-            "total_vulnerabilities": len(data.get('vulnerabilities', [])),
+            "total_vulnerabilities": catalog_size,
             "recent_count": len(recent_vulns),
             "critical_count": len(critical_vulns),
             "recent_vulnerabilities": recent_vulns[:10],  # Limit for size
@@ -1413,6 +1609,7 @@ def fetch_cisa_kev():
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
+        source_health.record("cisa", "failed", f"KEV catalog not read ({describe_error(e)})")
         return {
             "status": "error",
             "error": str(e),
@@ -1437,9 +1634,17 @@ def fetch_cpsc_recalls():
         url = f"https://www.saferproducts.gov/RestWebServices/Recall?RecallDateStart={cutoff}&format=json"
         response = fetch_with_retry(url)
         data = response.json()
-        recalls = data if isinstance(data, list) else []
+        # Anything but a list used to become an empty recall list reported as
+        # success — every supplier screened against nothing.
+        if not isinstance(data, list):
+            raise ValueError(f"expected a list of recalls, got {type(data).__name__}")
+        recalls = data
 
         harvest_stats.record_success(source_name)
+        if recalls:
+            source_health.record("cpsc", "ok", f"{len(recalls)} recalls from the last 90 days screened")
+        else:
+            source_health.record("cpsc", "empty", "no recalls returned for the last 90 days")
         return {
             "status": "success",
             "total_recalls": len(recalls),
@@ -1448,6 +1653,7 @@ def fetch_cpsc_recalls():
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
+        source_health.record("cpsc", "failed", f"recall database not read ({describe_error(e)})")
         return {
             "status": "error",
             "error": str(e),
@@ -1508,6 +1714,7 @@ def fetch_ofac_sdn():
                 raise ValueError("SDN list fetched but parsed to zero names")
 
             harvest_stats.record_success(source_name)
+            source_health.record("ofac", "ok", f"{len(names)} SDN entries screened")
             return {
                 "status": "success",
                 "total_entries": len(names),
@@ -1519,6 +1726,7 @@ def fetch_ofac_sdn():
             continue
 
     harvest_stats.record_error(source_name, str(last_error))
+    source_health.record("ofac", "failed", f"SDN list not read from either mirror ({describe_error(last_error)})")
     return {
         "status": "error",
         "error": str(last_error),
@@ -1597,6 +1805,10 @@ def fetch_macro_eu():
             break
 
         harvest_stats.record_success(source_name)
+        if usd_rate:
+            source_health.record("ecb", "ok", f"EUR/USD reference rate {usd_rate}")
+        else:
+            source_health.record("ecb", "empty", "reference rates published without a USD rate")
         return {
             "status": "success",
             "region": "EU",
@@ -1610,6 +1822,7 @@ def fetch_macro_eu():
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
+        source_health.record("ecb", "failed", f"reference rates not read ({describe_error(e)})")
         return {
             "status": "error",
             "region": "EU",
@@ -1692,7 +1905,10 @@ def fetch_macro_overview(macro_economy: dict = None):
     rag_score, drivers = score_macro_rag(macro_economy or {})
 
     return {
-        "status": "success",
+        # From the sources behind this pillar (see PILLAR_SOURCES), not a
+        # constant: it said "success" on harvests where FRED failed or the
+        # market readings never came back.
+        "status": source_health.pillar_status("macro"),
         "rag_score": rag_score,
         "rag_drivers": drivers,
         "regions": {
@@ -1807,6 +2023,7 @@ def fetch_sec_filings_for_peer(peer_name):
                     logger.info(f"Ignoring old amber signal from {filing_date}: {summary_text[:80]}")
 
         harvest_stats.record_success(source_name)
+        source_health.count("sec", "US-listed peers", "ok")
         return {
             "status": "success",
             "filings": filings,
@@ -1816,6 +2033,7 @@ def fetch_sec_filings_for_peer(peer_name):
         }
     except Exception as e:
         harvest_stats.record_error(source_name, str(e))
+        source_health.count("sec", "US-listed peers", "failed", f"{peer_name} ({describe_error(e)})")
         return {
             "status": "error",
             "error": str(e),
@@ -1916,7 +2134,7 @@ def fetch_peers_overview(peer_group):
         rag_score = "GREEN"
 
     return {
-        "status": "success",
+        "status": source_health.pillar_status("peers"),
         "rag_score": rag_score,
         "total_peers": len(peer_group),
         "total_red_signals": total_red_signals,
@@ -1969,6 +2187,11 @@ EMPTY_STOCK_READING = {
 }
 
 
+def _count_price(scope: str | None, outcome: str, note: str = None):
+    if scope:
+        source_health.count("yfinance_prices", scope, outcome, note)
+
+
 def daily_sigma_from_closes(closes: list) -> float | None:
     """Standard deviation of daily % returns, as a percentage.
 
@@ -1993,7 +2216,7 @@ def daily_sigma_from_closes(closes: list) -> float | None:
     return sigma if sigma > 0 else None
 
 
-def fetch_price_reading(ticker_symbol, source_label: str = None) -> dict:
+def fetch_price_reading(ticker_symbol, source_label: str = None, scope: str = None) -> dict:
     """
     Fetch a price reading for any listed instrument (supplier share, peer
     share, index, FX pair) using yfinance.
@@ -2003,13 +2226,23 @@ def fetch_price_reading(ticker_symbol, source_label: str = None) -> dict:
     volatility, used to judge whether today's move is actually unusual —
     see daily_sigma_from_closes). Every failure path returns the same shape
     with None/empty values rather than raising.
+
+    scope says what the listing is on the board ("listed suppliers", "peers",
+    "markets"), for the source-health tally; None leaves it out of the tally.
     """
     source_label = source_label or f"price_{ticker_symbol}"
-    if not ticker_symbol or ticker_symbol == "N/A" or yf is None:
+    if not ticker_symbol or ticker_symbol == "N/A":
+        return dict(EMPTY_STOCK_READING)
+    if yf is None:
+        _count_price(scope, "failed", f"{ticker_symbol} (yfinance not installed)")
         return dict(EMPTY_STOCK_READING)
 
-    # Check circuit breaker
+    # An open breaker used to hand back an empty reading and say nothing, so an
+    # outage looked like a quiet market. It is logged and recorded now, and the
+    # supplier row says it has no reading (see process_suppliers).
     if not yfinance_circuit_breaker.can_execute():
+        harvest_stats.record_warning(source_label, "skipped: yfinance circuit breaker open")
+        _count_price(scope, "failed", f"{ticker_symbol} (skipped, circuit breaker open)")
         return dict(EMPTY_STOCK_READING)
 
     try:
@@ -2023,6 +2256,7 @@ def fetch_price_reading(ticker_symbol, source_label: str = None) -> dict:
 
         daily_change_pct = None
         current_price = None
+        news_error = None
         closes = [float(c) for c in hist['Close'].tolist()] if len(hist) else []
         # Skip over gaps rather than giving up on them. yfinance routinely
         # returns a trailing NaN row for a session that hasn't printed a close
@@ -2056,10 +2290,23 @@ def fetch_price_reading(ticker_symbol, source_label: str = None) -> dict:
                     )
                     if title:
                         headlines.append(title)
-        except Exception:
-            pass
+        except Exception as e:
+            news_error = e
 
         yfinance_circuit_breaker.record_success()
+        if current_price is None:
+            _count_price(scope, "failed", f"{ticker_symbol} (no closes returned)")
+        else:
+            _count_price(scope, "ok")
+        # News is only read for suppliers and peers; an index's or a currency
+        # pair's headlines are never used. A fetch that raised used to be
+        # passed over in silence, leaving a news layer that read as quiet.
+        if scope and scope != "markets":
+            if news_error is not None:
+                source_health.count("yfinance_news", scope, "failed",
+                                    f"{ticker_symbol} ({describe_error(news_error)})")
+            else:
+                source_health.count("yfinance_news", scope, "ok" if headlines else "empty")
         return {
             "daily_change_pct": daily_change_pct,
             "current_price": current_price,
@@ -2070,6 +2317,7 @@ def fetch_price_reading(ticker_symbol, source_label: str = None) -> dict:
     except Exception as e:
         yfinance_circuit_breaker.record_failure()
         harvest_stats.record_warning(source_label, str(e)[:100])
+        _count_price(scope, "failed", f"{ticker_symbol} ({describe_error(e)})")
         return dict(EMPTY_STOCK_READING)
 
 
@@ -2375,7 +2623,8 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
 
         daily_sigma_pct = None
         if stock_ticker and stock_ticker != "N/A":
-            reading = fetch_price_reading(stock_ticker, source_label=f"supplier_stock_{stock_ticker}")
+            reading = fetch_price_reading(stock_ticker, source_label=f"supplier_stock_{stock_ticker}",
+                                          scope="listed suppliers")
             daily_change_pct = reading["daily_change_pct"]
             current_price = reading["current_price"]
             daily_sigma_pct = reading["daily_sigma_pct"]
@@ -2574,9 +2823,23 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             if daily_change_pct is not None:
                 direction = "+" if daily_change_pct >= 0 else ""
                 last_signal = f"✓ Normal operations. Stock: {direction}{daily_change_pct:.1f}%"
+            elif stock_ticker and stock_ticker != "N/A":
+                last_signal = (
+                    f"No share-price move could be read for {stock_ticker} this cycle. "
+                    f"No other risk signals."
+                )
             else:
                 last_signal = "✓ Normal operations. No risk signals."
             risk_analysis = f"No supply chain risks identified. {supplier_name} ({category}) operating normally. BAT exposure: {bat_exposure}."
+            # A listed supplier whose price never came back used to read
+            # "✓ Normal operations. No risk signals." — a layer that could not
+            # see anything, reported as one that saw nothing wrong.
+            if daily_change_pct is None and stock_ticker and stock_ticker != "N/A":
+                risk_analysis = (
+                    f"No share-price reading came back for {stock_ticker} this cycle, so a price "
+                    f"move would not show here. The other layers found no supply chain risk for "
+                    f"{supplier_name} ({category}). Exposure tier: {bat_exposure}."
+                )
 
         # ================================================================
         # LAYER 4: GEOPOLITICAL RISK OVERLAY
@@ -2741,7 +3004,9 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
         logger.warning(f"⚠️ {suppliers_at_sanctions_risk} supplier(s) matched OFAC SDN screening — requires immediate manual compliance review")
 
     return {
-        "status": "success",
+        # "degraded" when any layer behind the pillar could not be read this
+        # cycle (see PILLAR_SOURCES) — a blind layer scores GREEN by default.
+        "status": source_health.pillar_status("suppliers"),
         "rag_score": rag_score,
         "total_suppliers": len(suppliers),
         "suppliers_at_sanctions_risk": suppliers_at_sanctions_risk,
@@ -2854,7 +3119,7 @@ def fetch_macro_economy():
     regions = {}
 
     for region_key, market in MACRO_MARKETS.items():
-        reading = fetch_price_reading(market["ticker"], source_label=f"macro_{region_key}")
+        reading = fetch_price_reading(market["ticker"], source_label=f"macro_{region_key}", scope="markets")
         change_pct = reading["daily_change_pct"]
         sigma_pct = reading["daily_sigma_pct"]
         severity = classify_move(change_pct, sigma_pct)
@@ -2948,6 +3213,8 @@ def fetch_peer_group():
         harvest_stats.record_warning("peer_group", "Circuit breaker open - using fallback data")
         # Return fallback data
         for peer_config in PEERS_CONFIG:
+            source_health.count("yfinance_prices", "peers", "failed",
+                                f"{peer_config['ticker']} (skipped, circuit breaker open)")
             peer_data.append({
                 "name": peer_config["name"],
                 "ticker": peer_config["ticker"],
@@ -2977,7 +3244,7 @@ def fetch_peer_group():
             # ticker.info is no longer fetched here: it is a slow, frequently
             # failing endpoint and its only use was a fallback price for the
             # case where no history exists at all.
-            reading = fetch_price_reading(ticker_symbol, source_label=f"peer_{ticker_symbol}")
+            reading = fetch_price_reading(ticker_symbol, source_label=f"peer_{ticker_symbol}", scope="peers")
             current_price = reading["current_price"]
             daily_change_pct = reading["daily_change_pct"]
             daily_sigma_pct = reading["daily_sigma_pct"]
@@ -3100,8 +3367,12 @@ def fetch_peer_group():
                 else:
                     sentiment = "Neutral"
 
-            yfinance_circuit_breaker.record_success()
-            harvest_stats.record_success(f"peer_{peer_config['ticker']}")
+            # fetch_price_reading has already told the breaker how the request
+            # went. Recording a success here as well wiped its failure count
+            # after every failed reading, so a yfinance outage could never
+            # open it from the peer loop.
+            if current_price is not None:
+                harvest_stats.record_success(f"peer_{peer_config['ticker']}")
 
             # Fold in SEC 8-K filing signals (was previously a second,
             # independently-fetched "peers" pillar over a differently-named
@@ -3773,6 +4044,9 @@ def main():
         attempts=previous_attempts,
         suppliers_by_country=suppliers_by_country,
     )
+    source_health.record("gdelt", *gdelt_source_health(
+        fresh_geo, gdelt_attempts, previous_attempts, sorted(all_gdelt_countries)
+    ))
     # Merge onto last run's results instead of replacing wholesale — GDELT's
     # rate limiting means only a handful of countries succeed on any given
     # run, and which ones is essentially random (whichever get through
@@ -3874,6 +4148,12 @@ def main():
         overall_rag, pillar_rag_scores, suppliers_data, peer_group, macro_data,
         changes_this_cycle=new_changes, change_log=change_log,
     )
+    if executive_summary:
+        source_health.record("claude", "ok", "executive summary written")
+    elif not os.getenv("ANTHROPIC_API_KEY"):
+        source_health.record("claude", "empty", "ANTHROPIC_API_KEY not set, so no executive summary")
+    else:
+        source_health.record("claude", "failed", "no executive summary came back (the harvest log says why)")
 
     # Build dashboard state with three core pillars + additional intelligence
     dashboard_state = {
@@ -3892,6 +4172,9 @@ def main():
         "geopolitical_intel": geopolitical_intel,
         "geopolitical_attempts": gdelt_attempts,
         "harvest_stats": harvest_stats.summary(),
+        # What every external source delivered this cycle — ok, failed or
+        # empty, with a line saying what that means. See SourceHealth.
+        "source_health": source_health.snapshot(),
         "health": {
             "pillars": {
                 "macro": macro_data.get('status', 'unknown'),
@@ -3917,6 +4200,7 @@ def main():
             previous_state["last_updated"] = utc_now_iso()
             previous_state["status"] = "fallback"
             previous_state["harvest_stats"] = harvest_stats.summary()
+            previous_state["source_health"] = source_health.snapshot()
             dashboard_state = previous_state
 
     # Save to data directory
@@ -3935,25 +4219,29 @@ def main():
     logger.info(f"  2. Peers: {peers_data.get('rag_score', 'UNKNOWN')} ({peers_data.get('status', 'unknown')})")
     logger.info(f"  3. Suppliers: {suppliers_data.get('rag_score', 'UNKNOWN')} ({suppliers_data.get('status', 'unknown')})")
 
-    # Print detailed summaries
-    if peers_data.get('status') == 'success':
-        logger.info(f"  Peers: {peers_data.get('total_peers', 0)} tracked, {peers_data.get('total_red_signals', 0)} red, {peers_data.get('total_amber_signals', 0)} amber signals")
+    # Print detailed summaries. A degraded pillar still carries its figures.
+    logger.info(f"  Peers: {peers_data.get('total_peers', 0)} tracked, {peers_data.get('total_red_signals', 0)} red, {peers_data.get('total_amber_signals', 0)} amber signals")
+    logger.info(f"  Suppliers: {suppliers_data.get('total_suppliers', 0)} total, {suppliers_data.get('suppliers_at_cyber_risk', 0)} cyber risk, {suppliers_data.get('suppliers_at_news_risk', 0)} news risk")
 
-    if suppliers_data.get('status') == 'success':
-        logger.info(f"  Suppliers: {suppliers_data.get('total_suppliers', 0)} total, {suppliers_data.get('suppliers_at_cyber_risk', 0)} cyber risk, {suppliers_data.get('suppliers_at_news_risk', 0)} news risk")
+    logger.info("Source health:")
+    for source, entry in source_health.snapshot().items():
+        logger.info(f"  {source}: {entry['status']} — {entry['detail']}")
 
     # Harvest stats summary
     stats = harvest_stats.summary()
     logger.info(f"Harvest Stats: {stats['total_successes']} successes, {stats['total_errors']} errors, {stats['total_warnings']} warnings")
     logger.info(f"Duration: {stats['duration_seconds']:.2f}s")
 
-    # Check if we should alert
-    if harvest_stats.should_alert():
-        logger.warning("ALERT: Critical errors detected during harvest!")
+    # Exit 2 on any failed source, not only on the old error rules — see
+    # harvest_exit_code. The snapshot is already saved either way.
+    exit_code = harvest_exit_code(harvest_stats, source_health)
+    if exit_code:
+        logger.warning("ALERT: the harvest completed with failures")
+        for source in source_health.failed():
+            logger.warning(f"  - {source}: {source_health.detail(source)}")
         for error in harvest_stats.errors:
             logger.warning(f"  - [{error['source']}] {error['error']}")
-        # Exit with error code to trigger GitHub Actions failure notification
-        sys.exit(2)
+        sys.exit(exit_code)
 
 
 if __name__ == "__main__":

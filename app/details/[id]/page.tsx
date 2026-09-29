@@ -10,6 +10,8 @@ import type {
   ChangeLogEntry,
 } from '../../../types/intel';
 import { getRiskColor, getExposureColor } from '../../../types/intel';
+import ActionCard, { worldSignalsFor } from '../../components/board/ActionCard';
+import { safeHref } from '../../components/board/links';
 
 const intel = intelData as unknown as IntelSnapshot;
 
@@ -143,7 +145,18 @@ export default function CompanyDetailPage() {
 
   const googleNewsUrl = `https://www.google.com/search?q=${encodeURIComponent(entityName)}+supply+chain+news&tbm=nws`;
   const yahooFinanceUrl = hasTicker ? `https://finance.yahoo.com/quote/${ticker}` : null;
-  const secFilingsUrl = `https://www.sec.gov/edgar/search/#/q=${encodeURIComponent(entityName)}`;
+  // EDGAR only holds filers of the US market; a search for a Hong Kong or
+  // Helsinki listing returned nothing and looked like a broken link.
+  const isUsListed = hasTicker && !String(ticker).includes('.');
+  const secFilingsUrl = isUsListed ? `https://www.sec.gov/edgar/search/#/q=${encodeURIComponent(entityName)}` : null;
+
+  // Signals from the screening, exchange-filing, leak-site and world feeds,
+  // keyed by supplier name in the snapshot.
+  const screeningHits = supplier ? intel.screening?.hits?.[supplier.name] ?? [] : [];
+  const exchangeFilings = supplier ? intel.asia_filings?.filings?.[supplier.name] ?? [] : [];
+  const flaggedFilings = exchangeFilings.filter((f) => (f.flags ?? []).length > 0);
+  const ransomClaims = supplier ? intel.ransom_claims?.hits?.[supplier.name] ?? [] : [];
+  const worldItems = supplier ? worldSignalsFor(supplier.name, intel.world_signals) : [];
 
   const displayedRisk = (supplier?.event_risk_level ?? company.risk_level) as typeof company.risk_level;
   const move = supplier?.daily_change_pct ?? peer?.daily_change_pct ?? null;
@@ -191,6 +204,8 @@ export default function CompanyDetailPage() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
+            {supplier && <ActionCard supplier={supplier} suppliers={suppliers} world={intel.world_signals} />}
+
             <Section title="Primary Stats">
               <div className="grid grid-cols-2 gap-4">
                 {supplier ? (
@@ -234,11 +249,12 @@ export default function CompanyDetailPage() {
                         {move.toFixed(2)}%
                       </span>
                     }
-                    note={
+                    note={[
+                      supplier?.price_as_of ? `Session of ${supplier.price_as_of}` : null,
                       sigma
-                        ? `Normal daily range for this stock: ±${sigma.toFixed(1)}%`
-                        : 'No volatility baseline available'
-                    }
+                        ? `normal daily range for this stock: ±${sigma.toFixed(1)}%`
+                        : 'no volatility baseline available',
+                    ].filter(Boolean).join(' · ')}
                   />
                 )}
               </div>
@@ -299,7 +315,7 @@ export default function CompanyDetailPage() {
                         {(supplier.matching_recalls ?? []).map((recall) => (
                           <li key={recall.recallNumber}>
                             <a
-                              href={recall.url}
+                              href={safeHref(recall.url)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-semibold hover:underline"
@@ -350,11 +366,83 @@ export default function CompanyDetailPage() {
                     </div>
                   )}
 
+                  {screeningHits.length > 0 && (
+                    <div className="rounded border border-red-300 bg-red-50 p-4">
+                      <div className="font-semibold text-red-900">🚫 Export-control or trade screening match</div>
+                      <ul className="mt-2 space-y-1 text-sm text-red-800">
+                        {screeningHits.map((hit, idx) => {
+                          const href = safeHref(hit.source_url);
+                          return (
+                            <li key={idx}>
+                              <span className="font-mono">{hit.entity}</span> — {hit.list}
+                              {hit.country && <span className="text-xs"> · {hit.country}</span>}
+                              {href && (
+                                <a href={href} target="_blank" rel="noopener noreferrer" className="ml-1 text-xs underline">source</a>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <p className="mt-2 text-xs text-red-700">
+                        A listed entity can bar US-origin parts from shipping to this supplier. Name matching produces false
+                        positives; confirm with trade compliance before acting.
+                      </p>
+                    </div>
+                  )}
+
+                  {ransomClaims.length > 0 && (
+                    <div className="rounded border border-red-300 bg-red-50 p-4">
+                      <div className="font-semibold text-red-900">🔒 Named on a ransomware leak site</div>
+                      <ul className="mt-2 space-y-1 text-sm text-red-800">
+                        {ransomClaims.map((claim, idx) => (
+                          <li key={idx}>
+                            {claim.group}: {claim.title} <span className="text-xs">({claim.date?.slice(0, 10)})</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="mt-2 text-xs text-red-700">A claim by the attackers, not a confirmed breach. Ask the supplier.</p>
+                    </div>
+                  )}
+
+                  {flaggedFilings.length > 0 && (
+                    <div className="rounded border border-amber-300 bg-amber-50 p-4">
+                      <div className="font-semibold text-amber-900">📄 Exchange announcements worth reading</div>
+                      <ul className="mt-2 space-y-1 text-sm text-amber-900">
+                        {flaggedFilings.map((filing, idx) => {
+                          const href = safeHref(filing.url);
+                          return (
+                            <li key={idx}>
+                              {href ? (
+                                <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline">{filing.title}</a>
+                              ) : (
+                                filing.title
+                              )}
+                              <span className="text-xs text-amber-700"> · {filing.date} · {(filing.flags ?? []).join(', ')}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+
+                  {worldItems.length > 0 && (
+                    <div className="rounded border border-amber-300 bg-amber-50 p-4">
+                      <div className="font-semibold text-amber-900">🌐 Routes, inputs or hazards touching this supplier</div>
+                      <ul className="mt-2 space-y-1 text-sm text-amber-900">
+                        {worldItems.map((item) => <li key={item.id}>{item.headline}</li>)}
+                      </ul>
+                    </div>
+                  )}
+
                   {!supplier.sanctions_hit &&
                     !supplier.cyber_risk &&
                     !supplier.recall_risk &&
                     !supplier.geopolitical_risk &&
-                    !supplier.price_move_only && (
+                    !supplier.price_move_only &&
+                    screeningHits.length === 0 &&
+                    ransomClaims.length === 0 &&
+                    flaggedFilings.length === 0 &&
+                    worldItems.length === 0 && (
                       <p className="text-sm text-gray-500">
                         No active signals. Nothing in the monitored sources has flagged this supplier.
                       </p>
@@ -423,14 +511,16 @@ export default function CompanyDetailPage() {
                     📈 Yahoo Finance Page
                   </a>
                 )}
-                <a
-                  href={secFilingsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition font-medium"
-                >
-                  📄 SEC Filings
-                </a>
+                {secFilingsUrl && (
+                  <a
+                    href={secFilingsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition font-medium"
+                  >
+                    📄 SEC Filings
+                  </a>
+                )}
               </div>
             </Section>
           </div>

@@ -147,6 +147,9 @@ export interface Supplier {
   /** The listing's own recent daily volatility, so a move can be shown as
    *  unusual *for this stock* rather than as a bare percentage. */
   daily_sigma_pct?: number | null;
+  /** Trading session the latest close belongs to (YYYY-MM-DD). Over a weekend
+   *  it is Friday's, so a move is never presented as today's by default. */
+  price_as_of?: string | null;
   current_price: number | null;
   /** True when the risk level reflects only an uncorroborated price move. */
   price_move_only?: boolean;
@@ -161,8 +164,8 @@ export interface Supplier {
   counts_toward_rag?: boolean;
   bat_exposure: Exposure;
   segment: string;
-  /** Country of the site that supplies BAT — where a strike or border closure
-   *  would actually bite. Not necessarily the legal headquarters. */
+  /** Country of the site that supplies the company — where a strike or border
+   *  closure would actually bite. Not necessarily the legal headquarters. */
   location: string;
   /** Headquarters country, present only when it differs from the site. */
   hq_country?: string | null;
@@ -285,6 +288,77 @@ export interface RagHistoryEntry {
 // Main Intel Snapshot Type
 // ============================================================================
 
+// Physical and market conditions the supplier watchlist depends on: oil and
+// other inputs, shipping chokepoints, the Rhine, natural hazards. Produced by
+// scripts/world_signals.py.
+export type WorldSeverity = 'quiet' | 'notable' | 'severe';
+
+export interface WorldSignalItem {
+  id: string;
+  label: string;
+  value: number | string | null;
+  unit?: string | null;
+  as_of?: string | null;
+  baseline?: number | string | null;
+  change_pct?: number | null;
+  severity: WorldSeverity;
+  /** One plain sentence a procurement lead can read. */
+  headline: string;
+  affected_categories?: string[];
+  affected_suppliers?: string[];
+  source?: string;
+  source_url?: string;
+}
+
+export interface WorldSignals {
+  fetched_at: string;
+  level: WorldSeverity;
+  drivers: string[];
+  commodities: WorldSignalItem[];
+  chokepoints: WorldSignalItem[];
+  rivers: WorldSignalItem[];
+  hazards: WorldSignalItem[];
+  sources?: Record<string, { status: SourceStatus; detail?: string }>;
+}
+
+export type SourceStatus = 'ok' | 'failed' | 'empty';
+
+/** Per-source outcome of the last harvest, so a dead feed reads as dead
+ *  rather than as a quiet day. */
+export type SourceHealth = Record<string, { status: SourceStatus; detail?: string; checked_at?: string }>;
+
+export interface ScreeningHit {
+  list: string;
+  entity: string;
+  programs?: string | string[];
+  country?: string;
+  source_url?: string;
+}
+
+export interface RegulatoryNotice {
+  title: string;
+  date: string;
+  url: string;
+  agencies?: string[] | string;
+  topic?: string;
+  affected_categories?: string[];
+}
+
+export interface ExchangeFiling {
+  title: string;
+  date: string;
+  url: string;
+  flags?: string[];
+  severity?: string;
+}
+
+export interface RansomClaim {
+  group: string;
+  title: string;
+  date: string;
+  url?: string;
+}
+
 export interface IntelSnapshot {
   last_updated: string;
   version: string;
@@ -294,6 +368,28 @@ export interface IntelSnapshot {
     headline: string;
     next_step: string;
     context: string;
+    /** When the summary was written, and by which model. */
+    generated_at?: string;
+    model?: string;
+  };
+  world_signals?: WorldSignals;
+  source_health?: SourceHealth;
+  /** Export-control and sanctions screening beyond OFAC, and recent US
+   *  regulatory notices that touch the watchlist's categories. */
+  screening?: {
+    fetched_at?: string;
+    hits?: Record<string, ScreeningHit[]>;
+    notices?: RegulatoryNotice[];
+  };
+  /** Hong Kong and Shenzhen exchange announcements for listed suppliers. */
+  asia_filings?: {
+    fetched_at?: string;
+    filings?: Record<string, ExchangeFiling[]>;
+  };
+  /** Supplier names claimed on ransomware leak sites. */
+  ransom_claims?: {
+    fetched_at?: string;
+    hits?: Record<string, RansomClaim[]>;
   };
   rag_history?: RagHistoryEntry[];
   change_log?: ChangeLogEntry[];
@@ -318,7 +414,10 @@ export interface IntelSnapshot {
       // "domestic_press" is coverage published in it. The USA is read the
       // second way — GDELT cannot answer a mention query that large. Two
       // different measurements, so the page says which.
-      query_mode?: 'mentions' | 'domestic_press';
+      query_mode?: 'mentions' | 'domestic_press' | 'events';
+      /** Event counts by type, from GDELT's raw event files. */
+      event_mix?: Record<string, number>;
+      goldstein_avg?: number | null;
       /** Window this reading covers ("3d", "1d"). Not uniform: the US corpus
        *  will not aggregate over three days before the request times out. */
       window?: string;

@@ -20,6 +20,13 @@ import {
   RAG_COLORS,
   RAG_LABELS,
 } from '../types/intel';
+import CtaBanner from './components/board/CtaBanner';
+import Concentration from './components/board/Concentration';
+import Scenarios from './components/board/Scenarios';
+import WorldSignals, { severityTone } from './components/board/WorldSignals';
+import SourceHealthList, { SourceHealthBadge } from './components/board/SourceHealth';
+import { BOOKING_URL, CASE_STUDY_URL, AUTHOR_NAME } from './components/board/links';
+import { trackEvent } from './components/board/track';
 
 // Cast intel to proper type
 const typedIntel = intel as unknown as IntelSnapshot;
@@ -32,6 +39,18 @@ const typedIntel = intel as unknown as IntelSnapshot;
 function parseSnapshotTime(isoString: string): Date {
   const hasZone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(isoString);
   return new Date(hasZone ? isoString : `${isoString}Z`);
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// "28 Sep, 12:14 UTC" — built from UTC fields only, so it renders identically
+// at build time and in any reader's browser.
+function formatUtc(isoString: string): string {
+  const d = parseSnapshotTime(isoString);
+  if (Number.isNaN(d.getTime())) return isoString;
+  const hh = String(d.getUTCHours()).padStart(2, '0');
+  const mm = String(d.getUTCMinutes()).padStart(2, '0');
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}, ${hh}:${mm} UTC`;
 }
 
 function formatTimestamp(isoString: string | undefined): string {
@@ -459,17 +478,24 @@ export default function MorningCoffeeDashboard() {
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold">Global Supply Chain Watchtower</h1>
-              <p className="text-blue-100 mt-2 text-sm sm:text-base">Intelligence Dashboard • Three Core Pillars</p>
+              <p className="text-blue-100 mt-2 text-sm sm:text-base max-w-2xl">
+                What changed, where the supply base is thin and what to do about it, for a 24-supplier watchlist, from public data every six hours.
+              </p>
             </div>
             <div className="flex flex-col sm:items-end gap-3">
               <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                {/* Health Status Indicators */}
-                <div className="flex items-center gap-2" title="Data Source Health">
-                  <span className="text-xs text-blue-200 mr-1">Health:</span>
-                  <HealthIndicator status={macro?.status || 'unknown'} />
-                  <HealthIndicator status={peers?.status || 'unknown'} />
-                  <HealthIndicator status={suppliers?.status || 'unknown'} />
-                </div>
+                {/* Source health: per-source when the harvest records it,
+                    otherwise the older per-pillar dots. */}
+                {typedIntel.source_health ? (
+                  <SourceHealthBadge health={typedIntel.source_health} />
+                ) : (
+                  <div className="flex items-center gap-2" title="Data Source Health">
+                    <span className="text-xs text-blue-200 mr-1">Health:</span>
+                    <HealthIndicator status={macro?.status || 'unknown'} />
+                    <HealthIndicator status={peers?.status || 'unknown'} />
+                    <HealthIndicator status={suppliers?.status || 'unknown'} />
+                  </div>
+                )}
 
                 <Link
                   href="/geopolitical"
@@ -478,6 +504,16 @@ export default function MorningCoffeeDashboard() {
                 >
                   🌍 Geopolitical Intel (beta)
                 </Link>
+
+                <a
+                  href={BOOKING_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackEvent('cta_book_call', { placement: 'header' })}
+                  className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-blue-900 hover:bg-blue-50"
+                >
+                  Get this on your suppliers
+                </a>
 
                 <button
                   onClick={() => setIsModalOpen(true)}
@@ -613,6 +649,15 @@ export default function MorningCoffeeDashboard() {
                     </span>
                   </div>
                 )}
+                {/* Provenance, in UTC and formatted from the data alone so the
+                    server and browser renders agree. A summary with no date
+                    read as current even when it described a week-old move. */}
+                {typedIntel.executive_summary.generated_at && (
+                  <p className="text-xs text-gray-500">
+                    Written by AI at {formatUtc(typedIntel.executive_summary.generated_at)} from the signals on this page;
+                    the signals themselves are below.
+                  </p>
+                )}
               </div>
             )}
             {typedIntel.rag_history && typedIntel.rag_history.length > 1 && currentStreakDuration(typedIntel.rag_history) && (
@@ -624,8 +669,11 @@ export default function MorningCoffeeDashboard() {
           </div>
         )}
 
-        {/* Three Core Pillars Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <CtaBanner placement="after-status" />
+
+        {/* Three Core Pillars Overview, plus the world-signals card once the
+            harvest carries it */}
+        <div className={`grid grid-cols-1 gap-6 mb-8 ${typedIntel.world_signals ? 'md:grid-cols-2 xl:grid-cols-4' : 'md:grid-cols-3'}`}>
           {/* PILLAR 1: MACRO OVERVIEW */}
           <div className={`bg-white p-6 rounded-xl shadow-sm border-t-4 ${getRAGColor(macro?.rag_score)}`}>
             <div className="flex justify-between items-start mb-4">
@@ -804,7 +852,35 @@ export default function MorningCoffeeDashboard() {
               </div>
             )}
           </div>
+
+          {/* PILLAR 4: WORLD — routes, inputs and hazards */}
+          {typedIntel.world_signals && (
+            <a href="#world-heading" className={`bg-white p-6 rounded-xl shadow-sm border-t-4 block hover:bg-slate-50 ${
+              typedIntel.world_signals.level === 'severe' ? 'border-red-500' :
+              typedIntel.world_signals.level === 'notable' ? 'border-amber-500' : 'border-green-500'
+            }`}>
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-gray-500 font-semibold uppercase text-xs tracking-wider">Routes, inputs, hazards</h2>
+                <span className={`px-2 py-1 rounded border text-xs font-bold ${severityTone(typedIntel.world_signals.level)}`}>
+                  {typedIntel.world_signals.level === 'severe' ? 'SEVERE' : typedIntel.world_signals.level === 'notable' ? 'UNUSUAL' : 'NORMAL'}
+                </span>
+              </div>
+              {typedIntel.world_signals.drivers.length > 0 ? (
+                <ul className="space-y-1.5 text-sm text-gray-800">
+                  {typedIntel.world_signals.drivers.slice(0, 3).map((d, i) => <li key={i}>{d}</li>)}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-600">Chokepoints, the Rhine, input prices and hazards near supplying sites are within their normal range.</p>
+              )}
+            </a>
+          )}
         </div>
+
+        <WorldSignals data={typedIntel.world_signals} />
+
+        <Concentration suppliers={suppliersList} />
+
+        <Scenarios suppliers={suppliersList} />
 
         {/* Global Macro Context */}
         <div className="mb-8">
@@ -822,30 +898,24 @@ export default function MorningCoffeeDashboard() {
           <h2 className="text-xl font-bold text-gray-900 mb-4">Peer Intelligence &mdash; sample set</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {peerGroup.map((peer: PeerGroupItem, idx: number) => {
-              const isBAT = peer.name === 'British American Tobacco' || peer.name === 'BAT' || peer.ticker === 'BTI';
               const stockMovePositive = peer.stock_move?.startsWith('+');
               const stockMoveNegative = peer.stock_move?.startsWith('-');
               const hasSecSignal = (peer.sec_red_signals ?? 0) > 0 || (peer.sec_amber_signals ?? 0) > 0;
 
+              // Every company in the sample set is shown the same way: the
+              // board watches a watchlist on behalf of "the company", and
+              // singling one listed peer out as the tracked view read as a
+              // claim about whose supply base this is.
               return (
                 <Link
                   key={idx}
                   href={`/details/${encodeURIComponent(peer.name)}`}
-                  className={`bg-white rounded-lg shadow-sm border-2 p-5 block hover:bg-slate-50 cursor-pointer transition-colors ${
-                    isBAT
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200'
-                  }`}
+                  className="bg-white rounded-lg shadow-sm border-2 border-gray-200 p-5 block hover:bg-slate-50 cursor-pointer transition-colors"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-gray-900">{peer.name}</h3>
-                        {isBAT && (
-                          <span className="px-2 py-0.5 bg-blue-600 text-white text-xs font-semibold rounded">
-                            Tracked view
-                          </span>
-                        )}
                       </div>
                       <div className="text-xs text-gray-600 font-mono mt-1">{peer.ticker}</div>
                     </div>
@@ -879,7 +949,11 @@ export default function MorningCoffeeDashboard() {
                   </div>
 
                   <div className="pt-3 border-t border-gray-200 space-y-1">
-                    <p className="text-xs text-gray-700 leading-relaxed">{peer.latest_headline || 'No headline'}</p>
+                    {peer.latest_headline ? (
+                      <p className="text-xs text-gray-700 leading-relaxed">{peer.latest_headline}</p>
+                    ) : (
+                      <p className="text-xs text-gray-400 leading-relaxed">No material news this cycle.</p>
+                    )}
                     {hasSecSignal && peer.summary && (
                       <p className="text-xs text-amber-800 leading-relaxed font-medium">{peer.summary}</p>
                     )}
@@ -1160,13 +1234,24 @@ export default function MorningCoffeeDashboard() {
 
       </div>
 
-      <footer className="mt-12 bg-gray-900 text-gray-300 py-6">
-        <div className="max-w-[100rem] mx-auto px-6 text-center text-sm">
-          <p>Global Supply Chain Watchtower • Built with the "Flat Data" pattern</p>
-          <p className="mt-2">Zero infrastructure cost • Unbreakable stability • Official data sources only</p>
-          <p className="mt-3 text-xs text-gray-500">
-            A demonstration build. Supplier and peer data is illustrative.
-          </p>
+      <footer className="mt-12 bg-gray-900 text-gray-300 py-8">
+        <div className="max-w-[100rem] mx-auto px-6 space-y-6">
+          <CtaBanner placement="footer" />
+          <div className="text-xs text-gray-400 space-y-2 max-w-4xl">
+            <p>
+              A demonstration build. The supplier and peer lists, exposure tiers, spend and stock figures are illustrative.
+              Signals come from public sources: US Treasury sanctions and trade screening lists, CISA, CPSC, the ECB, FRED,
+              SEC EDGAR, IMF PortWatch, the German waterways authority (PEGELONLINE), GDACS, GDELT, Google News and Yahoo
+              Finance, refreshed about every six hours.
+            </p>
+            <p>
+              Built by{' '}
+              <a href={CASE_STUDY_URL} target="_blank" rel="noopener noreferrer" className="text-gray-200 underline underline-offset-2">
+                {AUTHOR_NAME}
+              </a>
+              .
+            </p>
+          </div>
         </div>
       </footer>
 
@@ -1201,9 +1286,17 @@ export default function MorningCoffeeDashboard() {
             {/* Body */}
             <div className="px-6 py-6 prose prose-sm max-w-none">
               <p className="text-gray-700 leading-relaxed mb-4">
-                This Intelligence Deck aggregates real-time supply chain signals for procurement leadership.
-                Risk assessment is based on <strong>threats to supply continuity</strong>, not stock price movements.
+                This board gathers public supply-chain signals for a procurement lead: what happened to a supplier,
+                where the supply base is thin, and what the world is doing to routes, inputs and supplying sites.
+                A supplier&apos;s level follows <strong>threats to supply continuity</strong>; a share-price move on its
+                own is shown as unexplained and never turns the board red.
               </p>
+              {typedIntel.source_health && (
+                <div className="mb-6">
+                  <h3 className="text-base font-bold text-gray-900 mb-3">Sources on the last harvest</h3>
+                  <SourceHealthList health={typedIntel.source_health} />
+                </div>
+              )}
               <p className="text-gray-700 leading-relaxed mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
                 <strong>This is a demonstration build.</strong> The supplier and peer lists are an
                 illustrative sample, and the exposure tiers beside each supplier were assigned for
@@ -1335,8 +1428,13 @@ export default function MorningCoffeeDashboard() {
                   <li><strong>Product Safety Recalls:</strong> the US Consumer Product Safety Commission&apos;s public recall database, checked for the last 90 days</li>
                   <li><strong>News:</strong> financial news headlines plus a broader news search for wider coverage</li>
                   <li><strong>Geopolitical Risk:</strong> a curated list of conflict zones and sanctioned regions, cross-checked against live news so a country isn&apos;t flagged just because it&apos;s mentioned near an unrelated headline</li>
-                  <li><strong>Suppliers:</strong> all 24 strategic partners are checked against every category above — stock movement, news, cyber, sanctions, recalls, and geopolitical risk</li>
+                  <li><strong>Routes, inputs and hazards:</strong> shipping transits through the main chokepoints (IMF PortWatch), the Rhine water level at Kaub (German waterways authority), oil, gas, pulp and aluminium prices (FRED) and natural-hazard alerts (GDACS)</li>
+                  <li><strong>Suppliers:</strong> all 24 suppliers on the sample watchlist are checked against every category above — stock movement, news, cyber, sanctions, recalls, and geopolitical risk</li>
                 </ul>
+                <p className="mt-3 text-sm text-gray-600">
+                  Google News and Yahoo Finance allow personal use only; a paid build for a company replaces them with
+                  licensed feeds.
+                </p>
               </div>
 
               <div className="mb-6">
@@ -1360,7 +1458,14 @@ export default function MorningCoffeeDashboard() {
             {/* Footer */}
             <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-xl">
               <p className="text-sm text-gray-600 text-center">
-                Version 1.0 | Sovereign Intelligence Architecture
+                Built by{' '}
+                <a href={CASE_STUDY_URL} target="_blank" rel="noopener noreferrer" className="text-blue-900 underline underline-offset-2">
+                  {AUTHOR_NAME}
+                </a>
+                {' · '}
+                <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="text-blue-900 underline underline-offset-2">
+                  Book a call
+                </a>
               </p>
             </div>
           </div>

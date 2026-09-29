@@ -213,15 +213,16 @@ If any data source fails:
 ## Getting the brief where the reader already is
 
 A dashboard only works if someone opens it. `scripts/send_digest.py` pushes the
-same change feed the front page leads with to Slack or Telegram, and the
-harvest workflow calls it in two modes:
+same change feed the front page leads with to Slack or Telegram, in two modes:
 
-- **alert** — after every harvest, but only fires on a real escalation
-  (a confirmed CRITICAL/HIGH signal, or the overall status going RED).
-  Otherwise silent, so an alert keeps meaning something.
-- **daily** — one brief on the harvest that lands in the European morning,
-  whether or not anything moved. A quiet day gets one short line; that is the
-  point.
+- **alert** — run by the harvest workflow after every harvest, but only fires
+  on a real escalation (a confirmed CRITICAL/HIGH signal, or the overall status
+  going RED). Otherwise silent, so an alert keeps meaning something.
+- **daily** — one brief every morning from its own workflow,
+  `.github/workflows/daily-brief.yml` (05:30 UTC, or run it by hand), whether
+  or not anything moved. A quiet day gets one short line; that is the point.
+  It used to ride on whichever harvest landed between 05 and 08 UTC, and
+  scheduler drift meant none did after 1 Sep, so it never sent.
 
 Both are opt-in. With none of these set, the script prints what it would have
 sent and exits 0:

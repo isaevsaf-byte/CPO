@@ -11,6 +11,8 @@ Each section pins a rule that was quietly wrong in production:
   from Saturday to Monday, called "today" in every one and logged three times;
   IFX.DE's Monday -7.72% came back on Wednesday from a lagging copy of the
   series and flipped the supplier pillar GREEN → AMBER → GREEN.
+- Currency pairs were judged on the share-price rule, whose 2% floor no major
+  pair clears on an ordinary bad day.
 
 No network: yfinance, HTTP and the clock-dependent parts are all stubbed.
 """
@@ -628,3 +630,73 @@ def test_an_entry_written_before_sessions_still_blocks_for_a_day(harvester):
     legacy = {"at": six_hours_ago, "kind": "price_move", "entity": "GPI"}
 
     assert diff(harvester, before, after, change_log=[legacy]) == []
+
+
+# ---------------------------------------------------------------------------
+# Currency pairs have their own rule
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "change,sigma,expected",
+    [
+        (-1.5, 0.27, "severe"),     # EUR/USD's 5.6σ day, which used to score quiet
+        (-0.9, 0.27, "notable"),    # 3.3σ and over half a percent
+        (0.6, 0.08, "notable"),     # USD/CNY 7.5σ, but under the 1% severe floor
+        (-1.1, 0.10, "severe"),
+        (-0.45, 0.10, "quiet"),     # 4.5σ, too small to reach anyone's costs
+        (-0.15, 0.08, "quiet"),     # 1.9σ
+        (-1.5, None, "quiet"),      # no σ, nothing to say it is unusual for the pair
+        (None, 0.27, "quiet"),
+    ],
+)
+def test_fx_moves_are_judged_on_their_own_scale(harvester, change, sigma, expected):
+    assert harvester.classify_move(change, sigma, "fx") == expected
+    assert harvester.classify_move(change, sigma, "fx_inverted") == expected
+
+
+def test_shares_and_the_index_keep_their_rule(harvester):
+    # The S&P 500 still needs the 2% floor...
+    assert harvester.classify_move(-1.5, 0.27, "index") == "quiet"
+    assert harvester.classify_move(-1.5, 0.27) == "quiet"
+    # ...and still reads a 3σ+ fall above it as severe.
+    assert harvester.classify_move(-3.0, 0.8, "index") == "severe"
+
+
+@pytest.mark.parametrize(
+    "label,change,sigma,severity,expected",
+    [
+        ("USD/CNY", -0.15, 0.08, "quiet",
+         "USD/CNY -0.15% today, about 1.9× its normal daily move, below the level treated as unusual."),
+        ("EUR/USD", -0.06, 0.27, "quiet",
+         "EUR/USD -0.06% today, within its normal range (±0.27% a day)."),
+        ("EUR/USD", -0.9, 0.27, "notable",
+         "EUR/USD -0.90% today, about 3.3× its normal daily move, an unusual move for this market."),
+        ("EUR/USD", -1.5, 0.27, "severe",
+         "EUR/USD -1.50% today, about 5.6× its normal daily move, a sharp move for this market."),
+        ("S&P 500", -0.4, None, "quiet", "S&P 500 -0.40% today."),
+        ("S&P 500", None, 0.7, "quiet", "S&P 500: no reading available this cycle."),
+    ],
+)
+def test_macro_sentence_follows_from_the_z_score(harvester, label, change, sigma, severity, expected):
+    assert harvester.describe_market_move(label, change, sigma, severity, "2026-09-29",
+                                          today="2026-09-29") == expected
+
+
+def test_macro_sentence_dates_an_earlier_session(harvester):
+    text = harvester.describe_market_move("S&P 500", -0.77, 0.7, "quiet", "2026-09-25",
+                                          today="2026-09-28")
+    assert text.startswith("S&P 500 -0.77% on Fri 25 Sep, about 1.1×")
+
+
+def test_macro_markets_use_the_fx_rule_and_carry_their_session(harvester, monkeypatch, health):
+    stub_reading(harvester, monkeypatch, daily_change_pct=-1.5, current_price=1.1,
+                 daily_sigma_pct=0.27, price_as_of="2026-09-25")
+    monkeypatch.setattr(harvester, "fetch_fred_observation", lambda *a, **k: None)
+
+    economy = harvester.fetch_macro_economy()
+
+    assert economy["us"]["market_severity"] == "quiet"      # the index keeps the 2% floor
+    assert economy["eu"]["market_severity"] == "severe"
+    assert economy["china"]["market_severity"] == "severe"
+    assert {row["price_as_of"] for row in economy.values()} == {"2026-09-25"}
+    assert economy["eu"]["summary"].startswith("EUR/USD -1.50% on Fri 25 Sep")

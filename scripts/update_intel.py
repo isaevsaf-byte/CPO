@@ -3162,11 +3162,71 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
 # MACRO ECONOMY DATA GENERATION (LIVE DATA)
 # ============================================================================
 
-def classify_move(change_pct, sigma_pct=None) -> str:
-    """Severity of a daily move in either direction: 'quiet' | 'notable' | 'severe'."""
+# Currency pairs are judged on their own scale. They used to go through the
+# share-price rule, whose 2% floor (PRICE_MIN_PCT) a major pair almost never
+# clears: EUR/USD -1.5%, a 5.6σ day for it, scored quiet, and USD/CNY, whose
+# normal day is under 0.1%, could not register at all. A currency move counts
+# when it is far outside the pair's own range *and* big enough in absolute
+# terms to reach what a buyer pays.
+FX_SIGMA_NOTABLE = 3.0     # σ for "unusual for this pair"…
+FX_MIN_PCT_NOTABLE = 0.5   # …and at least this large a move
+FX_SIGMA_SEVERE = 5.0
+FX_MIN_PCT_SEVERE = 1.0
+
+
+def classify_fx_move(change_pct, sigma_pct=None) -> str:
+    """Severity of a currency pair's daily move, either direction.
+
+    Needs the pair's own σ: without one (under 21 closes of history) nothing
+    says a move is unusual for that pair, so it reads quiet.
+    """
+    if change_pct is None or not sigma_pct:
+        return "quiet"
+    move = abs(change_pct)
+    z = move / sigma_pct
+    if z >= FX_SIGMA_SEVERE and move >= FX_MIN_PCT_SEVERE:
+        return "severe"
+    if z >= FX_SIGMA_NOTABLE and move >= FX_MIN_PCT_NOTABLE:
+        return "notable"
+    return "quiet"
+
+
+def classify_move(change_pct, sigma_pct=None, kind: str = "index") -> str:
+    """Severity of a daily move in either direction: 'quiet' | 'notable' | 'severe'.
+
+    A currency pair (kind "fx" / "fx_inverted") is judged by classify_fx_move;
+    an index keeps the share-price rule, floor included.
+    """
     if change_pct is None:
         return "quiet"
+    if kind in ("fx", "fx_inverted"):
+        return classify_fx_move(change_pct, sigma_pct)
     return classify_price_move(-abs(change_pct), sigma_pct)
+
+
+def describe_market_move(label: str, change_pct, sigma_pct, severity: str,
+                         as_of: str = None, today: str = None) -> str:
+    """One sentence on a market's move, worded from its z-score.
+
+    It used to say "inside its normal daily range" whenever the move scored
+    quiet, which for a currency meant whenever it stayed under the share
+    floor: "USD/CNY -0.15% today, inside its normal daily range of ±0.1%" was
+    a move of about 1.9σ. "Within its normal range" now means under 1σ.
+    """
+    if change_pct is None:
+        return f"{label}: no reading available this cycle."
+    head = f"{label} {change_pct:+.2f}% {session_phrase(as_of, today)}"
+    if not sigma_pct:
+        return f"{head}."
+    z = abs(change_pct) / sigma_pct
+    if z < 1:
+        return f"{head}, within its normal range (±{sigma_pct:.2f}% a day)."
+    size = f"about {z:.1f}× its normal daily move"
+    if severity == "severe":
+        return f"{head}, {size}, a sharp move for this market."
+    if severity == "notable":
+        return f"{head}, {size}, an unusual move for this market."
+    return f"{head}, {size}, below the level treated as unusual."
 
 
 # The one genuinely live number each region has, and what it is.
@@ -3254,25 +3314,14 @@ def fetch_macro_economy(previous_economy: dict = None):
         change_pct = reading["daily_change_pct"]
         sigma_pct = reading["daily_sigma_pct"]
         price_as_of = reading.get("price_as_of")
-        severity = reading.get("severity") or classify_move(change_pct, sigma_pct)
+        severity = reading.get("severity") or classify_move(change_pct, sigma_pct, market["kind"])
         trend = _region_trend(market["kind"], change_pct, severity)
 
         series = MACRO_SERIES[region_key]
         cpi_obs = fetch_fred_observation(*series["cpi"]) if series["cpi"] else None
         rate_obs = fetch_fred_observation(*series["rate"]) if series["rate"] else None
 
-        if change_pct is None:
-            market_sentence = f"{market['label']}: no reading available this cycle."
-        else:
-            if sigma_pct:
-                band = f"its normal daily range of ±{sigma_pct:.1f}%"
-                comparison = (
-                    f"inside {band}" if severity == "quiet"
-                    else f"{abs(change_pct) / sigma_pct:.1f}× {band}"
-                )
-                market_sentence = f"{market['label']} {change_pct:+.2f}% {session_phrase(price_as_of)}, {comparison}."
-            else:
-                market_sentence = f"{market['label']} {change_pct:+.2f}% {session_phrase(price_as_of)}."
+        market_sentence = describe_market_move(market["label"], change_pct, sigma_pct, severity, price_as_of)
 
         stat_parts = []
         if cpi_obs:

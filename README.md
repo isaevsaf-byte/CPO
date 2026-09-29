@@ -167,6 +167,15 @@ hours. A price move with no corroborating news never turns the board RED: it is
 carried as `price_move_only` and named in the change feed as an unexplained
 move, which is what it is.
 
+Currency pairs have their own rule, because a 2% floor no major pair clears on
+an ordinary bad day made EUR/USD's -1.5% (5.6σ) read quiet and USD/CNY unable
+to register at all (`classify_fx_move`):
+
+- **severe**: ≥5σ and a move of at least 1.0%
+- **notable**: ≥3σ and a move of at least 0.5%
+
+Shares and the S&P 500 keep the rule above.
+
 ### A price reading says which session it is
 
 Every price reading — supplier, peer, macro market — carries `price_as_of`,
@@ -200,10 +209,13 @@ filing does not say which.
 
 ### Macro pillar
 Scored from how unusual each region's market move is (S&P 500, EUR/USD,
-USD/CNY), on the same volatility yardstick — one severe move is RED, one
-notable move is AMBER, otherwise GREEN. Official statistics (CPI, policy rate)
-come from FRED and carry the month they were observed; a region with no live
-feed that still updates shows "not connected" rather than a stale number.
+USD/CNY), on the same volatility yardstick — the S&P 500 on the share rule, the
+two currency pairs on the FX rule above. One severe move is RED, one notable
+move is AMBER, otherwise GREEN. The summary sentence follows from the z-score:
+"within its normal range" only under 1σ, otherwise "about 1.9× its normal daily
+move, below the level treated as unusual". Official statistics (CPI, policy
+rate) come from FRED and carry the month they were observed; a region with no
+live feed that still updates shows "not connected" rather than a stale number.
 
 ### Where a supplier sits is not the same as what happened to it
 
@@ -296,10 +308,10 @@ python scripts/send_digest.py --mode daily --dry-run
 ## Tests and CI
 
 `tests/` covers the rules that decide what the board shows — keyword matching,
-price-move classification, which session a price reading belongs to, macro
-scoring, the split between event and structural risk, source health and the
-exit code, and what does and does not reach the change feed or the daily
-brief. No network, no yfinance required.
+price-move classification (shares and FX), which session a price reading
+belongs to, macro scoring, the split between event and structural risk, source
+health and the exit code, and what does and does not reach the change feed or
+the daily brief. No network, no yfinance required.
 
 ```bash
 pip install -r requirements-dev.txt && pytest tests/ -q

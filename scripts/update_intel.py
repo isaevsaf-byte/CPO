@@ -20,6 +20,7 @@ import sys
 import time
 import random
 import hashlib
+import importlib
 import logging
 import os
 import shutil
@@ -314,6 +315,11 @@ def calculate_data_hash(data: dict) -> str:
     # run — same reasoning as above.
     if 'geopolitical_attempts' in data_copy:
         del data_copy['geopolitical_attempts']
+    # The outside feeds carry fetched_at and timing fields that change every
+    # run by construction; whatever they found that matters already shows in
+    # the supplier rows and the pillar scores hashed above.
+    for key in ('world_signals', 'screening', 'asia_filings', 'ransom_claims'):
+        data_copy.pop(key, None)
 
     json_str = json.dumps(data_copy, sort_keys=True)
     return hashlib.md5(json_str.encode()).hexdigest()[:12]
@@ -2787,7 +2793,8 @@ GEO_ESCALATION_STICKY_HOURS = 48
 
 
 def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
-                      previous_suppliers=None, previous_geo_state=None):
+                      previous_suppliers=None, previous_geo_state=None,
+                      extra_signals=None):
     """
     Process supplier watchlist and assess SUPPLY CHAIN RISK to BAT.
 
@@ -3176,6 +3183,21 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             risk_analysis = f"No supply chain risks identified. {supplier_name} ({category}) operating normally. BAT exposure: {bat_exposure}."
 
         # ================================================================
+        # LAYER 3.5: SIGNALS GATHERED OUTSIDE THIS FUNCTION
+        # Export-control and forced-labour listings, ransomware leak-site
+        # claims and flagged exchange filings (see build_extra_signals). Like
+        # every layer after the first, they can only raise the level.
+        # ================================================================
+        extra_flags = {}
+        for extra in (extra_signals or {}).get(supplier_name, []):
+            extra_flags[extra["flag"]] = True
+            if RISK_PRIORITY.get(extra["level"], 0) > RISK_PRIORITY.get(supplier_risk_level, 0):
+                supplier_risk_level = extra["level"]
+                last_signal = extra["signal"]
+                risk_analysis = extra["analysis"]
+                price_move_only = False
+
+        # ================================================================
         # LAYER 4: GEOPOLITICAL RISK OVERLAY
         # Acts as a FLOOR — can only elevate risk, never reduce it.
         # Combines static conflict map + live Google News country scan.
@@ -3235,6 +3257,9 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
             "category": category,
             "sanctions_hit": sanctions_hit,
             "sanctions_matches": sanctions_matches,
+            "screening_hit": extra_flags.get("screening_hit", False),
+            "ransom_claim": extra_flags.get("ransom_claim", False),
+            "filing_flag": extra_flags.get("filing_flag", False),
             "cyber_risk": cyber_risk,
             "matching_vulnerabilities": matching_vulns[:5],
             "recall_risk": recall_risk,
@@ -3799,6 +3824,9 @@ PRICE_MOVE_REPORT_PCT = 4.0
 # Per-supplier boolean signals, in the order they should be named.
 SUPPLIER_SIGNAL_LABELS = [
     ("sanctions_hit", "OFAC sanctions match"),
+    ("screening_hit", "export-control or forced-labour list match"),
+    ("ransom_claim", "ransomware leak-site claim"),
+    ("filing_flag", "flagged exchange filing"),
     ("cyber_risk", "CISA cyber vulnerability"),
     ("recall_risk", "CPSC safety recall"),
     ("news_risk", "adverse news"),
@@ -4199,8 +4227,12 @@ EXECUTIVE_SUMMARY_SYSTEM = (
     "brief to explain what is still standing and worth watching. Note that a "
     "kind of 'price_move' is by design NOT reflected in the RAG color — treat it "
     "as real and worth naming even when everything reads GREEN. "
-    "overall_rag.driven_by names which pillar(s) — macro, peers, and/or suppliers — "
-    "actually produced the current score; your headline and next_step MUST be about "
+    "overall_rag.driven_by names which pillar(s) — macro, peers, suppliers and/or "
+    "world — actually produced the current score. world means routes, inputs and "
+    "hazards (shipping chokepoints, the Rhine, energy and raw-material prices, "
+    "natural hazards near supplying sites), and its story is in world_signals.drivers; "
+    "for every pillar, "
+    "your headline and next_step MUST be about "
     "that pillar's data specifically, even if another pillar's payload is larger or "
     "more detailed. When driven_by is empty the board is GREEN and no pillar is "
     "driving it. Do not default to writing about suppliers just because that "
@@ -4231,7 +4263,8 @@ def _clean_summary_text(value) -> str:
 def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
                                  suppliers_data: dict, peer_group: list,
                                  macro_data: dict, changes_this_cycle: list = None,
-                                 change_log: list = None) -> dict | None:
+                                 change_log: list = None,
+                                 world_signals: dict | None = None) -> dict | None:
     """
     Narrate the already-computed RAG rollup into a CPO-facing executive
     summary via a single Claude API call. This never influences the RAG
@@ -4332,6 +4365,11 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
                 for region, data in (macro_data.get("regions") or {}).items()
             },
         }
+        if world_signals:
+            payload["world_signals"] = {
+                "level": world_signals.get("level"),
+                "drivers": list(world_signals.get("drivers") or [])[:6],
+            }
 
         client = anthropic.Anthropic(
             timeout=EXECUTIVE_SUMMARY_TIMEOUT_SECONDS,
@@ -4385,6 +4423,138 @@ def generate_executive_summary(overall_rag: dict, pillar_rag_scores: dict,
         return None
 
 
+# ============================================================================
+# DATA MODULES BESIDE THIS SCRIPT
+# ============================================================================
+# World signals, GDELT event files, trade-list screening, Asian exchange
+# filings, leak-site claims and the events archive each live in their own
+# module in scripts/. The workflow runs this file as a script, which puts
+# scripts/ on sys.path; the tests load it by path, which doesn't, so the path
+# is added here. Each module is imported when it is needed, and a module that
+# fails to import or crashes costs its own layer, never the harvest.
+_SCRIPTS_DIR = str(Path(__file__).resolve().parent)
+
+
+def _data_module(name: str):
+    if _SCRIPTS_DIR not in sys.path:
+        sys.path.insert(0, _SCRIPTS_DIR)
+    try:
+        return importlib.import_module(name)
+    except Exception as e:
+        harvest_stats.record_error(name, f"module failed to import: {e}")
+        logger.error(f"Could not import {name}: {e}")
+        return None
+
+
+def _run_layer(name: str, call, default):
+    """Run one best-effort data layer; a crash costs that layer only."""
+    try:
+        result = call()
+        return default if result is None else result
+    except Exception as e:
+        harvest_stats.record_error(name, f"{type(e).__name__}: {e}")
+        logger.error(f"{name} failed: {e}")
+        return default
+
+
+def build_extra_signals(screening: dict | None, ransom: dict | None, filings: dict | None) -> dict:
+    """Outside signals per supplier, for layer 3.5 of process_suppliers.
+
+    A US export-control or forced-labour listing can stop US-origin parts
+    reaching a supplier, or goods containing its parts entering the US: HIGH
+    pending verification, CRITICAL when the list is the OFAC SDN list itself.
+    A leak-site claim is the attackers' word, not a confirmed breach: HIGH
+    until the supplier answers. Only filings the module rates high (a profit
+    warning, a trading halt, an investigation) raise a level, and only to
+    MEDIUM; a share pledge or a routine announcement stays context on the
+    supplier's page.
+    """
+    extras: dict = {}
+
+    def add(name, **signal):
+        extras.setdefault(name, []).append(signal)
+
+    for name, hits in ((screening or {}).get("hits") or {}).items():
+        for hit in hits:
+            list_name = str(hit.get("list") or "a US screening list")
+            via = f" through its parent {hit['parent']}" if hit.get("via") == "parent" and hit.get("parent") else ""
+            add(name,
+                flag="screening_hit",
+                level="CRITICAL" if "specially designated" in list_name.lower() else "HIGH",
+                signal=f"🚫 Possible listing: {hit.get('entity')} on the {list_name}{via} — verify",
+                analysis=(f"{name}{via} matches {hit.get('entity')} on the US {list_name}. "
+                          "A listing can stop US-origin parts reaching this supplier, or goods containing "
+                          "its parts entering the US. Name matching produces false positives: confirm with "
+                          "trade compliance before acting."))
+    for name, claims in ((ransom or {}).get("hits") or {}).items():
+        for claim in claims:
+            add(name,
+                flag="ransom_claim",
+                level="HIGH",
+                signal=f"🔒 Named on a ransomware leak site ({claim.get('group')}, {claim.get('date')})",
+                analysis=(f"The {claim.get('group')} group claims {name} on its leak site ({claim.get('date')}). "
+                          "This is the attackers' claim, not a confirmed breach: ask the supplier whether "
+                          "operations, shipments or shared data are affected."))
+    for name, items in ((filings or {}).get("filings") or {}).items():
+        for filing in items:
+            if filing.get("severity") != "high":
+                continue
+            add(name,
+                flag="filing_flag",
+                level="MEDIUM",
+                signal=f"📄 Exchange filing: {str(filing.get('title') or '')[:90]}",
+                analysis=(f"{name} filed \"{filing.get('title')}\" on {filing.get('date')} "
+                          f"({', '.join(filing.get('flags') or [])}). Worth reading for anything that "
+                          "touches production, liquidity or ownership."))
+    return extras
+
+
+def score_world_rag(world: dict | None) -> str | None:
+    """The routes-inputs-hazards pillar: AMBER while any reading is outside its
+    normal range, never RED. These are pressures on the whole supply base, not
+    something confirmed at one supplier, and RED stays reserved for that.
+    None when no world source answered, so a dead feed is left out of the
+    rollup instead of being scored as calm."""
+    if not world:
+        return None
+    sources = list((world.get("sources") or {}).values())
+    if sources and all(src.get("status") == "failed" for src in sources):
+        return None
+    return "AMBER" if world.get("level") in ("notable", "severe") else "GREEN"
+
+
+def gdelt_event_relevance(suppliers_by_country: dict) -> dict:
+    """Per-country relevance callables for the GDELT event files (see
+    scripts/gdelt_files.py). Each event is already located in its country, but
+    a generic supply-chain word in a headline derived from a URL still has to
+    name the country, except for the USA, whose own press rarely names it."""
+    callables = {}
+    for country, suppliers in suppliers_by_country.items():
+        names, keywords = gdelt_relevance_terms(suppliers)
+        country_terms = None if country == "USA" else gdelt_country_terms(country)
+        callables[country] = (
+            lambda n, k, t: lambda title, url: gdelt_headline_relevance(title, n, k, t, url)
+        )(names, keywords, country_terms)
+    return callables
+
+
+def gdelt_attempts_from_files(status: dict, previous: dict, now_iso: str) -> dict:
+    """Per-country bookkeeping in the shape /geopolitical reads, from the
+    event-file reader's per-country outcome."""
+    attempts = {}
+    for country, outcome in ((status or {}).get("countries") or {}).items():
+        state = dict(previous.get(country, {}))
+        state["last_attempt"] = now_iso
+        state["last_status"] = outcome
+        if outcome == "ok":
+            state["last_success"] = now_iso
+            state["consecutive_failures"] = 0
+        else:
+            state["consecutive_failures"] = state.get("consecutive_failures", 0) + 1
+        attempts[country] = state
+    return attempts
+
+
 def main():
     """Main aggregation function - Three Core Pillars"""
     logger.info("Starting CPO intelligence harvest (Three Core Pillars)...")
@@ -4422,6 +4592,38 @@ def main():
     peer_group = fetch_peer_group()
     peers_data = fetch_peers_overview(peer_group)
 
+    # Trade-list screening, leak-site claims and Asian exchange filings feed a
+    # layer of the supplier assessment (see build_extra_signals), so they run
+    # before it. Each fails soft and reports its own sources.
+    watchlist_rows = [
+        {"name": w["name"], "category": w["category"],
+         "location": SUPPLIER_PROFILES.get(w["name"], {}).get("location", "Unknown")}
+        for w in WATCHLIST_DATA
+    ]
+    name_terms = {row["name"]: supplier_search_terms(row["name"]) for row in watchlist_rows}
+    screening_mod = _data_module("screening")
+    screening_result = (
+        _run_layer("screening", lambda: screening_mod.screen_suppliers(watchlist_rows, name_terms), {})
+        if screening_mod else {}
+    )
+    # Search leak sites under legal and parent names too (CNT as
+    # Contraf-Nicotex-Tobacco), not only the watchlist's short name.
+    leak_terms = (
+        _run_layer("screening", lambda: screening_mod.expand_name_terms(name_terms), name_terms)
+        if screening_mod else name_terms
+    )
+    ransom_mod = _data_module("ransom")
+    ransom_result = (
+        _run_layer("ransom", lambda: ransom_mod.fetch_ransom_claims(leak_terms), {})
+        if ransom_mod else {}
+    )
+    filings_mod = _data_module("filings_asia")
+    filings_result = (
+        _run_layer("asia_filings", lambda: filings_mod.fetch_asia_filings(), {})
+        if filings_mod else {}
+    )
+    extra_signals = build_extra_signals(screening_result, ransom_result, filings_result)
+
     # PILLAR 3: Supplier Watchlist
     suppliers_data = process_suppliers(
         cyber_data, recalls_data, sanctions_data,
@@ -4430,6 +4632,7 @@ def main():
         # headline behind it scrolls out of the news window.
         previous_suppliers=(previous_state or {}).get("suppliers", {}).get("suppliers", []),
         previous_geo_state=(previous_state or {}).get("suppliers", {}).get("geo_escalation_state", {}),
+        extra_signals=extra_signals,
     )
 
     # Experimental GDELT geopolitical signal — feeds only the standalone
@@ -4442,19 +4645,29 @@ def main():
                 {"name": s.get("name"), "category": s.get("category")}
             )
     all_gdelt_countries = set(suppliers_by_country.keys())
-    # Order is decided per cycle from the attempt history rather than being
-    # fixed (see order_gdelt_countries): a fixed order plus the circuit
-    # breaker meant the same tail of the list was cut off every single run.
     previous_attempts = {
         country: state
         for country, state in (previous_state or {}).get("geopolitical_attempts", {}).items()
         if country in all_gdelt_countries
     }
-    fresh_geo, gdelt_attempts = fetch_gdelt_intel(
-        sorted(all_gdelt_countries),
-        attempts=previous_attempts,
-        suppliers_by_country=suppliers_by_country,
+    # Read from GDELT's raw 15-minute event files rather than its DOC API
+    # (fetch_gdelt_intel, now unused): the API answered GitHub's runners with
+    # HTTP 429 for 10 of 11 countries, leaving readings up to two weeks old,
+    # while the static files have no rate limit and cover every country in
+    # one pass (see scripts/gdelt_files.py).
+    gdelt_mod = _data_module("gdelt_files")
+    gdelt_failed = ({}, {"status": "failed", "detail": "GDELT event-file reader unavailable"})
+    fresh_geo, gdelt_status = (
+        _run_layer(
+            "gdelt",
+            lambda: gdelt_mod.fetch_gdelt_from_files(
+                sorted(all_gdelt_countries), gdelt_event_relevance(suppliers_by_country)
+            ),
+            gdelt_failed,
+        )
+        if gdelt_mod else gdelt_failed
     )
+    gdelt_attempts = gdelt_attempts_from_files(gdelt_status, previous_attempts, utc_now_iso())
     # Merge onto last run's results instead of replacing wholesale — GDELT's
     # rate limiting means only a handful of countries succeed on any given
     # run, and which ones is essentially random (whichever get through
@@ -4471,6 +4684,17 @@ def main():
         if country in all_gdelt_countries
     }
     geopolitical_intel = {**previous_geo, **fresh_geo}
+
+    # Routes, inputs and hazards the whole watchlist depends on: shipping
+    # chokepoints, the Rhine, energy and raw-material prices, natural hazards
+    # near supplying sites (see scripts/world_signals.py). On 28 Sep 2026 the
+    # board read "All clear" while Strait of Hormuz transits were down 96% on
+    # the year, Brent was near $115 and the Rhine at Kaub stood at 0 cm.
+    world_mod = _data_module("world_signals")
+    world_signals = (
+        _run_layer("world_signals", lambda: world_mod.collect_world_signals(watchlist_rows), None)
+        if world_mod else None
+    )
 
     # The macro pillar's RAG score is computed in score_macro_rag from these
     # same readings (fetched at the top of main), so there is no second
@@ -4506,6 +4730,9 @@ def main():
         "peers": peers_data.get("rag_score", "GREEN"),
         "suppliers": suppliers_data.get("rag_score", "GREEN"),
     }
+    world_rag = score_world_rag(world_signals)
+    if world_rag is not None:
+        pillar_rag_scores["world"] = world_rag
     worst_rag = max(pillar_rag_scores.values(), key=lambda v: RAG_PRIORITY_ORDER.get(v, 0))
     overall_rag = {
         "score": worst_rag,
@@ -4528,6 +4755,7 @@ def main():
         "macro": pillar_rag_scores["macro"],
         "peers": pillar_rag_scores["peers"],
         "suppliers": pillar_rag_scores["suppliers"],
+        **({"world": pillar_rag_scores["world"]} if "world" in pillar_rag_scores else {}),
         "overall": worst_rag,
     })
     rag_history = rag_history[-MAX_RAG_HISTORY:]
@@ -4554,9 +4782,20 @@ def main():
     else:
         logger.info("Change log: nothing changed since the previous snapshot")
 
+    # The change log inside the snapshot keeps three weeks; the archive keeps
+    # everything, for /track-record (see scripts/backfill_archive.py).
+    archive_mod = _data_module("backfill_archive")
+    if archive_mod:
+        _run_layer(
+            "events_archive",
+            lambda: archive_mod.update_archive(data_dir / "events_archive.json", new_changes),
+            0,
+        )
+
     executive_summary = generate_executive_summary(
         overall_rag, pillar_rag_scores, suppliers_data, peer_group, macro_data,
         changes_this_cycle=new_changes, change_log=change_log,
+        world_signals=world_signals,
     )
 
     # Build dashboard state with three core pillars + additional intelligence
@@ -4575,6 +4814,10 @@ def main():
         "peer_group": peer_group,
         "geopolitical_intel": geopolitical_intel,
         "geopolitical_attempts": gdelt_attempts,
+        "world_signals": world_signals,
+        "screening": screening_result or None,
+        "asia_filings": filings_result or None,
+        "ransom_claims": ransom_result or None,
         "harvest_stats": harvest_stats.summary(),
         "health": {
             "pillars": {

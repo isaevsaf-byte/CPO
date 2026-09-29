@@ -714,6 +714,38 @@ def _geo_keyword_hit(title_lower: str, keywords: list, country: str):
     return None
 
 
+# History and anniversary pieces name a country next to an invasion or a war
+# without anything happening now. "Military Digest | When the British feared
+# airborne invasion of India, raised anti-parachute force" escalated India in
+# two September harvests. Each signal below is narrow on purpose, because a
+# headline dropped here can no longer report a real event:
+#   - a column label before " | " at the start of the headline;
+#   - "years ago", "decades ago", "anniversary", "remembering", "history of";
+#   - an opening "When ... feared/was/were" (a past-tense frame, so "When
+#     China invades Taiwan" is not caught by it);
+#   - a year before 2000 read as a date: after "in", "since", "during" and
+#     similar, as a decade ("1960s"), or before "war", "invasion" and similar.
+#     A bare four-digit number is not enough: "deploys 1500 troops" is a count.
+_RETROSPECTIVE_LABEL = re.compile(
+    r"^\s*(?:military digest|on this day|this day in history|history|opinion|"
+    r"from the archives|throwback|flashback)\s*\|"
+)
+_RETROSPECTIVE_PHRASE = re.compile(r"\b(?:years ago|decades ago|anniversary|remembering|history of)\b")
+_RETROSPECTIVE_WHEN = re.compile(r"^\s*(?:[^|]{0,40}\|\s*)?when\s+(?:\S+\s+){0,8}?(?:feared|was|were)\b")
+_RETROSPECTIVE_YEAR = re.compile(
+    r"\b(?:in|since|of|from|during|until|circa|before|after|by)\s+1[5-9]\d{2}\b"
+    r"|\b1[5-9]\d0s\b"
+    r"|\b1[5-9]\d{2}(?:\s*[-–]\s*\d{2,4})?\s+(?:wars?|conflict|crisis|invasion|revolution|partition"
+    r"|uprising|riots?|massacre|coup|famine|treaty|accord|blockade|siege)\b"
+)
+
+
+def is_retrospective(title_lower: str) -> bool:
+    """True for a history or anniversary piece rather than current news."""
+    return any(pattern.search(title_lower) for pattern in (
+        _RETROSPECTIVE_LABEL, _RETROSPECTIVE_PHRASE, _RETROSPECTIVE_WHEN, _RETROSPECTIVE_YEAR))
+
+
 def scan_country_geopolitical_news(country):
     """
     Scan Google News for geopolitical risk signals directly affecting a
@@ -728,12 +760,15 @@ def scan_country_geopolitical_news(country):
     headlines holds only results that name the country; they are stored and
     shown under every supplier located there. The raw search result used to
     be returned, which put DR Congo, Iran and Tigray headlines under Sappi as
-    South Africa's geopolitical news.
+    South Africa's geopolitical news. History and anniversary pieces are
+    left out altogether (see is_retrospective): they are not news, and they
+    must not escalate a country.
     """
     query = f'"{country}" ({GEO_SEARCH_KEYWORDS})'
     headlines = [
         h for h in _recent_headlines(fetch_google_news_rss(query, max_results=8))
         if headline_names_country(h["title"].lower(), country)
+        and not is_retrospective(_headline_text(h["title"]))
     ]
 
     if not headlines:

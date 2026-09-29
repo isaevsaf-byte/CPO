@@ -944,3 +944,54 @@ def test_the_place_a_buildup_is_aimed_at_is_escalated(harvester, monkeypatch, co
 def test_an_event_between_two_countries_still_counts_for_both(harvester, monkeypatch):
     for country in ("India", "China"):
         assert _country_level(harvester, monkeypatch, country, "India-China border clash leaves 3 dead") == "HIGH"
+
+
+# ---------------------------------------------------------------------------
+# 10. History and anniversary pieces do not escalate a country
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        # Escalated India twice in September.
+        "Military Digest | When the British feared airborne invasion of India, raised anti-parachute force - The Indian Express",
+        "On This Day | China invades Vietnam",
+        "History | The 1962 Sino-Indian war",
+        "Opinion | India must prepare for a two-front war",
+        "50 years ago, China invaded Vietnam",
+        "India marks 1971 war anniversary",
+        "Remembering the Korean War armistice",
+        "A history of India's border clashes with China",
+        "When Russia was at war with Finland",
+        "Finland in 1939: the Winter War",
+        "How the 1960s shaped South African politics",
+    ],
+)
+def test_retrospective_pieces_are_recognised(harvester, title):
+    assert harvester.is_retrospective(harvester._headline_text(title)) is True
+
+
+@pytest.mark.parametrize(
+    "title",
+    [
+        "India-China border clash leaves 3 dead",
+        "China deploys 1500 troops near Indian border",      # a count, not a year
+        "US imposes new sanctions on Chinese refiners",
+        "When China invades Taiwan, chip supply will suffer",  # not a past-tense frame
+        "Seoul says North Korea fired 2025 artillery shells, a record",
+        "China's history-making export controls hit chipmakers",
+        "Opinion polls show Indian voters back tougher China stance",
+    ],
+)
+def test_current_news_is_not_mistaken_for_history(harvester, title):
+    assert harvester.is_retrospective(harvester._headline_text(title)) is False
+
+
+def test_a_history_column_neither_escalates_nor_is_stored(harvester, monkeypatch):
+    column = ("Military Digest | When the British feared airborne invasion of India, "
+              "raised anti-parachute force - The Indian Express")
+    monkeypatch.setattr(harvester, "fetch_google_news_rss", lambda query, max_results=8: [
+        rss_item(column), rss_item("India-Pakistan tensions escalate after 2 soldiers killed")])
+    _, level, headlines, reason = harvester.scan_country_geopolitical_news("India")
+    assert [h["title"] for h in headlines] == ["India-Pakistan tensions escalate after 2 soldiers killed"]
+    assert level == "HIGH" and "tensions escalat" in reason   # the real event still counts

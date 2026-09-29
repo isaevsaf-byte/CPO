@@ -20,14 +20,11 @@ import {
   RAG_COLORS,
   RAG_LABELS,
 } from '../../../types/intel';
-import CtaBanner from './CtaBanner';
 import Concentration from './Concentration';
 import Scenarios from './Scenarios';
 import WorldSignals, { severityTone, worldSignalsAnswered } from './WorldSignals';
 import SourceHealthList, { SourceHealthBadge } from './SourceHealth';
-import { BOOKING_URL, CASE_STUDY_URL, AUTHOR_NAME } from './links';
 import RegulatoryCalendar from '../RegulatoryCalendar';
-import { trackEvent } from './track';
 
 // Cast intel to proper type
 const typedIntel = intel as unknown as IntelSnapshot;
@@ -541,16 +538,6 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
                   🌍 Geopolitical Intel (beta)
                 </Link>
 
-                <a
-                  href={BOOKING_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackEvent('cta_book_call', { placement: 'header' })}
-                  className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-blue-900 hover:bg-blue-50"
-                >
-                  Get this on your suppliers
-                </a>
-
                 <button
                   onClick={() => setIsModalOpen(true)}
                   className="p-2 rounded-full hover:bg-blue-800 transition-colors"
@@ -704,8 +691,6 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
             {typedIntel.rag_history && <RagSparkline history={typedIntel.rag_history} />}
           </div>
         )}
-
-        <CtaBanner placement="after-status" />
 
         {/* Three Core Pillars Overview, plus the world-signals card once the
             harvest carries it */}
@@ -1290,23 +1275,13 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
       </div>
 
       <footer className="mt-12 bg-gray-900 text-gray-300 py-8">
-        <div className="max-w-[100rem] mx-auto px-6 space-y-6">
-          <CtaBanner placement="footer" />
-          <div className="text-xs text-gray-400 space-y-2 max-w-4xl">
-            <p>
-              A demonstration build. The supplier and peer lists, exposure tiers, spend and stock figures are illustrative.
-              Signals come from public sources: US Treasury sanctions and trade screening lists, CISA, CPSC, the ECB, FRED,
-              SEC EDGAR, IMF PortWatch, the German waterways authority (PEGELONLINE), GDACS, GDELT, Google News and Yahoo
-              Finance, refreshed about every six hours.
-            </p>
-            <p>
-              Built by{' '}
-              <a href={CASE_STUDY_URL} target="_blank" rel="noopener noreferrer" className="text-gray-200 underline underline-offset-2">
-                {AUTHOR_NAME}
-              </a>
-              .
-            </p>
-          </div>
+        <div className="max-w-[100rem] mx-auto px-6">
+          <p className="text-xs text-gray-400 max-w-4xl">
+            A demonstration build. The supplier and peer lists, exposure tiers, spend and stock figures are illustrative.
+            Signals come from public sources: US Treasury sanctions and trade screening lists, CISA, CPSC, the ECB, FRED,
+            SEC EDGAR, IMF PortWatch, the German waterways authority (PEGELONLINE), GDACS, GDELT, Google News and Yahoo
+            Finance, refreshed about every six hours.
+          </p>
         </div>
       </footer>
 
@@ -1486,10 +1461,6 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
                   <li><strong>Routes, inputs and hazards:</strong> shipping transits through the main chokepoints (IMF PortWatch), the Rhine water level at Kaub (German waterways authority), oil, gas, pulp and aluminium prices (FRED) and natural-hazard alerts (GDACS)</li>
                   <li><strong>Suppliers:</strong> all 24 suppliers on the sample watchlist are checked against every category above — stock movement, news, cyber, sanctions, recalls, and geopolitical risk</li>
                 </ul>
-                <p className="mt-3 text-sm text-gray-600">
-                  Google News and Yahoo Finance allow personal use only; a paid build for a company replaces them with
-                  licensed feeds.
-                </p>
               </div>
 
               <div className="mb-6">
@@ -1510,19 +1481,6 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-xl">
-              <p className="text-sm text-gray-600 text-center">
-                Built by{' '}
-                <a href={CASE_STUDY_URL} target="_blank" rel="noopener noreferrer" className="text-blue-900 underline underline-offset-2">
-                  {AUTHOR_NAME}
-                </a>
-                {' · '}
-                <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="text-blue-900 underline underline-offset-2">
-                  Book a call
-                </a>
-              </p>
-            </div>
           </div>
         </div>
       )}

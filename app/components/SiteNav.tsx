@@ -16,8 +16,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Board', also: ['/details', '/macro'] },
   { href: '/brief', label: 'Brief' },
   { href: '/track-record', label: 'Track record' },
-  { href: '/check', label: 'Check your list' },
-  { href: '/scan', label: 'Free scan' },
   { href: '/geopolitical', label: 'Geopolitical' },
 ];
 

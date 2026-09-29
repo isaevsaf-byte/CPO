@@ -170,8 +170,7 @@ export default function Scenarios({ suppliers }: { suppliers: Supplier[] }) {
           </>
         )}
         <p className="mt-3 text-[11px] text-gray-500">
-          Spend, stock cover and qualification times are illustrative figures set for this demonstration. A live build uses the
-          company&apos;s own numbers.
+          Spend, stock cover and qualification times are illustrative figures set for this demonstration.
         </p>
       </div>
     </section>

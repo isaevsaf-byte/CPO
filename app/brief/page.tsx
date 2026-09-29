@@ -9,7 +9,6 @@ import BriefSection from '../components/brief/BriefSection';
 import PrintButton from '../components/brief/PrintButton';
 import RagStrip from '../components/brief/RagStrip';
 import RelativeAge from '../components/brief/RelativeAge';
-import SubscribeCta from '../components/brief/SubscribeCta';
 import WorldSignalsSection from '../components/brief/WorldSignalsSection';
 import {
   buildActionItems,
@@ -330,12 +329,9 @@ export default function BriefPage() {
           {/* 5 · World signals: only when the snapshot carries them */}
           {world && <WorldSignalsSection view={world} supplierNames={suppliers.map((supplier) => supplier.name)} />}
 
-          <SubscribeCta />
-
           <footer className="pt-2 text-xs text-gray-500 space-y-1 print:pt-1">
             <p>
-              Supply Chain Watchtower is a demonstration board built by Safar Isaev. Figures here are
-              illustrative.
+              Supply Chain Watchtower is a demonstration board. Figures here are illustrative.
             </p>
             <p>
               <Link href="/" className="underline hover:text-gray-700 print:no-underline">

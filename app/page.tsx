@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Dashboard from './components/board/Dashboard';
 import SupplierMap, { buildMapCountries } from './components/SupplierMap';
 import intel from '../data/intel_snapshot.json';
@@ -6,6 +7,8 @@ import type { IntelSnapshot, WorldSignalItem } from '../types/intel';
 import type { SupplierMapOverlay } from '../types/extras-track';
 
 const typedIntel = intel as unknown as IntelSnapshot;
+
+export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 // Chokepoints and the Rhine gauge, when the harvest has read them, become map
 // markers coloured by how far they are from normal.

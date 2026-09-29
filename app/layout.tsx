@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/react'
+import SiteNav from './components/SiteNav'
 import './globals.css'
 
 const SITE_URL = 'https://cpo-watchtower.co.uk'
@@ -8,21 +9,22 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'Supply Chain Watchtower — demo risk board',
   description:
-    'A demonstration board that reads macro conditions, competitor signals and a supplier watchlist as one picture, refreshed every six hours from public data.',
-  alternates: { canonical: '/' },
+    'A demonstration supplier-risk board: what changed, where the supply base is thin, what a disruption would cost and what to do about it, refreshed every six hours from public data.',
+  // No canonical or og:url here: set in the root layout they applied to every
+  // route, telling search engines that each supplier, region and brief page
+  // was a copy of the home page. The home page declares its own canonical.
   openGraph: {
     type: 'website',
-    url: SITE_URL,
     siteName: 'Supply Chain Watchtower',
     title: 'Supply Chain Watchtower — demo risk board',
     description:
-      'A demonstration board that reads macro conditions, competitor signals and a supplier watchlist as one picture, refreshed every six hours from public data.',
+      'What changed, where the supply base is thin, what a disruption would cost and what to do about it, for a 24-supplier watchlist.',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Supply Chain Watchtower — demo risk board',
     description:
-      'A demonstration board that reads macro conditions, competitor signals and a supplier watchlist as one picture.',
+      'What changed, where the supply base is thin, what a disruption would cost and what to do about it.',
   },
 }
 
@@ -54,6 +56,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <SampleDataBanner />
+        <SiteNav />
         {children}
         {/* Page views and the call-to-action clicks (see
             app/components/board/track.ts). Records nothing until Web

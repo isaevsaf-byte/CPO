@@ -53,16 +53,15 @@ export function useDataFreshness(options: UseDataFreshnessOptions = {}) {
     autoCheck = true,
   } = options;
 
+  // Starts as "not stale" and is measured in the effect below. Measuring it
+  // here ran at build time too, where the snapshot is minutes old, so a board
+  // read a day later rendered a stale badge the prerendered HTML didn't have —
+  // a hydration mismatch.
   const [state, setState] = useState<DataFreshnessState>(() => {
     const lastUpdate = lastUpdated ? parseSnapshotTime(lastUpdated) : null;
-    const now = new Date();
-    const hoursSinceUpdate = lastUpdate
-      ? (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60)
-      : Infinity;
-
     return {
-      isStale: hoursSinceUpdate > staleThresholdHours,
-      hoursSinceUpdate,
+      isStale: false,
+      hoursSinceUpdate: 0,
       lastUpdate,
       version: currentVersion || null,
       hasNewVersion: false,

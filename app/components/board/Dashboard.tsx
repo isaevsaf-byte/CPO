@@ -54,6 +54,18 @@ function formatUtc(isoString: string): string {
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}, ${hh}:${mm} UTC`;
 }
 
+// The header time in the reader's own time zone, which only the browser knows.
+// Rendered in UTC at build time and on the first client pass so the two agree,
+// then switched to local time once mounted.
+function UpdatedAt({ iso }: { iso?: string }) {
+  const [local, setLocal] = useState<string | null>(null);
+  useEffect(() => {
+    if (iso) setLocal(formatTimestamp(iso));
+  }, [iso]);
+  if (!iso) return <>Unknown</>;
+  return <>{local ?? formatUtc(iso)}</>;
+}
+
 function formatTimestamp(isoString: string | undefined): string {
   if (!isoString) return 'Unknown';
   try {
@@ -82,7 +94,15 @@ function HealthIndicator({ status }: { status: string }) {
 // How long the current overall score has been in effect — tells a CPO
 // whether today's status is a new blip or something that's been sitting
 // there for days, without exposing raw per-cycle check data.
-function currentStreakDuration(history: { overall: string; timestamp: string }[] | undefined): string | null {
+// Measured up to the snapshot's own timestamp rather than the reader's clock:
+// the page is prerendered at build time, and a value computed from Date.now()
+// differs between that render and the browser's, which React reports as a
+// hydration mismatch. "Stable for 8d as of the last harvest" is also the
+// accurate statement.
+function currentStreakDuration(
+  history: { overall: string; timestamp: string }[] | undefined,
+  asOf: string | undefined,
+): string | null {
   if (!history || history.length === 0) return null;
   const current = history[history.length - 1].overall;
   let streakStart = history[history.length - 1].timestamp;
@@ -90,7 +110,8 @@ function currentStreakDuration(history: { overall: string; timestamp: string }[]
     if (history[i].overall !== current) break;
     streakStart = history[i].timestamp;
   }
-  const hours = (Date.now() - parseSnapshotTime(streakStart).getTime()) / (1000 * 60 * 60);
+  const end = asOf ? parseSnapshotTime(asOf).getTime() : parseSnapshotTime(history[history.length - 1].timestamp).getTime();
+  const hours = (end - parseSnapshotTime(streakStart).getTime()) / (1000 * 60 * 60);
   if (hours < 1) return null;
   if (hours < 48) return `${Math.round(hours)}h`;
   return `${Math.round(hours / 24)}d`;
@@ -532,7 +553,7 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
               </div>
               <div className="sm:text-right">
                 <div className="text-sm text-blue-100 flex items-center gap-2 flex-wrap">
-                  <span>Last Updated: {formatTimestamp(typedIntel?.last_updated)}</span>
+                  <span>Last Updated: <UpdatedAt iso={typedIntel?.last_updated} /></span>
                   {isChecking && (
                     <span className="animate-spin text-xs">&#8635;</span>
                   )}
@@ -664,9 +685,9 @@ export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
                 )}
               </div>
             )}
-            {typedIntel.rag_history && typedIntel.rag_history.length > 1 && currentStreakDuration(typedIntel.rag_history) && (
+            {typedIntel.rag_history && typedIntel.rag_history.length > 1 && currentStreakDuration(typedIntel.rag_history, typedIntel.last_updated) && (
               <div className="w-full text-xs text-gray-500 pt-3 mt-1 border-t border-black/10">
-                {typedIntel.overall_rag.score === 'GREEN' ? 'Stable' : `Status unchanged`} for {currentStreakDuration(typedIntel.rag_history)}
+                {typedIntel.overall_rag.score === 'GREEN' ? 'Stable' : `Status unchanged`} for {currentStreakDuration(typedIntel.rag_history, typedIntel.last_updated)}
               </div>
             )}
             {typedIntel.rag_history && <RagSparkline history={typedIntel.rag_history} />}

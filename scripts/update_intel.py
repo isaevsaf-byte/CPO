@@ -1290,18 +1290,164 @@ SUPPLY_RISK_KEYWORDS = {
 }
 
 
-def classify_supply_headline(headline: str) -> tuple:
+# ----------------------------------------------------------------------------
+# Trade measures: only when the supplier is the one they are aimed at
+# ----------------------------------------------------------------------------
+# A sanction, embargo or ban says something about a supplier only when the
+# supplier is its target. Once inflections matched, "Smoore says US sanctions
+# on China won't hurt vape sales" named Smoore next to "sanctions" and read as
+# CRITICAL, which would have turned the board RED. These keywords now count
+# only when the headline aims the measure at the supplier. Otherwise they
+# count for nothing: the measure is aimed elsewhere, the country's standing
+# exposure is already its floor, and if the supplier's supply really is hit,
+# the headline's own words ("shortage", "disruption", "halts") score it.
+SUPPLY_TARGETED_KEYWORDS = {"sanction", "sanctioned", "embargo", "import ban", "export ban", "trade ban"}
+
+# Words that may sit between a supplier and "sanctioned" or "hit by":
+# "Smoore has been sanctioned", "EVE Energy was hit with sanctions".
+_AUX_WORDS = r"(?:is|was|were|has|have|had|been|gets|got|being|now|also|reportedly|formally)"
+
+# Words that end the object of a measure: in "sanctions on China could hit
+# Smoore" the object is China; in "US sanctions hit Smoore's rivals" there is
+# none.
+_OBJECT_ENDS = {
+    "on", "against", "hit", "hits", "will", "won't", "would", "could", "can", "may",
+    "might", "to", "over", "after", "amid", "as", "for", "following", "because",
+    "while", "but", "despite", "are", "is", "was", "were", "have", "has", "says",
+    "said", "say", "cost", "costs", "affect", "affects", "hurt", "hurts",
+}
+
+# Listings count only when aimed at the supplier and need no keyword above:
+# "US adds Smoore to entity list", "Smoore added to UFLPA list".
+_LISTING = r"(?:(?:entity|sanctions?|uflpa|export[\s-]control)\s+lists?|blacklist)"
+_ADDED_TO_LISTING = re.compile(
+    rf"\b(?:added|placed|put)\s+(?:on|to)\s+(?:the\s+)?(?:[\w.'-]+\s+){{0,2}}?{_LISTING}\b")
+_TO_LISTING = re.compile(rf"\s*to\s+(?:the\s+)?(?:[\w.'-]+\s+){{0,2}}?{_LISTING}\b")
+
+
+def supplier_mention_spans(text: str, supplier_name: str) -> list:
+    """(start, end) of each place a normalised headline names the supplier."""
+    identity = SUPPLIER_NEWS_IDENTITIES.get(supplier_name)
+    if identity is not None:
+        return identity.mention_spans(text)
+    return [
+        m.span()
+        for term in supplier_search_terms(supplier_name)
+        for m in re.finditer(r'\b' + re.escape(term.lower()) + r'\b', text)
+    ]
+
+
+def _object_end(text: str, start: int, max_words: int) -> int:
+    """End of the noun phrase starting at start: up to max_words, cut at a
+    clause break or at a word in _OBJECT_ENDS."""
+    end = start
+    for count, match in enumerate(re.finditer(r"\S+", text[start:])):
+        word = match.group(0)
+        if count >= max_words or word in ("-", "–", "—", "|") \
+                or word.strip(",.;:!?()|\"'") in _OBJECT_ENDS:
+            break
+        end = start + match.end()
+        if re.search(r"[,;:.!?()|]$", word):
+            break
+    return end
+
+
+def _mention_in(spans: list, start: int, end: int) -> bool:
+    return any(start <= s < end for s, _ in spans)
+
+
+def _mention_before(text: str, position: int, spans: list, joiner: str) -> bool:
+    """True if a mention ends just before position, joined to it by joiner."""
+    return any(e <= position and re.fullmatch(joiner, text[e:position]) for _, e in spans)
+
+
+def _measure_aimed_at_supplier(text: str, match, spans: list) -> bool:
+    after = text[match.end():]
+    on = re.match(r"\s+(?:on|against|targeting)\s+", after)
+    if on:                      # "sanctions on Smoore", "import ban on EVE Energy batteries"
+        start = match.end() + on.end()
+        return _mention_in(spans, start, _object_end(text, start, 8))
+    token = match.group(0)
+    single_word = " " not in token
+    # "US sanctions Smoore over vape exports", "Treasury sanctioned vape maker Smoore"
+    if single_word and token.endswith(("s", "ed")) \
+            and _mention_in(spans, match.end(), _object_end(text, match.end(), 4)):
+        return True
+    # "Smoore sanctioned", "Smoore has been sanctioned"
+    if single_word and token.endswith("ed") \
+            and _mention_before(text, match.start(), spans, rf"(?:'s)?\s+(?:{_AUX_WORDS}\s+){{0,3}}"):
+        return True
+    # "Smoore hit with US sanctions", "EVE Energy was hit by an import ban"
+    return _mention_before(
+        text, match.start(), spans,
+        rf"(?:'s)?\s+(?:{_AUX_WORDS}\s+){{0,2}}(?:hit|struck|targeted|slapped)\s+(?:by|with)\s+"
+        rf"(?:[\w.'&-]+\s+){{0,3}}",
+    )
+
+
+def _targeted_measure_hit(text: str, keyword: str, spans: list) -> bool:
+    return any(
+        not _negated_before(text, match.start()) and _measure_aimed_at_supplier(text, match, spans)
+        for match in _keyword_pattern(keyword).finditer(text)
+    )
+
+
+def supplier_listing_hit(text: str, spans: list):
+    """"entity list", "blacklist" or "ban" when the headline lists or bans
+    the supplier itself, else None."""
+    for match in _ADDED_TO_LISTING.finditer(text):       # "Smoore added to entity list"
+        if not _negated_before(text, match.start()) and _mention_before(
+                text, match.start(), spans, rf"(?:'s)?\s+(?:{_AUX_WORDS}\s+){{0,3}}"):
+            return "blacklist" if "blacklist" in match.group(0) else "entity list"
+    for match in re.finditer(r"\badd(?:s|ed|ing)?\s+", text):   # "US adds Smoore to entity list"
+        if _negated_before(text, match.start()):
+            continue
+        end = _object_end(text, match.end(), 5)
+        for s, e in spans:
+            if match.end() <= s < end:
+                listing = _TO_LISTING.match(text, e)
+                if listing:
+                    return "blacklist" if "blacklist" in listing.group(0) else "entity list"
+    for match in re.finditer(r"\bblacklist(?:s|ed)\b", text):
+        if _negated_before(text, match.start()):
+            continue
+        if _mention_in(spans, match.end(), _object_end(text, match.end(), 4)):       # "US blacklists Smoore"
+            return "blacklist"
+        if match.group(0).endswith("ed") and _mention_before(                        # "Smoore blacklisted"
+                text, match.start(), spans, rf"(?:'s)?\s+(?:{_AUX_WORDS}\s+){{0,3}}"):
+            return "blacklist"
+    for match in re.finditer(r"\bbans\b", text):                                     # "US bans Smoore vapes"
+        if not _negated_before(text, match.start()) \
+                and _mention_in(spans, match.end(), _object_end(text, match.end(), 4)):
+            return "ban"
+    return None
+
+
+def classify_supply_headline(headline: str, supplier_name: str = None) -> tuple:
     """(level, keyword) for the most severe supply-risk keyword in one headline,
-    or ("LOW", None)."""
-    text = headline.lower()
+    or ("LOW", None).
+
+    A trade-measure keyword (SUPPLY_TARGETED_KEYWORDS) counts only when the
+    headline aims the measure at supplier_name; without a supplier it never
+    counts.
+    """
+    text = _headline_text(headline)
+    spans = supplier_mention_spans(text, supplier_name) if supplier_name else []
     for level in ("CRITICAL", "HIGH", "MEDIUM"):
         for keyword in SUPPLY_RISK_KEYWORDS[level]:
-            if _keyword_hit(text, keyword):
+            if keyword in SUPPLY_TARGETED_KEYWORDS:
+                if spans and _targeted_measure_hit(text, keyword, spans):
+                    return level, keyword
+            elif _keyword_hit(text, keyword):
                 return level, keyword
+        if level == "CRITICAL" and spans:
+            listing = supplier_listing_hit(text, spans)
+            if listing:
+                return "CRITICAL", listing
     return "LOW", None
 
 
-def most_severe_supply_headline(headlines: list) -> tuple:
+def most_severe_supply_headline(headlines: list, supplier_name: str = None) -> tuple:
     """(level, keyword, headline) for the most severe of headlines, earliest
     first on a tie, or ("LOW", None, None).
 
@@ -1311,7 +1457,7 @@ def most_severe_supply_headline(headlines: list) -> tuple:
     """
     best = ("LOW", None, None)
     for headline in headlines:
-        level, keyword = classify_supply_headline(headline)
+        level, keyword = classify_supply_headline(headline, supplier_name)
         if RISK_PRIORITY[level] > RISK_PRIORITY[best[0]]:
             best = (level, keyword, headline)
             if level == "CRITICAL":
@@ -1353,7 +1499,7 @@ def scan_supplier_news_google(supplier_name, country):
     if not naming:
         return [], "LOW", ""
 
-    max_level, keyword, flagged = most_severe_supply_headline(naming)
+    max_level, keyword, flagged = most_severe_supply_headline(naming, supplier_name)
     if flagged:
         naming = [flagged] + [title for title in naming if title != flagged]
     reason = {
@@ -1705,6 +1851,10 @@ class NewsIdentity:
             for bare in spec.get("bare", []):
                 name = _phrase_regex(bare)
                 self.exclude_near.append(re.compile(f"{name}{gap}{near}|{near}{gap}{name}"))
+
+    def mention_spans(self, text: str) -> list:
+        """(start, end) of each name or bare name in normalised headline text."""
+        return [m.span() for p in self.names + self.bare for m in p.finditer(text)]
 
     def matches(self, headline: str) -> bool:
         text = _headline_text(headline)
@@ -2794,7 +2944,7 @@ def process_suppliers(cyber_data, recalls_data=None, sanctions_data=None,
 
             # Every headline is read and the most severe one wins; the one shown
             # is the headline that carried the signal, not merely the first.
-            level, kw, flagged = most_severe_supply_headline(headlines_list)
+            level, kw, flagged = most_severe_supply_headline(headlines_list, supplier_name)
             news_headline = flagged or (headlines_list[0] if headlines_list else "")
             if flagged:
                 news_risk = True

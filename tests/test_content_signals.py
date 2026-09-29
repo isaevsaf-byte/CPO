@@ -822,3 +822,80 @@ def test_a_supplier_link_must_be_http_too(harvester, tmp_path):
     _, profiles, _ = harvester._load_watchlist(path)
     assert profiles["Acme"]["url"] is None
     assert profiles["Beta"]["url"] == "https://beta.example"
+
+
+# ---------------------------------------------------------------------------
+# 8. Trade measures count for a supplier only when aimed at it
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "supplier,headline,keyword",
+    [
+        ("Smoore", "US sanctions Smoore over vape exports to Iran", "sanction"),
+        ("Smoore", "Treasury imposes sanctions on Smoore", "sanction"),
+        ("EVE Energy", "New US sanctions on Smoore and EVE Energy", "sanction"),
+        ("Smoore", "Treasury sanctions vape maker Smoore", "sanction"),
+        ("Smoore", "New US sanctions target Smoore", "sanction"),
+        ("Smoore", "Smoore sanctioned by US Treasury", "sanction"),
+        ("Smoore", "Smoore has been sanctioned over Iran links", "sanction"),
+        ("Smoore", "Smoore hit with US sanctions", "sanction"),
+        ("EVE Energy", "EVE Energy was hit by an EU import ban", "import ban"),
+        ("EVE Energy", "US import ban on EVE Energy batteries takes effect", "import ban"),
+        ("Smoore", "Embargo on Smoore devices announced", "embargo"),
+        ("Smoore", "US adds Smoore to entity list", "entity list"),
+        ("Smoore", "Smoore added to the US entity list", "entity list"),
+        ("Smoore", "Smoore added to UFLPA list", "entity list"),
+        ("Smoore", "US blacklists Smoore", "blacklist"),
+        ("Smoore", "Smoore blacklisted by Commerce Department", "blacklist"),
+        ("Smoore", "US bans Smoore vapes", "ban"),
+    ],
+)
+def test_a_measure_aimed_at_the_supplier_is_critical(harvester, supplier, headline, keyword):
+    assert harvester.classify_supply_headline(headline, supplier) == ("CRITICAL", keyword)
+
+
+@pytest.mark.parametrize(
+    "supplier,headline,expected",
+    [
+        # The supplier comments on, or is near, a measure aimed elsewhere.
+        ("Smoore", "Smoore says US sanctions on China won't hurt vape sales", "LOW"),
+        ("Smoore", "Sanctions on China could hit Smoore", "LOW"),
+        ("Smoore", "US sanctions hit Smoore's rivals", "LOW"),
+        ("Smoore", "Smoore rival hit by sanctions", "LOW"),
+        ("Smoore", "Smoore's supplier sanctioned", "LOW"),
+        ("Smoore", "Smoore shares rise as sanctions fears ease", "LOW"),
+        ("EVE Energy", "EVE Energy says EU import ban on Chinese batteries won't hurt", "LOW"),
+        ("Smoore", "US denies sanctions on Smoore", "LOW"),
+        # A real supply effect is still scored, by its own words.
+        ("Smoore", "Smoore warns of supply disruption from US sanctions on China", "MEDIUM"),
+    ],
+)
+def test_a_measure_aimed_elsewhere_is_not_a_supplier_event(harvester, supplier, headline, expected):
+    assert harvester.classify_supply_headline(headline, supplier)[0] == expected
+
+
+def test_without_a_supplier_a_measure_never_counts(harvester):
+    assert harvester.classify_supply_headline("US sanctions Smoore over vape exports") == ("LOW", None)
+
+
+def test_the_board_stays_calm_when_a_supplier_comments_on_sanctions(listed_supplier):
+    row = listed_supplier("Smoore", "EMS", "China", "6969.HK",
+                          ["Smoore says US sanctions on China won't hurt vape sales"])
+    assert row["risk_level"] == "LOW"
+    assert row["news_risk"] is False
+
+
+def test_a_sanctioned_supplier_is_critical_end_to_end(listed_supplier):
+    row = listed_supplier("Smoore", "EMS", "China", "6969.HK",
+                          ["US sanctions Smoore over vape exports to Iran"])
+    assert row["risk_level"] == "CRITICAL"
+    assert row["news_items"][0]["keyword"] == "sanction"
+
+
+def test_the_unlisted_scan_is_target_aware_too(harvester, monkeypatch):
+    monkeypatch.setattr(harvester, "fetch_google_news_rss", lambda query, max_results=5: [
+        rss_item("CNT says sanctions on Russia won't affect nicotine supply")])
+    assert harvester.scan_supplier_news_google("CNT", "Switzerland")[1] == "LOW"
+    monkeypatch.setattr(harvester, "fetch_google_news_rss", lambda query, max_results=5: [
+        rss_item("US sanctions on CNT nicotine exports")])
+    assert harvester.scan_supplier_news_google("CNT", "Switzerland")[1] == "CRITICAL"

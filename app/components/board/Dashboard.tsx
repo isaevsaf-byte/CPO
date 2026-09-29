@@ -1,0 +1,1496 @@
+'use client';
+
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import intel from '../../../data/intel_snapshot.json';
+import { useDataFreshness } from '../../../hooks/useDataFreshness';
+import type {
+  IntelSnapshot,
+  RAGScore as RAGScoreType,
+  Supplier,
+  PeerGroupItem,
+  ChangeLogEntry,
+  MacroEconomyRegion,
+  RagHistoryEntry,
+} from '../../../types/intel';
+import {
+  getRAGColor,
+  getRAGLabel,
+  getExposureColor,
+  RAG_COLORS,
+  RAG_LABELS,
+} from '../../../types/intel';
+import CtaBanner from './CtaBanner';
+import Concentration from './Concentration';
+import Scenarios from './Scenarios';
+import WorldSignals, { severityTone } from './WorldSignals';
+import SourceHealthList, { SourceHealthBadge } from './SourceHealth';
+import { BOOKING_URL, CASE_STUDY_URL, AUTHOR_NAME } from './links';
+import RegulatoryCalendar from '../RegulatoryCalendar';
+import { trackEvent } from './track';
+
+// Cast intel to proper type
+const typedIntel = intel as unknown as IntelSnapshot;
+
+// Snapshots written before timestamps carried an offset are bare UTC
+// date-times, and JavaScript resolves those as LOCAL time — which showed an
+// 18:22 UTC harvest as "6:22 PM GMT+1" and skewed every age calculation by
+// the reader's offset. The harvester now emits +00:00 (see utc_now_iso), and
+// this pins the older entries still sitting in rag_history to UTC as well.
+function parseSnapshotTime(isoString: string): Date {
+  const hasZone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(isoString);
+  return new Date(hasZone ? isoString : `${isoString}Z`);
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// "28 Sep, 12:14 UTC" — built from UTC fields only, so it renders identically
+// at build time and in any reader's browser.
+function formatUtc(isoString: string): string {
+  const d = parseSnapshotTime(isoString);
+  if (Number.isNaN(d.getTime())) return isoString;
+  const hh = String(d.getUTCHours()).padStart(2, '0');
+  const mm = String(d.getUTCMinutes()).padStart(2, '0');
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}, ${hh}:${mm} UTC`;
+}
+
+function formatTimestamp(isoString: string | undefined): string {
+  if (!isoString) return 'Unknown';
+  try {
+    const date = parseSnapshotTime(isoString);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    });
+  } catch {
+    return 'Unknown';
+  }
+}
+
+// Health status indicator component
+function HealthIndicator({ status }: { status: string }) {
+  const color = status === 'success' ? 'bg-green-500' : status === 'error' ? 'bg-red-500' : 'bg-yellow-500';
+  return (
+    <span className={`inline-block w-2 h-2 rounded-full ${color}`} title={`Status: ${status}`} />
+  );
+}
+
+// How long the current overall score has been in effect — tells a CPO
+// whether today's status is a new blip or something that's been sitting
+// there for days, without exposing raw per-cycle check data.
+function currentStreakDuration(history: { overall: string; timestamp: string }[] | undefined): string | null {
+  if (!history || history.length === 0) return null;
+  const current = history[history.length - 1].overall;
+  let streakStart = history[history.length - 1].timestamp;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].overall !== current) break;
+    streakStart = history[i].timestamp;
+  }
+  const hours = (Date.now() - parseSnapshotTime(streakStart).getTime()) / (1000 * 60 * 60);
+  if (hours < 1) return null;
+  if (hours < 48) return `${Math.round(hours)}h`;
+  return `${Math.round(hours / 24)}d`;
+}
+
+// Keys for the reader's own visit clock. The snapshot is shared and static;
+// "since I last looked" is per-person, so it lives in the browser.
+const VISIT_ANCHOR_KEY = 'watchtower:visit-anchor';
+const LAST_SEEN_KEY = 'watchtower:last-seen';
+// Reloading the page mid-session should not wipe the feed the reader is
+// still working through, so the anchor only advances after a real gap away.
+const SESSION_GAP_MS = 30 * 60 * 1000;
+const FIRST_VISIT_WINDOW_DAYS = 7;
+const COLLAPSED_ENTRY_COUNT = 6;
+
+function relativeAge(date: Date): string {
+  const minutes = (Date.now() - date.getTime()) / (1000 * 60);
+  if (minutes < 60) return `${Math.max(1, Math.round(minutes))}m ago`;
+  const hours = minutes / 60;
+  if (hours < 36) return `${Math.round(hours)}h ago`;
+  return `${Math.round(hours / 24)}d ago`;
+}
+
+// What happened to this supplier, with the standing country floor set aside.
+// Nine of the twenty-four sit in a country carrying a floor, so reading the
+// combined level put a third of the watchlist at MEDIUM every day of the year —
+// the same amber pill as a supplier that had a CVE published that morning.
+// Older snapshots have no event_risk_level, so they fall back to the combined
+// one and simply keep the previous behaviour.
+function eventLevel(supplier: Supplier): string {
+  return (supplier as any).event_risk_level ?? supplier.risk_level;
+}
+
+// True when this supplier is only flagged because of where it operates.
+function isStructuralOnly(supplier: Supplier): boolean {
+  const geo = supplier.geopolitical_risk;
+  return !!geo?.escalated && geo?.baseline_only !== false;
+}
+
+const MACRO_REGIONS = [
+  { key: 'us' as const, flag: '🇺🇸', label: 'US' },
+  { key: 'eu' as const, flag: '🇪🇺', label: 'EU' },
+  { key: 'china' as const, flag: '🇨🇳', label: 'China' },
+];
+
+// One card per region, replacing three near-identical hand-written blocks.
+// Shows the live market move against that market's own normal daily range —
+// a bare "-0.58%" tells a reader nothing about whether to care — and states
+// plainly where an official statistic has no live feed behind it, instead of
+// printing a hardcoded number that hasn't changed in months.
+function MacroCard({
+  regionKey,
+  flag,
+  label,
+  data,
+}: {
+  regionKey: string;
+  flag: string;
+  label: string;
+  data?: MacroEconomyRegion;
+}) {
+  // The snapshot is a flat file that lags a deploy: after a release the board
+  // serves the new UI against whatever the last harvest wrote, for up to six
+  // hours. Rendering an older snapshot's macro block field-by-field silently
+  // resurrected exactly what this release removed — hardcoded CPI and policy
+  // rates, with no observation date beside them. A snapshot without
+  // market_label predates the current shape, so the card says so instead.
+  const isCurrentShape = data?.market_label != null;
+  const severity = data?.market_severity ?? 'quiet';
+  const change = data?.market_change_pct;
+  const sigma = data?.market_sigma_pct;
+  const moveTone =
+    severity === 'severe' ? 'text-red-700' :
+    severity === 'notable' ? 'text-amber-700' :
+    change != null && change > 0 ? 'text-green-700' : 'text-gray-700';
+
+  return (
+    <Link
+      href={`/macro/${regionKey}`}
+      className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 block hover:border-gray-300 transition-colors cursor-pointer"
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">{flag}</span>
+          <span className="font-bold text-gray-900">{label}</span>
+        </div>
+        {severity !== 'quiet' && (
+          <span className={`text-xs font-semibold uppercase tracking-wide ${moveTone}`}>
+            {severity === 'severe' ? 'Sharp move' : 'Unusual move'}
+          </span>
+        )}
+      </div>
+
+      {!isCurrentShape ? (
+        <p className="text-sm text-gray-500 leading-relaxed">
+          Waiting for the next harvest — the current snapshot was written before
+          this reading was added.
+        </p>
+      ) : (
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between items-baseline gap-2">
+          <span className="text-gray-600">{data?.market_label || 'Market'}</span>
+          <span className={`font-mono font-semibold ${moveTone}`}>
+            {change != null ? `${change > 0 ? '+' : ''}${change.toFixed(2)}%` : '—'}
+          </span>
+        </div>
+        {sigma != null && (
+          <div className="text-xs text-gray-400 text-right -mt-1">
+            normal day: ±{sigma.toFixed(1)}%
+          </div>
+        )}
+        <div className="flex justify-between items-baseline gap-2">
+          <span className="text-gray-600">CPI</span>
+          <span className="font-mono font-semibold text-gray-900">
+            {data?.cpi ?? <span className="font-sans text-xs text-gray-400">not connected</span>}
+            {data?.cpi && data?.cpi_as_of && (
+              <span className="ml-1 font-sans text-xs font-normal text-gray-400">{data.cpi_as_of}</span>
+            )}
+          </span>
+        </div>
+        <div className="flex justify-between items-baseline gap-2">
+          <span className="text-gray-600">Policy rate</span>
+          <span className="font-mono font-semibold text-gray-900">
+            {data?.rate ?? <span className="font-sans text-xs text-gray-400">not connected</span>}
+            {data?.rate && data?.rate_as_of && (
+              <span className="ml-1 font-sans text-xs font-normal text-gray-400">{data.rate_as_of}</span>
+            )}
+          </span>
+        </div>
+      </div>
+      )}
+    </Link>
+  );
+}
+
+// Twenty days of overall status at a glance: whether today's colour is a blip
+// or the tail of a run. The history was already in the snapshot and nothing
+// rendered it.
+function RagSparkline({ history }: { history: RagHistoryEntry[] }) {
+  const recent = history.slice(-60);
+  if (recent.length < 4) return null;
+
+  const tone = (score: string) =>
+    score === 'RED' ? 'bg-red-500' : score === 'AMBER' ? 'bg-amber-400' : 'bg-green-500';
+
+  // Every label here is derived from the data itself rather than from the
+  // clock or the viewer's locale. `toLocaleString()` formats differently on
+  // the server and in the browser (8/15/2026 vs 15/08/2026), which React
+  // reports as a hydration mismatch, and anything measured against Date.now()
+  // drifts between the two renders for the same reason.
+  const first = parseSnapshotTime(recent[0].timestamp);
+  const last = parseSnapshotTime(recent[recent.length - 1].timestamp);
+  const spanDays = Math.max(1, Math.round((last.getTime() - first.getTime()) / 86_400_000));
+  const stamp = (iso: string) => parseSnapshotTime(iso).toISOString().slice(0, 16).replace('T', ' ');
+
+  return (
+    <div className="w-full pt-3 mt-1 border-t border-black/10">
+      <div className="flex items-end gap-[2px] h-6" aria-hidden="true">
+        {recent.map((entry, idx) => (
+          <div
+            key={idx}
+            title={`${stamp(entry.timestamp)} UTC — ${entry.overall}`}
+            className={`flex-1 rounded-sm ${tone(entry.overall)} ${
+              entry.overall === 'GREEN' ? 'h-2' : entry.overall === 'AMBER' ? 'h-4' : 'h-6'
+            }`}
+          />
+        ))}
+      </div>
+      <div className="mt-1 flex justify-between text-[11px] text-gray-500">
+        <span>last {spanDays} days</span>
+        <span>now</span>
+      </div>
+    </div>
+  );
+}
+
+function ChangeEntryRow({ entry }: { entry: ChangeLogEntry }) {
+  const marker =
+    entry.direction === 'up' ? { glyph: '▲', tone: 'text-red-600' } :
+    entry.direction === 'down' ? { glyph: '▼', tone: 'text-green-600' } :
+    { glyph: '•', tone: 'text-gray-400' };
+
+  const body = (
+    <>
+      <div className="text-sm font-medium text-gray-900">{entry.headline}</div>
+      {entry.detail && (
+        <div className="text-xs text-gray-600 mt-0.5 leading-relaxed">{entry.detail}</div>
+      )}
+    </>
+  );
+
+  return (
+    <li className="flex items-start gap-3 py-2.5">
+      <span className={`shrink-0 pt-0.5 text-sm ${marker.tone}`} aria-hidden="true">
+        {marker.glyph}
+      </span>
+      <div className="min-w-0 flex-1">
+        {entry.href ? (
+          <Link href={entry.href} className="block hover:underline">{body}</Link>
+        ) : (
+          body
+        )}
+      </div>
+      <span className="shrink-0 text-xs text-gray-400 whitespace-nowrap pt-0.5">
+        {relativeAge(parseSnapshotTime(entry.at))}
+      </span>
+    </li>
+  );
+}
+
+// "What moved since you last looked" — the question a status board cannot
+// answer. An all-clear board is identical every morning, which is a poor
+// reason to open it again; this section has content on quiet days too.
+function ChangeFeed({ entries }: { entries: ChangeLogEntry[] }) {
+  const [anchor, setAnchor] = useState<Date | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const now = Date.now();
+    let resolvedAnchor: string | null = null;
+    try {
+      const lastSeenRaw = window.localStorage.getItem(LAST_SEEN_KEY);
+      const lastSeen = lastSeenRaw ? new Date(lastSeenRaw).getTime() : null;
+
+      if (lastSeen && now - lastSeen > SESSION_GAP_MS) {
+        // Returning after a break: diff from the end of the previous visit.
+        resolvedAnchor = lastSeenRaw;
+      } else if (lastSeen) {
+        // Same working session — keep whatever window is already on screen.
+        resolvedAnchor = window.localStorage.getItem(VISIT_ANCHOR_KEY);
+      }
+
+      if (resolvedAnchor) {
+        window.localStorage.setItem(VISIT_ANCHOR_KEY, resolvedAnchor);
+      }
+      window.localStorage.setItem(LAST_SEEN_KEY, new Date(now).toISOString());
+    } catch {
+      // Private mode / blocked storage: fall back to the first-visit window.
+      resolvedAnchor = null;
+    }
+
+    setAnchor(resolvedAnchor ? new Date(resolvedAnchor) : null);
+    setMounted(true);
+  }, []);
+
+  const sorted = useMemo(
+    () => [...entries].sort(
+      (a, b) => parseSnapshotTime(b.at).getTime() - parseSnapshotTime(a.at).getTime()
+    ),
+    [entries]
+  );
+
+  const cutoff = anchor
+    ? anchor.getTime()
+    : Date.now() - FIRST_VISIT_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  const sinceVisit = sorted.filter((entry) => parseSnapshotTime(entry.at).getTime() > cutoff);
+
+  if (entries.length === 0) return null;
+
+  // Rendered only after the visit clock is read, so the server and the first
+  // client pass agree on markup.
+  if (!mounted) {
+    return <div className="mb-8 h-32 rounded-xl border border-gray-200 bg-white" aria-hidden="true" />;
+  }
+
+  const hasNew = sinceVisit.length > 0;
+  const shown = hasNew ? sinceVisit : sorted.slice(0, 3);
+  const visible = expanded ? shown : shown.slice(0, COLLAPSED_ENTRY_COUNT);
+
+  return (
+    <div className="mb-8 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-gray-200 bg-gray-50 px-6 py-4">
+        <h2 className="text-lg font-bold text-gray-900">
+          {hasNew
+            ? `${sinceVisit.length} change${sinceVisit.length > 1 ? 's' : ''}${anchor ? ' since your last visit' : ' recently'}`
+            : anchor
+              ? 'Nothing new since your last visit'
+              : 'No changes recorded yet'}
+        </h2>
+        <span className="text-xs text-gray-500">
+          {anchor
+            ? `Last visit ${relativeAge(anchor)}`
+            : `Showing the last ${FIRST_VISIT_WINDOW_DAYS} days`}
+        </span>
+      </div>
+      <div className="px-6 py-2">
+        {!hasNew && (
+          <p className="pt-2 text-sm text-gray-500">
+            Most recent activity{anchor ? ', from before your last visit' : ''}:
+          </p>
+        )}
+        <ul className="divide-y divide-gray-100">
+          {visible.map((entry, idx) => (
+            <ChangeEntryRow key={`${entry.at}-${entry.entity}-${idx}`} entry={entry} />
+          ))}
+        </ul>
+        {shown.length > COLLAPSED_ENTRY_COUNT && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="mb-3 mt-1 text-sm font-medium text-blue-800 hover:underline"
+          >
+            {expanded ? 'Show less' : `Show all ${shown.length}`}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// The map is drawn at build time by a server component (see
+// app/components/SupplierMap.tsx), so it arrives here ready-made from the
+// server page rather than being computed in the browser.
+export default function Dashboard({ mapSlot }: { mapSlot?: React.ReactNode }) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [riskFilter, setRiskFilter] = useState<'all' | 'cyber' | 'news' | 'operational' | 'critical' | 'high' | 'medium' | 'geopolitical' | 'sanctions' | 'recall'>('all');
+
+  // Use the data freshness hook
+  const {
+    isStale,
+    hoursSinceUpdate,
+    hasNewVersion,
+    isChecking,
+    refreshData,
+    dismissNewVersion,
+  } = useDataFreshness({
+    currentVersion: typedIntel.version,
+    lastUpdated: typedIntel.last_updated,
+    checkInterval: 5 * 60 * 1000, // Check every 5 minutes
+    staleThresholdHours: 24,
+  });
+
+  const macro = typedIntel?.macro || {} as IntelSnapshot['macro'];
+  const peers = typedIntel?.peers || {} as IntelSnapshot['peers'];
+  const suppliers = typedIntel?.suppliers || {} as IntelSnapshot['suppliers'];
+  const macroEconomy = typedIntel?.macro_economy || {} as IntelSnapshot['macro_economy'];
+  const peerGroup = typedIntel?.peer_group || [] as PeerGroupItem[];
+
+  // Group suppliers by category
+  const suppliersByCategory: { [key: string]: Supplier[] } = {};
+  const suppliersList: Supplier[] = suppliers?.suppliers || [];
+
+  suppliersList.forEach((supplier: Supplier) => {
+    const category = supplier.category || 'Other';
+    if (!suppliersByCategory[category]) {
+      suppliersByCategory[category] = [];
+    }
+    suppliersByCategory[category].push(supplier);
+  });
+
+  // Concrete "what to actually look at" list for the Overall Status banner
+  // — naming specific companies and reasons instead of just "Suppliers".
+  // Sanctions matches first (most urgent), then CRITICAL, then HIGH.
+  type ActionItem = { label: string; href: string };
+  const actionItems: ActionItem[] = [];
+  suppliersList
+    .filter((s: any) => s.sanctions_hit)
+    .forEach((s) => actionItems.push({
+      label: `Verify possible sanctions match: ${s.name}`,
+      href: `/details/${encodeURIComponent(s.name)}`,
+    }));
+  suppliersList
+    .filter((s) => eventLevel(s) === 'CRITICAL' && !s.sanctions_hit)
+    .forEach((s) => actionItems.push({ label: `${s.name}: ${s.last_signal}`, href: `/details/${encodeURIComponent(s.name)}` }));
+  peerGroup
+    .filter((p) => p.risk_level === 'CRITICAL')
+    .forEach((p) => actionItems.push({ label: `${p.name}: ${p.last_signal}`, href: `/details/${encodeURIComponent(p.name)}` }));
+  if (actionItems.length < 3) {
+    suppliersList
+      .filter((s) => eventLevel(s) === 'HIGH')
+      .forEach((s) => actionItems.push({ label: `${s.name}: ${s.last_signal}`, href: `/details/${encodeURIComponent(s.name)}` }));
+  }
+  const topActionItems = actionItems.slice(0, 3);
+
+  // Suppliers whose current risk level reflects something that actually
+  // happened this cycle, rather than the standing floor applied to every
+  // supplier in a flagged country. Same filter process_suppliers applies for
+  // the pillar RAG rollup, recomputed here from the list itself so a headline
+  // count can never disagree with the rows its filter reveals.
+  const actionableCritical = suppliersList.filter((s) => eventLevel(s) === 'CRITICAL').length;
+  const actionableHigh = suppliersList.filter((s) => eventLevel(s) === 'HIGH').length;
+  const actionableMedium = suppliersList.filter((s) => eventLevel(s) === 'MEDIUM').length;
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white shadow-lg overflow-hidden">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 py-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Global Supply Chain Watchtower</h1>
+              <p className="text-blue-100 mt-2 text-sm sm:text-base max-w-2xl">
+                What changed, where the supply base is thin and what to do about it, for a 24-supplier watchlist, from public data every six hours.
+              </p>
+            </div>
+            <div className="flex flex-col sm:items-end gap-3">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                {/* Source health: per-source when the harvest records it,
+                    otherwise the older per-pillar dots. */}
+                {typedIntel.source_health ? (
+                  <SourceHealthBadge health={typedIntel.source_health} />
+                ) : (
+                  <div className="flex items-center gap-2" title="Data Source Health">
+                    <span className="text-xs text-blue-200 mr-1">Health:</span>
+                    <HealthIndicator status={macro?.status || 'unknown'} />
+                    <HealthIndicator status={peers?.status || 'unknown'} />
+                    <HealthIndicator status={suppliers?.status || 'unknown'} />
+                  </div>
+                )}
+
+                <Link
+                  href="/geopolitical"
+                  className="text-xs text-blue-200 hover:text-white underline decoration-dotted underline-offset-2"
+                  title="Experimental GDELT-based geopolitical signal, not part of the main risk score"
+                >
+                  🌍 Geopolitical Intel (beta)
+                </Link>
+
+                <a
+                  href={BOOKING_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackEvent('cta_book_call', { placement: 'header' })}
+                  className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-blue-900 hover:bg-blue-50"
+                >
+                  Get this on your suppliers
+                </a>
+
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="p-2 rounded-full hover:bg-blue-800 transition-colors"
+                  aria-label="About this Tool"
+                  title="About this Tool"
+                >
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+              </div>
+              <div className="sm:text-right">
+                <div className="text-sm text-blue-100 flex items-center gap-2 flex-wrap">
+                  <span>Last Updated: {formatTimestamp(typedIntel?.last_updated)}</span>
+                  {isChecking && (
+                    <span className="animate-spin text-xs">&#8635;</span>
+                  )}
+                </div>
+                {typedIntel?.version && (
+                  <div className="text-xs text-blue-200 font-mono truncate max-w-[220px] sm:max-w-none">
+                    v{typedIntel.version}
+                  </div>
+                )}
+                {isStale && (
+                  <span className="inline-block mt-2 bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    &#9888; Data Stale ({Math.round(hoursSinceUpdate)}h old)
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* New Version Available Banner */}
+      {hasNewVersion && (
+        <div className="bg-blue-600 text-white px-4 py-3">
+          <div className="max-w-[100rem] mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="text-lg">&#128260;</span>
+              <span className="font-medium">New data available! Click refresh to see the latest intelligence.</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={refreshData}
+                className="bg-white text-blue-600 px-4 py-1.5 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+              >
+                Refresh Now
+              </button>
+              <button
+                onClick={dismissNewVersion}
+                className="text-blue-200 hover:text-white px-2 py-1"
+                aria-label="Dismiss"
+              >
+                &#10005;
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-[100rem] mx-auto px-6 py-8">
+        <ChangeFeed entries={typedIntel?.change_log ?? []} />
+
+        {/* Overall Status Rollup — single "should I worry today" answer,
+            derived from the worst of the three pillar RAG scores below */}
+        {typedIntel?.overall_rag && (
+          <div className={`mb-8 rounded-xl border-2 p-6 flex flex-wrap items-center justify-between gap-4 ${
+            typedIntel.overall_rag.score === 'RED' ? 'bg-red-50 border-red-300' :
+            typedIntel.overall_rag.score === 'AMBER' ? 'bg-amber-50 border-amber-300' :
+            'bg-green-50 border-green-300'
+          }`}>
+            <div className="flex items-center gap-4">
+              <span className="text-4xl" aria-hidden="true">
+                {typedIntel.overall_rag.score === 'RED' ? '🔴' : typedIntel.overall_rag.score === 'AMBER' ? '🟡' : '🟢'}
+              </span>
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">Overall Status</div>
+                <div className={`text-2xl font-bold ${
+                  typedIntel.overall_rag.score === 'RED' ? 'text-red-800' :
+                  typedIntel.overall_rag.score === 'AMBER' ? 'text-amber-800' :
+                  'text-green-800'
+                }`}>
+                  {typedIntel.overall_rag.score === 'RED'
+                    ? (topActionItems.length > 0
+                        ? `${topActionItems.length} item${topActionItems.length > 1 ? 's' : ''} need review`
+                        : 'Action needed today')
+                    : typedIntel.overall_rag.score === 'AMBER' ? 'Monitor closely' :
+                   'All clear'}
+                </div>
+              </div>
+            </div>
+            {typedIntel.overall_rag.score !== 'GREEN' && topActionItems.length > 0 && (
+              <div className="text-sm text-gray-700 w-full sm:w-auto">
+                <ul className="space-y-1">
+                  {topActionItems.map((item, idx) => (
+                    <li key={idx}>
+                      <Link href={item.href} className="hover:underline">
+                        <span className="text-gray-500">→</span> {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {typedIntel.overall_rag.score !== 'GREEN' && topActionItems.length === 0 && typedIntel.overall_rag.driven_by?.length > 0 && (
+              <div className="text-sm text-gray-700">
+                Driven by:{' '}
+                <span className="font-semibold capitalize">
+                  {typedIntel.overall_rag.driven_by.join(', ')}
+                </span>
+                <span className="text-gray-500"> — see below for detail</span>
+              </div>
+            )}
+            {typedIntel.executive_summary && (
+              <div className="w-full pt-4 mt-1 border-t border-black/10 space-y-3">
+                <p className="text-base font-semibold text-gray-900 leading-snug max-w-3xl">
+                  {typedIntel.executive_summary.headline}
+                </p>
+                {typedIntel.executive_summary.context && (
+                  <p className="text-sm text-gray-600 leading-relaxed max-w-3xl">
+                    {typedIntel.executive_summary.context}
+                  </p>
+                )}
+                {typedIntel.executive_summary.next_step && (
+                  <div className="flex items-start gap-2.5 max-w-3xl rounded-lg border border-black/5 bg-white/60 px-3.5 py-2.5">
+                    <span className="shrink-0 pt-0.5 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                      Next step
+                    </span>
+                    <span className="text-sm font-medium text-gray-800">
+                      {typedIntel.executive_summary.next_step}
+                    </span>
+                  </div>
+                )}
+                {/* Provenance, in UTC and formatted from the data alone so the
+                    server and browser renders agree. A summary with no date
+                    read as current even when it described a week-old move. */}
+                {typedIntel.executive_summary.generated_at && (
+                  <p className="text-xs text-gray-500">
+                    Written by AI at {formatUtc(typedIntel.executive_summary.generated_at)} from the signals on this page;
+                    the signals themselves are below.
+                  </p>
+                )}
+              </div>
+            )}
+            {typedIntel.rag_history && typedIntel.rag_history.length > 1 && currentStreakDuration(typedIntel.rag_history) && (
+              <div className="w-full text-xs text-gray-500 pt-3 mt-1 border-t border-black/10">
+                {typedIntel.overall_rag.score === 'GREEN' ? 'Stable' : `Status unchanged`} for {currentStreakDuration(typedIntel.rag_history)}
+              </div>
+            )}
+            {typedIntel.rag_history && <RagSparkline history={typedIntel.rag_history} />}
+          </div>
+        )}
+
+        <CtaBanner placement="after-status" />
+
+        {/* Three Core Pillars Overview, plus the world-signals card once the
+            harvest carries it */}
+        <div className={`grid grid-cols-1 gap-6 mb-8 ${typedIntel.world_signals ? 'md:grid-cols-2 xl:grid-cols-4' : 'md:grid-cols-3'}`}>
+          {/* PILLAR 1: MACRO OVERVIEW */}
+          <div className={`bg-white p-6 rounded-xl shadow-sm border-t-4 ${getRAGColor(macro?.rag_score)}`}>
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-gray-500 font-semibold uppercase text-xs tracking-wider">Macro Overview</h2>
+              <span className={`px-2 py-1 rounded text-xs font-bold ${
+                macro?.rag_score === 'RED' ? 'bg-red-100 text-red-800' :
+                macro?.rag_score === 'AMBER' ? 'bg-amber-100 text-amber-800' :
+                macro?.rag_score === 'GREEN' ? 'bg-green-100 text-green-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {getRAGLabel(macro?.rag_score)}
+              </span>
+            </div>
+            {/* Read from macro_economy, the same live figures the region cards
+                below show. The legacy macro.regions block marks the US and
+                China as "placeholder", so keying off its status printed a
+                bare "—" for two of the three regions on every harvest. */}
+            {macro?.status === 'success' && (
+              <div className="space-y-2 text-sm">
+                {MACRO_REGIONS.map(({ key, label }) => {
+                  const region = macroEconomy?.[key];
+                  const change = region?.market_change_pct;
+                  const severity = region?.market_severity ?? 'quiet';
+                  return (
+                    <div key={key} className="flex justify-between items-baseline gap-2">
+                      <span className="text-gray-600">
+                        {label}
+                        {region?.market_label && (
+                          <span className="ml-1 text-xs text-gray-400">{region.market_label}</span>
+                        )}
+                      </span>
+                      <span className={`font-mono font-semibold ${
+                        severity === 'severe' ? 'text-red-700' :
+                        severity === 'notable' ? 'text-amber-700' :
+                        'text-gray-900'
+                      }`}>
+                        {change != null ? `${change > 0 ? '+' : ''}${change.toFixed(2)}%` : '—'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* PILLAR 2: PEERS & COMPETITORS */}
+          <div className={`bg-white p-6 rounded-xl shadow-sm border-t-4 ${getRAGColor(peers?.rag_score)}`}>
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-gray-500 font-semibold uppercase text-xs tracking-wider">Peers & Competitors</h2>
+              <span className={`px-2 py-1 rounded text-xs font-bold ${
+                peers?.rag_score === 'RED' ? 'bg-red-100 text-red-800' :
+                peers?.rag_score === 'AMBER' ? 'bg-amber-100 text-amber-800' :
+                peers?.rag_score === 'GREEN' ? 'bg-green-100 text-green-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {getRAGLabel(peers?.rag_score)}
+              </span>
+            </div>
+            {peers?.status === 'success' && (
+              <div className="space-y-2 text-sm">
+                <div className="text-2xl font-bold text-gray-900">{peers?.total_peers || 0}</div>
+                <div className="text-gray-600">Companies tracked</div>
+                {peers?.total_red_signals > 0 && (
+                  <div className="text-red-600 font-semibold text-xs">🔴 {peers.total_red_signals} Distress</div>
+                )}
+                {/* Item 5.02 filings are officer/director departures — a
+                    planned retirement files the same item code as a
+                    scandal-driven exit, and the filing itself does not say
+                    which. The harvester deliberately does not treat these as
+                    risk (see fetch_peer_group), so labelling them "Warning"
+                    here contradicted the pillar's own GREEN badge. */}
+                {peers?.total_amber_signals > 0 && (
+                  <div className="text-gray-500 text-xs">
+                    📄 {peers.total_amber_signals} leadership-change filing{peers.total_amber_signals > 1 ? 's' : ''}
+                    <span className="block text-gray-400">context only, not a risk signal</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* PILLAR 3: SUPPLIER WATCHLIST */}
+          <div className={`bg-white p-6 rounded-xl shadow-sm border-t-4 ${getRAGColor(suppliers?.rag_score)}`}>
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-gray-500 font-semibold uppercase text-xs tracking-wider">Supplier Watchlist</h2>
+              <span className={`px-2 py-1 rounded text-xs font-bold ${
+                suppliers?.rag_score === 'RED' ? 'bg-red-100 text-red-800' :
+                suppliers?.rag_score === 'AMBER' ? 'bg-amber-100 text-amber-800' :
+                suppliers?.rag_score === 'GREEN' ? 'bg-green-100 text-green-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {getRAGLabel(suppliers?.rag_score)}
+              </span>
+            </div>
+            {suppliers?.status === 'success' && (
+              <div className="space-y-2 text-sm">
+                <div className="text-2xl font-bold text-gray-900">{suppliers?.total_suppliers || 0}</div>
+                <div className="text-gray-600">Suppliers monitored</div>
+                {/* Sanctions match is the single most severe signal — shown first */}
+                {(suppliers as any)?.suppliers_at_sanctions_risk > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'sanctions' ? 'all' : 'sanctions')}
+                    className={`block text-white bg-red-700 font-bold text-xs px-2 py-1 rounded hover:bg-red-800 cursor-pointer ${riskFilter === 'sanctions' ? 'ring-2 ring-red-900' : ''}`}
+                  >
+                    🚫 {(suppliers as any).suppliers_at_sanctions_risk} Sanctions Match — verify now
+                  </button>
+                )}
+                {/* Severity counts use the actionable_* figures — the same
+                    ones the pillar RAG score is computed from. total_* counts
+                    every supplier in the bucket including those sitting there
+                    purely on a standing geographic floor, which put "9 Medium
+                    Risk" next to an all-clear GREEN badge and made the reader
+                    choose which of the two to believe. The unchanged
+                    structural exposure is still shown, below and separately. */}
+                {actionableCritical > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'critical' ? 'all' : 'critical')}
+                    className={`block text-red-700 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'critical' ? 'bg-red-100 px-2 py-0.5 rounded' : ''}`}
+                  >
+                    🚨 {actionableCritical} Critical
+                  </button>
+                )}
+                {actionableHigh > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'high' ? 'all' : 'high')}
+                    className={`block text-red-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'high' ? 'bg-red-100 px-2 py-0.5 rounded' : ''}`}
+                  >
+                    ⚠️ {actionableHigh} High Risk
+                  </button>
+                )}
+                {actionableMedium > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'medium' ? 'all' : 'medium')}
+                    className={`block text-amber-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'medium' ? 'bg-amber-100 px-2 py-0.5 rounded' : ''}`}
+                  >
+                    📋 {actionableMedium} Medium Risk
+                  </button>
+                )}
+                {actionableCritical + actionableHigh + actionableMedium === 0 &&
+                  !(suppliers as any)?.suppliers_at_sanctions_risk && (
+                    <div className="text-xs text-green-700 font-semibold">
+                      ✓ No new signals this cycle
+                    </div>
+                  )}
+                {/* Show risk type counts */}
+                {suppliers?.suppliers_at_cyber_risk > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'cyber' ? 'all' : 'cyber')}
+                    className={`block text-gray-600 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'cyber' ? 'bg-gray-100 px-2 py-0.5 rounded' : ''}`}
+                  >
+                    🔒 {suppliers.suppliers_at_cyber_risk} Cyber
+                  </button>
+                )}
+                {(suppliers as any)?.suppliers_at_recall_risk > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'recall' ? 'all' : 'recall')}
+                    className={`block text-amber-700 font-semibold text-xs hover:underline cursor-pointer ${riskFilter === 'recall' ? 'bg-amber-100 px-2 py-0.5 rounded' : ''}`}
+                  >
+                    ⚠️ {(suppliers as any).suppliers_at_recall_risk} CPSC Recall
+                  </button>
+                )}
+                {/* Standing country exposure, phrased so it does not read as
+                    something that happened today. These are the same
+                    suppliers the severity counts above used to double-count,
+                    and the set barely moves from one cycle to the next. */}
+                {(suppliers as any)?.suppliers_at_geopolitical_risk > 0 && (
+                  <button
+                    onClick={() => setRiskFilter(riskFilter === 'geopolitical' ? 'all' : 'geopolitical')}
+                    className={`block text-left text-gray-500 text-xs hover:underline cursor-pointer pt-1 ${riskFilter === 'geopolitical' ? 'bg-orange-50 px-2 py-0.5 rounded' : ''}`}
+                    title="Standing exposure from the country a supplier operates in — not a signal that something changed"
+                  >
+                    🌍 {(suppliers as any).suppliers_at_geopolitical_risk} in flagged regions
+                    <span className="block text-gray-400">standing exposure, unchanged</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* PILLAR 4: WORLD — routes, inputs and hazards */}
+          {typedIntel.world_signals && (
+            <a href="#world-heading" className={`bg-white p-6 rounded-xl shadow-sm border-t-4 block hover:bg-slate-50 ${
+              typedIntel.world_signals.level === 'severe' ? 'border-red-500' :
+              typedIntel.world_signals.level === 'notable' ? 'border-amber-500' : 'border-green-500'
+            }`}>
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-gray-500 font-semibold uppercase text-xs tracking-wider">Routes, inputs, hazards</h2>
+                <span className={`px-2 py-1 rounded border text-xs font-bold ${severityTone(typedIntel.world_signals.level)}`}>
+                  {typedIntel.world_signals.level === 'severe' ? 'SEVERE' : typedIntel.world_signals.level === 'notable' ? 'UNUSUAL' : 'NORMAL'}
+                </span>
+              </div>
+              {typedIntel.world_signals.drivers.length > 0 ? (
+                <ul className="space-y-1.5 text-sm text-gray-800">
+                  {typedIntel.world_signals.drivers.slice(0, 3).map((d, i) => <li key={i}>{d}</li>)}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-600">Chokepoints, the Rhine, input prices and hazards near supplying sites are within their normal range.</p>
+              )}
+            </a>
+          )}
+        </div>
+
+        {mapSlot && (
+          <section className="mb-8 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden" aria-labelledby="map-heading">
+            <div className="border-b border-gray-200 bg-gray-50 px-6 py-4">
+              <h2 id="map-heading" className="text-lg font-bold text-gray-900">Where the suppliers are</h2>
+              <p className="mt-1 text-sm text-gray-600">
+                One pin per supplying country, coloured by what happened there; a grey ring marks standing country exposure.
+              </p>
+            </div>
+            <div className="px-2 py-4 sm:px-6">{mapSlot}</div>
+          </section>
+        )}
+
+        <WorldSignals data={typedIntel.world_signals} />
+
+        <Concentration suppliers={suppliersList} />
+
+        <Scenarios suppliers={suppliersList} />
+
+        <div className="mb-8">
+          <RegulatoryCalendar limit={4} compact />
+        </div>
+
+        {/* Global Macro Context */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Global Macro Context</h2>
+          <p className="text-sm text-gray-600 mb-4">Click any region for detailed economic intelligence</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {MACRO_REGIONS.map(({ key, flag, label }) => (
+              <MacroCard key={key} regionKey={key} flag={flag} label={label} data={macroEconomy?.[key]} />
+            ))}
+          </div>
+        </div>
+
+        {/* Peer Intelligence */}
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Peer Intelligence &mdash; sample set</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {peerGroup.map((peer: PeerGroupItem, idx: number) => {
+              const stockMovePositive = peer.stock_move?.startsWith('+');
+              const stockMoveNegative = peer.stock_move?.startsWith('-');
+              const hasSecSignal = (peer.sec_red_signals ?? 0) > 0 || (peer.sec_amber_signals ?? 0) > 0;
+
+              // Every company in the sample set is shown the same way: the
+              // board watches a watchlist on behalf of "the company", and
+              // singling one listed peer out as the tracked view read as a
+              // claim about whose supply base this is.
+              return (
+                <Link
+                  key={idx}
+                  href={`/details/${encodeURIComponent(peer.name)}`}
+                  className="bg-white rounded-lg shadow-sm border-2 border-gray-200 p-5 block hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-gray-900">{peer.name}</h3>
+                      </div>
+                      <div className="text-xs text-gray-600 font-mono mt-1">{peer.ticker}</div>
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                        peer.sentiment === 'Positive' ? 'bg-green-100 text-green-800' :
+                        peer.sentiment === 'Negative' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {peer.sentiment}
+                      </span>
+                      <span className={`font-mono font-semibold text-sm ${
+                        stockMovePositive ? 'text-green-600' :
+                        stockMoveNegative ? 'text-red-600' :
+                        'text-gray-600'
+                      }`}>
+                        {peer.stock_move || 'N/A'}
+                      </span>
+                      {hasSecSignal && (
+                        <span
+                          className="px-1.5 py-0.5 bg-amber-700 text-white rounded text-xs"
+                          title={`SEC 8-K filing signal: ${peer.sec_red_signals ?? 0} distress, ${peer.sec_amber_signals ?? 0} management-change`}
+                        >
+                          📄 SEC
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-gray-200 space-y-1">
+                    {peer.latest_headline ? (
+                      <p className="text-xs text-gray-700 leading-relaxed">{peer.latest_headline}</p>
+                    ) : (
+                      <p className="text-xs text-gray-400 leading-relaxed">No material news this cycle.</p>
+                    )}
+                    {hasSecSignal && peer.summary && (
+                      <p className="text-xs text-amber-800 leading-relaxed font-medium">{peer.summary}</p>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Supplier Watchlist Table */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Supplier Watchlist &mdash; sample set</h2>
+                <p className="text-sm text-gray-600 mt-1">Click any supplier for detailed intelligence</p>
+              </div>
+              {riskFilter !== 'all' && (
+                <div className="flex items-center gap-2">
+                  <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${
+                    riskFilter === 'sanctions' ? 'bg-red-700 text-white' :
+                    riskFilter === 'critical' ? 'bg-red-200 text-red-900' :
+                    riskFilter === 'high' ? 'bg-red-100 text-red-800' :
+                    riskFilter === 'medium' ? 'bg-amber-100 text-amber-800' :
+                    riskFilter === 'cyber' ? 'bg-gray-100 text-gray-800' :
+                    riskFilter === 'recall' ? 'bg-amber-100 text-amber-800' :
+                    riskFilter === 'news' ? 'bg-amber-100 text-amber-800' :
+                    riskFilter === 'geopolitical' ? 'bg-orange-100 text-orange-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {riskFilter === 'sanctions' && '🚫 Sanctions Match'}
+                    {riskFilter === 'critical' && '🚨 Critical Risk'}
+                    {riskFilter === 'high' && '⚠️ High Risk'}
+                    {riskFilter === 'medium' && '📋 Medium Risk'}
+                    {riskFilter === 'cyber' && '🔒 Cyber Risk'}
+                    {riskFilter === 'recall' && '⚠️ CPSC Recall'}
+                    {riskFilter === 'news' && '📰 News Risk'}
+                    {riskFilter === 'operational' && '⚠️ Operational Risk'}
+                    {riskFilter === 'geopolitical' && '🌍 Geopolitical Risk'}
+                  </span>
+                  <button
+                    onClick={() => setRiskFilter('all')}
+                    className="text-gray-500 hover:text-gray-700 text-sm underline"
+                  >
+                    Show All
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {(() => {
+            const filteredSuppliers = suppliersList.filter((supplier: Supplier) => {
+              if (riskFilter === 'all') return true;
+              // Severity filters mirror the actionable counts on the card
+              // above; the geopolitical filter below is what surfaces the
+              // structural-floor suppliers those counts exclude.
+              if (riskFilter === 'critical') return eventLevel(supplier) === 'CRITICAL';
+              if (riskFilter === 'high') return eventLevel(supplier) === 'HIGH';
+              if (riskFilter === 'medium') return eventLevel(supplier) === 'MEDIUM';
+              if (riskFilter === 'sanctions') return (supplier as any).sanctions_hit;
+              if (riskFilter === 'cyber') return supplier.cyber_risk;
+              if (riskFilter === 'recall') return (supplier as any).recall_risk;
+              if (riskFilter === 'news') return supplier.news_risk;
+              if (riskFilter === 'operational') return (supplier as any).operational_risk;
+              if (riskFilter === 'geopolitical') return supplier.geopolitical_risk != null;
+              return true;
+            });
+
+            const riskBadges = (supplier: Supplier) => (
+              <>
+                {eventLevel(supplier) === 'CRITICAL' && (
+                  <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">Critical</span>
+                )}
+                {eventLevel(supplier) === 'HIGH' && (
+                  <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">High</span>
+                )}
+                {eventLevel(supplier) === 'MEDIUM' && (
+                  <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-semibold">Medium</span>
+                )}
+                {(eventLevel(supplier) === 'LOW' || !eventLevel(supplier)) && (
+                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">Low</span>
+                )}
+                {supplier.sanctions_hit && (
+                  <span className="px-1.5 py-0.5 bg-red-800 text-white rounded text-xs" title={`OFAC SDN match — verify: ${supplier.sanctions_matches?.[0] || ''}`}>🚫</span>
+                )}
+                {supplier.cyber_risk && (
+                  <span className="px-1.5 py-0.5 bg-red-600 text-white rounded text-xs" title="CISA cyber vulnerability">🔒</span>
+                )}
+                {supplier.recall_risk && (
+                  <span className="px-1.5 py-0.5 bg-amber-700 text-white rounded text-xs" title={`CPSC recall: ${supplier.matching_recalls?.[0]?.product || ''}`}>⚠️</span>
+                )}
+                {supplier.news_risk && (
+                  <span className="px-1.5 py-0.5 bg-amber-600 text-white rounded text-xs" title="News-based risk">📰</span>
+                )}
+                {supplier.geopolitical_risk && (
+                  <span
+                    className={`px-1.5 py-0.5 rounded text-xs ${isStructuralOnly(supplier) ? 'bg-gray-200 text-gray-700' : 'bg-orange-600 text-white'}`}
+                    title={`${isStructuralOnly(supplier) ? 'Standing country exposure — not a new development' : 'Live geopolitical escalation'}: ${supplier.geopolitical_risk?.reason || ''}`}
+                  >🌍</span>
+                )}
+              </>
+            );
+
+            return (
+              <>
+                {/* Mobile: stacked cards — a wide table forces the Risk
+                    Status column (the whole point of this list) off-screen
+                    with no visible hint that there's more to scroll to. */}
+                <div className="md:hidden divide-y divide-gray-200">
+                  {filteredSuppliers.map((supplier: Supplier, idx: number) => (
+                    <Link
+                      key={idx}
+                      href={`/details/${encodeURIComponent(supplier.name)}`}
+                      className="block px-4 py-4 hover:bg-slate-50 active:bg-slate-100 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900">{supplier.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {supplier.category}
+                            {supplier.stock_ticker && supplier.stock_ticker !== 'N/A' && (
+                              <span className="font-mono"> • {supplier.stock_ticker}</span>
+                            )}
+                          </div>
+                        </div>
+                        <span className={`shrink-0 px-2 py-1 rounded-full text-xs font-bold border ${getExposureColor(supplier.bat_exposure || 'Medium')}`}>
+                          {supplier.bat_exposure || 'Medium'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap mt-2">
+                        {riskBadges(supplier)}
+                      </div>
+                      {eventLevel(supplier) !== 'LOW' && supplier.last_signal && (
+                        <div className="text-xs text-gray-600 mt-1.5">{supplier.last_signal}</div>
+                      )}
+                      {supplier.geopolitical_risk?.reason && isStructuralOnly(supplier) && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Standing exposure: {supplier.geopolitical_risk.reason}
+                        </div>
+                      )}
+                      <div className="text-xs text-gray-400 mt-1.5">{supplier.location || 'Unknown'}</div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Desktop/tablet: full table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Supplier</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Exposure tier</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Segment</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider min-w-[320px]">Risk Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredSuppliers.map((supplier: Supplier, idx: number) => (
+                  <tr
+                    key={idx}
+                    className="hover:bg-slate-50 cursor-pointer transition-colors"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Link href={`/details/${encodeURIComponent(supplier.name)}`} className="block">
+                        <div className="text-sm font-semibold text-gray-900 hover:text-blue-900">{supplier.name}</div>
+                        {supplier.stock_ticker && supplier.stock_ticker !== 'N/A' && (
+                          <div className="text-xs text-gray-500 font-mono">{supplier.stock_ticker}</div>
+                        )}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Link href={`/details/${encodeURIComponent(supplier.name)}`} className="block">
+                        <div className="text-sm text-gray-900">{supplier.category}</div>
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Link href={`/details/${encodeURIComponent(supplier.name)}`} className="block">
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold border ${getExposureColor(supplier.bat_exposure || 'Medium')}`}>
+                          {supplier.bat_exposure || 'Medium'}
+                        </span>
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Link href={`/details/${encodeURIComponent(supplier.name)}`} className="block">
+                        <div className="text-sm text-gray-900">{supplier.segment || 'N/A'}</div>
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Link href={`/details/${encodeURIComponent(supplier.name)}`} className="block">
+                        <div className="text-sm text-gray-900">{supplier.location || 'Unknown'}</div>
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link href={`/details/${encodeURIComponent(supplier.name)}`} className="block">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            {/* Use risk_level as primary indicator */}
+                            {eventLevel(supplier) === 'CRITICAL' && (
+                              <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">
+                                Critical
+                              </span>
+                            )}
+                            {eventLevel(supplier) === 'HIGH' && (
+                              <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-semibold">
+                                High
+                              </span>
+                            )}
+                            {eventLevel(supplier) === 'MEDIUM' && (
+                              <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-semibold">
+                                Medium
+                              </span>
+                            )}
+                            {(eventLevel(supplier) === 'LOW' || !eventLevel(supplier)) && (
+                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">
+                                Low
+                              </span>
+                            )}
+                            {/* Show risk type badges */}
+                            {supplier.sanctions_hit && (
+                              <span className="px-1.5 py-0.5 bg-red-800 text-white rounded text-xs" title={`OFAC SDN match — verify: ${supplier.sanctions_matches?.[0] || ''}`}>
+                                🚫
+                              </span>
+                            )}
+                            {supplier.cyber_risk && (
+                              <span className="px-1.5 py-0.5 bg-red-600 text-white rounded text-xs" title="CISA cyber vulnerability">
+                                🔒
+                              </span>
+                            )}
+                            {supplier.recall_risk && (
+                              <span className="px-1.5 py-0.5 bg-amber-700 text-white rounded text-xs" title={`CPSC recall: ${supplier.matching_recalls?.[0]?.product || ''}`}>
+                                ⚠️
+                              </span>
+                            )}
+                            {supplier.news_risk && (
+                              <span className="px-1.5 py-0.5 bg-amber-600 text-white rounded text-xs" title="News-based risk">
+                                📰
+                              </span>
+                            )}
+                            {supplier.geopolitical_risk && (
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-xs ${isStructuralOnly(supplier) ? 'bg-gray-200 text-gray-700' : 'bg-orange-600 text-white'}`}
+                                title={`${isStructuralOnly(supplier) ? 'Standing country exposure — not a new development' : 'Live geopolitical escalation'}: ${supplier.geopolitical_risk?.reason || ''}`}
+                              >
+                                🌍
+                              </span>
+                            )}
+                          </div>
+                          {/* Show risk reason for non-LOW risks */}
+                          {eventLevel(supplier) !== 'LOW' && supplier.last_signal && (
+                            <div className="text-xs text-gray-600 max-w-md" title={supplier.last_signal}>
+                              {supplier.last_signal}
+                            </div>
+                          )}
+                          {/* Where a supplier sits, kept visually separate from what
+                              happened to it: grey, below the level, and never the
+                              thing that colours the pill. */}
+                          {supplier.geopolitical_risk?.reason && isStructuralOnly(supplier) && (
+                            <div className="text-xs text-gray-500 max-w-md" title={supplier.geopolitical_risk.reason}>
+                              Standing exposure: {supplier.geopolitical_risk.reason}
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    </td>
+                  </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+
+      </div>
+
+      <footer className="mt-12 bg-gray-900 text-gray-300 py-8">
+        <div className="max-w-[100rem] mx-auto px-6 space-y-6">
+          <CtaBanner placement="footer" />
+          <div className="text-xs text-gray-400 space-y-2 max-w-4xl">
+            <p>
+              A demonstration build. The supplier and peer lists, exposure tiers, spend and stock figures are illustrative.
+              Signals come from public sources: US Treasury sanctions and trade screening lists, CISA, CPSC, the ECB, FRED,
+              SEC EDGAR, IMF PortWatch, the German waterways authority (PEGELONLINE), GDACS, GDELT, Google News and Yahoo
+              Finance, refreshed about every six hours.
+            </p>
+            <p>
+              Built by{' '}
+              <a href={CASE_STUDY_URL} target="_blank" rel="noopener noreferrer" className="text-gray-200 underline underline-offset-2">
+                {AUTHOR_NAME}
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      </footer>
+
+      {/* About Modal */}
+      {isModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsModalOpen(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          
+          {/* Modal Content */}
+          <div 
+            className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-4 rounded-t-xl flex justify-between items-center">
+              <h2 className="text-xl font-bold">System Status & Methodology</h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-1 rounded-full hover:bg-blue-700 transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-6 prose prose-sm max-w-none">
+              <p className="text-gray-700 leading-relaxed mb-4">
+                This board gathers public supply-chain signals for a procurement lead: what happened to a supplier,
+                where the supply base is thin, and what the world is doing to routes, inputs and supplying sites.
+                A supplier&apos;s level follows <strong>threats to supply continuity</strong>; a share-price move on its
+                own is shown as unexplained and never turns the board red.
+              </p>
+              {typedIntel.source_health && (
+                <div className="mb-6">
+                  <h3 className="text-base font-bold text-gray-900 mb-3">Sources on the last harvest</h3>
+                  <SourceHealthList health={typedIntel.source_health} />
+                </div>
+              )}
+              <p className="text-gray-700 leading-relaxed mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                <strong>This is a demonstration build.</strong> The supplier and peer lists are an
+                illustrative sample, and the exposure tiers beside each supplier were assigned for
+                this demo &mdash; they are not any company&apos;s own classification. Every signal
+                shown is drawn from public sources, and the mechanics, scoring and analysis are the
+                real thing.
+              </p>
+
+              {/* What Changed — the feed is the first thing on the page now */}
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">What Changed Since You Last Looked</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  The list at the top of the page is everything that moved since your last visit —
+                  a supplier&apos;s risk level going up or down, a new signal appearing or clearing,
+                  a competitor&apos;s status shifting, an economic outlook turning. Your browser
+                  remembers when you were last here, so the list is yours: come back after two days
+                  and you see two days&apos; worth.
+                </p>
+                <p className="text-gray-700 leading-relaxed mt-2">
+                  This exists because a board that says &quot;all clear&quot; looks identical every
+                  morning, and identical is easy to stop reading. Even on a calm day something has
+                  usually moved &mdash; and a large, unexplained share-price move on a supplier that
+                  matters shows up here even when nothing has turned the board amber or red.
+                </p>
+                <p className="text-gray-700 leading-relaxed mt-2">
+                  One thing it deliberately leaves out: the standing exposure that comes simply from
+                  where a supplier operates. That is real, but it is the same every day, and
+                  repeating it would push the things that actually changed off the screen.
+                </p>
+              </div>
+
+              {/* Overall Status & Trend */}
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">The Traffic Light</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  The banner below that list gives you one answer to &quot;do I need to worry today?&quot;
+                  🟢 <strong>green</strong> means everything looks normal, 🟡 <strong>amber</strong> means something
+                  is worth keeping an eye on, and 🔴 <strong>red</strong> means something needs attention now.
+                  It automatically takes the worst of the three sections below it (Global Economy, Peers &amp;
+                  Competitors, Suppliers) — you don&apos;t need to check all three yourself. When it&apos;s
+                  amber or red, the banner also lists the specific company (or companies) causing it and why —
+                  click any of them to jump straight to the details.
+                </p>
+                <p className="text-gray-700 leading-relaxed mt-2">
+                  Underneath, a line tells you how long the current colour has been in effect, so you
+                  can tell at a glance whether today&apos;s status is brand new or has been sitting
+                  there for days.
+                </p>
+                <p className="text-gray-700 leading-relaxed mt-2">
+                  One thing worth knowing: about a third of the watchlist sits in countries with
+                  long-standing tension — general trade friction between the US and China, Finland&apos;s
+                  border with Russia. That is real, but it is true every single day, so it is kept
+                  apart from the risk level. A supplier&apos;s level answers &quot;what happened to this
+                  company?&quot;; where it operates appears beside it as a grey 🌍 marker reading
+                  <em> standing exposure</em>. Both are on the page, and only the first one can turn
+                  the board amber or red — which is what keeps those colours worth reacting to.
+                </p>
+              </div>
+
+              {/* Risk Level Legend */}
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">Risk Level Legend</h3>
+                <div className="space-y-3">
+                  {/* CRITICAL */}
+                  <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-bold whitespace-nowrap">🚨 Critical</span>
+                    <div className="text-sm">
+                      <p className="font-semibold text-red-800">Immediate threat to supply</p>
+                      <p className="text-red-700 mt-1">
+                        <strong>Triggers:</strong> name match on the US sanctions watchlist, 2+ product safety recalls, bankruptcy, factory fire/closure, ransomware attack, labor strike, active war zone, or a share-price fall far outside that stock&apos;s normal range with no explanation
+                      </p>
+                      <p className="text-red-600 mt-1 text-xs italic">
+                        Example: &quot;Supplier X files for Chapter 11 bankruptcy&quot;
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* HIGH */}
+                  <div className="flex items-start gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-bold whitespace-nowrap">⚠️ High</span>
+                    <div className="text-sm">
+                      <p className="font-semibold text-orange-800">Serious concern requiring monitoring</p>
+                      <p className="text-orange-700 mt-1">
+                        <strong>Triggers:</strong> Fraud/SEC investigation, major product recall, executive exodus, severe regional tensions/sanctions, or an unusually large unexplained share-price fall at a Critical/High exposure supplier
+                      </p>
+                      <p className="text-orange-600 mt-1 text-xs italic">
+                        Example: &quot;SEC opens investigation into Supplier Y accounting practices&quot;
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* MEDIUM */}
+                  <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs font-bold whitespace-nowrap">📋 Medium</span>
+                    <div className="text-sm">
+                      <p className="font-semibold text-amber-800">Potential concern, watch closely</p>
+                      <p className="text-amber-700 mt-1">
+                        <strong>Triggers:</strong> Mass layoffs, supply disruption news, credit downgrade, trade war/instability, or an unusually large unexplained share-price fall at a Medium exposure supplier
+                      </p>
+                      <p className="text-amber-600 mt-1 text-xs italic">
+                        Example: &quot;Supplier Z announces 20% workforce reduction&quot;
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* LOW */}
+                  <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-bold whitespace-nowrap">✓ Low</span>
+                    <div className="text-sm">
+                      <p className="font-semibold text-green-800">Normal operations</p>
+                      <p className="text-green-700 mt-1">
+                        <strong>Status:</strong> No negative operational news, and any share-price movement is within that stock&apos;s own normal daily range.
+                      </p>
+                      <p className="text-green-600 mt-1 text-xs italic">
+                        Note: &quot;Normal&quot; is measured per company, not as one fixed percentage — a 2% day is routine for some listings and unusual for others.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">Where the Information Comes From</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                  <li><strong>Global Economy:</strong> live market prices (S&amp;P 500, EUR/USD, USD/CNY) plus official inflation and policy-rate statistics from the US Federal Reserve&apos;s FRED database, and the ECB&apos;s daily euro reference rate. Where a region has no free feed that still updates — China&apos;s inflation and policy rate — the dashboard says &quot;not connected&quot; rather than showing an old number</li>
+                  <li><strong>Competitors:</strong> live stock prices, news headlines, and official regulatory filings for PMI, Imperial, and Japan Tobacco</li>
+                  <li><strong>Cyber Security:</strong> the US government&apos;s public list of security flaws currently being exploited by attackers</li>
+                  <li><strong>Sanctions:</strong> the US Treasury&apos;s official watchlist of people and companies barred from doing business — a match here is flagged for a compliance team to double-check by hand, since name-matching software can occasionally get it wrong</li>
+                  <li><strong>Product Safety Recalls:</strong> the US Consumer Product Safety Commission&apos;s public recall database, checked for the last 90 days</li>
+                  <li><strong>News:</strong> financial news headlines plus a broader news search for wider coverage</li>
+                  <li><strong>Geopolitical Risk:</strong> a curated list of conflict zones and sanctioned regions, cross-checked against live news so a country isn&apos;t flagged just because it&apos;s mentioned near an unrelated headline</li>
+                  <li><strong>Routes, inputs and hazards:</strong> shipping transits through the main chokepoints (IMF PortWatch), the Rhine water level at Kaub (German waterways authority), oil, gas, pulp and aluminium prices (FRED) and natural-hazard alerts (GDACS)</li>
+                  <li><strong>Suppliers:</strong> all 24 suppliers on the sample watchlist are checked against every category above — stock movement, news, cyber, sanctions, recalls, and geopolitical risk</li>
+                </ul>
+                <p className="mt-3 text-sm text-gray-600">
+                  Google News and Yahoo Finance allow personal use only; a paid build for a company replaces them with
+                  licensed feeds.
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">Update Frequency</h3>
+                <p className="text-gray-700">
+                  Data refreshes <strong>every 6 hours</strong> via automated pipeline.
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-base font-bold text-gray-900 mb-3">How to Use</h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-700">
+                  <li><strong>Start with the change list</strong> at the top — it is the part that is different from yesterday</li>
+                  <li><strong>Click risk counts</strong> in the Supplier Watchlist card to filter by severity</li>
+                  <li><strong>Click any supplier</strong> row to view detailed intelligence dossier</li>
+                  <li><strong>Hover over risk badges</strong> to see the specific trigger reason</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-xl">
+              <p className="text-sm text-gray-600 text-center">
+                Built by{' '}
+                <a href={CASE_STUDY_URL} target="_blank" rel="noopener noreferrer" className="text-blue-900 underline underline-offset-2">
+                  {AUTHOR_NAME}
+                </a>
+                {' · '}
+                <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="text-blue-900 underline underline-offset-2">
+                  Book a call
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

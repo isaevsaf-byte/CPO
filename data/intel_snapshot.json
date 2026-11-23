@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-11-22T22:55:38.691020+00:00",
-  "version": "72dd3394a90d",
+  "last_updated": "2026-11-23T04:25:33.390094+00:00",
+  "version": "8134f0fc3bdf",
   "status": "healthy",
   "overall_rag": {
     "score": "AMBER",
@@ -17,21 +17,13 @@
     }
   },
   "executive_summary": {
-    "headline": "Multiple US-listed suppliers and components took unexplained losses of 5\u20138% on 20 Nov while macro headwinds and Strait of Hormuz transit collapse pushed two pillars to AMBER.",
-    "next_step": "By end of day, check whether the 20 Nov supplier drops cluster by sector (semiconductors, materials, contract manufacturing) and cross-reference with any US market event or overnight Asia spillover; escalate to supply planning if semiconductor or filter-material suppliers show coordinated stress.",
-    "context": "Eastman, Texas Instruments, Infineon and Jabil all dropped 5\u20138% on 20 Nov with no corroborating news, all unconfirmed causes. Simultaneously, Macro turned AMBER on declining US outlook and World escalated to severe on Hormuz transits down 97% year-on-year and energy/commodity inflation. Peers recovered to GREEN after a brief spike Tuesday tied to tobacco majors' losses.",
-    "generated_at": "2026-11-22T22:55:38.690974+00:00",
+    "headline": "Smoore fell 4.9% today with no news; multiple unconfirmed supplier and peer price moves on Friday suggest a market event, while macro and world signals have shifted to AMBER.",
+    "next_step": "Check whether Smoore, Texas Instruments, Infineon, Jabil and Eastman drops on Friday 20 Nov share a common trigger\u2014earnings, sector news, or geopolitical event\u2014before treating each as isolated.",
+    "context": "Smoore (critical exposure) dropped again today unexplained. On Friday, four suppliers (Texas Instruments and Infineon in semiconductors; Eastman in materials; Jabil in assembly) all fell 4.8\u20138.4% with no corroborating news, and Japan Tobacco fell 10.2%. Macro shifted to AMBER on US outlook decline, and world signals show severe Strait of Hormuz transit collapse, EU gas and aluminium spikes, and new drought alerts across EU and US.",
+    "generated_at": "2026-11-23T04:25:33.390053+00:00",
     "model": "claude-haiku-4-5"
   },
   "rag_history": [
-    {
-      "timestamp": "2026-10-27T21:33:07.899666+00:00",
-      "macro": "GREEN",
-      "peers": "GREEN",
-      "suppliers": "GREEN",
-      "world": "AMBER",
-      "overall": "AMBER"
-    },
     {
       "timestamp": "2026-10-28T02:49:59.494712+00:00",
       "macro": "GREEN",
@@ -663,6 +655,14 @@
       "suppliers": "AMBER",
       "world": "AMBER",
       "overall": "AMBER"
+    },
+    {
+      "timestamp": "2026-11-23T04:25:27.834100+00:00",
+      "macro": "AMBER",
+      "peers": "GREEN",
+      "suppliers": "AMBER",
+      "world": "AMBER",
+      "overall": "AMBER"
     }
   ],
   "change_log": [
@@ -1286,6 +1286,16 @@
       "headline": "Philip Morris Int.: MEDIUM \u2192 LOW",
       "detail": "\ud83d\udcf0 Philip Morris (PM) Down 7.6% Since Last Earnings Report: Can It Rebound?",
       "href": "/details/Philip%20Morris%20Int."
+    },
+    {
+      "at": "2026-11-23T04:25:27.834110+00:00",
+      "kind": "price_move",
+      "direction": "info",
+      "entity": "Smoore",
+      "headline": "Smoore -4.9% on Mon 23 Nov (1.7\u00d7 its normal daily range), no corroborating signal",
+      "detail": "Exposure tier: Critical. Cause unconfirmed.",
+      "href": "/details/Smoore",
+      "price_as_of": "2026-11-23"
     }
   ],
   "macro": {
@@ -1304,7 +1314,7 @@
           "policy": "Placeholder - Fed policy updates"
         },
         "summary": "US economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-11-22T22:54:04.859483+00:00"
+        "last_fetched": "2026-11-23T04:24:06.703300+00:00"
       },
       "eu": {
         "status": "success",
@@ -1315,7 +1325,7 @@
           "policy": "Placeholder - ECB policy updates"
         },
         "summary": "EU economic indicators - EUR/USD: 1.099",
-        "last_fetched": "2026-11-22T22:54:05.302988+00:00"
+        "last_fetched": "2026-11-23T04:24:07.133331+00:00"
       },
       "china": {
         "status": "placeholder",
@@ -1326,11 +1336,11 @@
           "policy": "Placeholder - PBOC policy updates"
         },
         "summary": "China economic indicators not yet integrated (placeholder data)",
-        "last_fetched": "2026-11-22T22:54:05.303956+00:00"
+        "last_fetched": "2026-11-23T04:24:07.134302+00:00"
       }
     },
     "volatility_pct": null,
-    "last_fetched": "2026-11-22T22:54:05.303985+00:00"
+    "last_fetched": "2026-11-23T04:24:07.134339+00:00"
   },
   "peers": {
     "status": "success",
@@ -1338,7 +1348,7 @@
     "total_peers": 4,
     "total_red_signals": 0,
     "total_amber_signals": 0,
-    "last_fetched": "2026-11-22T22:54:12.447446+00:00"
+    "last_fetched": "2026-11-23T04:24:08.690877+00:00"
   },
   "suppliers": {
     "status": "success",
@@ -1462,8 +1472,8 @@
           "reason": "NATO frontline state, border with Russia",
           "headlines": [
             "Russian cargo ship leaves Finland\u2019s territorial waters after drone attack - Al Jazeera",
-            "Russia-bound ship towed away after it was attacked in Gulf of Finland - BBC",
-            "Russian ship burns off Finland after suspected drone attack: \u2018War is spilling over\u2019 - The Independent"
+            "Europe Is \u2018Somewhere Between Peace And War\u2019 With Russia, Former Finnish Defense Chief Says - Radio Free Europe/Radio Liberty",
+            "Russia-bound ship towed away after it was attacked in Gulf of Finland - BBC"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1509,7 +1519,7 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "US Power Advantage Over China Shrinks Further on Iran War Effect - Bloomberg.com",
-            "The U.S. has sufficient munitions to fight Iran \u2014 but what about China? - Deseret News",
+            "Resident of Japan island near Taiwan fears another war as China ties sour - Japan Wire by Kyodo News",
             "Trump says Board of Trade has brought 'greater balance' to US-China ties - Reuters"
           ],
           "escalated": true,
@@ -1710,8 +1720,9 @@
           "level": "MEDIUM",
           "reason": "North Korea proximity, regional military tensions",
           "headlines": [
-            "South Korea\u2019s Coal Use Is Surging \u2013 and Not Just Because of the Iran War - The Diplomat \u2013 Asia-Pacific Current Affairs Magazine",
-            "A Shifting Balance of Power... In the 'Constant Crisis' Era, What Is South Korea's Strategic Position? [Lee Jong-yoon's Military World] - \ud30c\uc774\ub0b8\uc15c\ub274\uc2a4"
+            "South Korea says deployment to Middle East not indirect military participation in war on Iran - Middle East Eye",
+            "From Supplier to Partner: South Korea\u2019s Gulf Security Moment - ORF Middle East",
+            "South Korea\u2019s Coal Use Is Surging \u2013 and Not Just Because of the Iran War - The Diplomat \u2013 Asia-Pacific Current Affairs Magazine"
           ],
           "escalated": true,
           "baseline_only": true
@@ -1884,10 +1895,10 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -0.63,
-        "daily_sigma_pct": 1.74,
-        "current_price": 299.1,
-        "price_as_of": "2026-11-20",
+        "daily_change_pct": 0.05,
+        "daily_sigma_pct": 1.75,
+        "current_price": 299.25,
+        "price_as_of": "2026-11-23",
         "price_severity": "quiet",
         "risk_analysis": "Geopolitical risk in India: Border tensions with China and Pakistan. ITC (Nicotine) located in affected region. Exposure tier: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
@@ -1900,7 +1911,6 @@
           "level": "MEDIUM",
           "reason": "Border tensions with China and Pakistan",
           "headlines": [
-            "The AI talent war: China is the factory, America the magnet, India an also-ran - The Times of India",
             "India look for 'eight good balls' on final day's 'war of attrition' - Cricinfo",
             "Rahul Gandhi backs strong India-Israel ties despite Gaza war - Al Jazeera"
           ],
@@ -1948,7 +1958,7 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "US Power Advantage Over China Shrinks Further on Iran War Effect - Bloomberg.com",
-            "The U.S. has sufficient munitions to fight Iran \u2014 but what about China? - Deseret News",
+            "Resident of Japan island near Taiwan fears another war as China ties sour - Japan Wire by Kyodo News",
             "Trump says Board of Trade has brought 'greater balance' to US-China ties - Reuters"
           ],
           "escalated": true,
@@ -2031,7 +2041,7 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "US Power Advantage Over China Shrinks Further on Iran War Effect - Bloomberg.com",
-            "The U.S. has sufficient munitions to fight Iran \u2014 but what about China? - Deseret News",
+            "Resident of Japan island near Taiwan fears another war as China ties sour - Japan Wire by Kyodo News",
             "Trump says Board of Trade has brought 'greater balance' to US-China ties - Reuters"
           ],
           "escalated": true,
@@ -2061,10 +2071,10 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -4.96,
-        "daily_sigma_pct": 2.8,
-        "current_price": 7.18,
-        "price_as_of": "2026-11-20",
+        "daily_change_pct": -4.94,
+        "daily_sigma_pct": 2.85,
+        "current_price": 6.82,
+        "price_as_of": "2026-11-23",
         "price_severity": "quiet",
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. Smoore (EMS) located in affected region. Exposure tier: Critical. Previous risk: LOW.",
         "risk_level": "MEDIUM",
@@ -2078,7 +2088,7 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "US Power Advantage Over China Shrinks Further on Iran War Effect - Bloomberg.com",
-            "The U.S. has sufficient munitions to fight Iran \u2014 but what about China? - Deseret News",
+            "Resident of Japan island near Taiwan fears another war as China ties sour - Japan Wire by Kyodo News",
             "Trump says Board of Trade has brought 'greater balance' to US-China ties - Reuters"
           ],
           "escalated": true,
@@ -2108,10 +2118,10 @@
         "news_risk": false,
         "news_items": [],
         "operational_risk": false,
-        "daily_change_pct": -2.67,
-        "daily_sigma_pct": 2.64,
-        "current_price": 44.4,
-        "price_as_of": "2026-11-20",
+        "daily_change_pct": -1.1,
+        "daily_sigma_pct": 2.66,
+        "current_price": 43.91,
+        "price_as_of": "2026-11-23",
         "price_severity": "quiet",
         "risk_analysis": "Geopolitical risk in China: US-China trade war, Taiwan risk, export controls on tech. EVE Energy (Batteries) located in affected region. Exposure tier: High. Previous risk: LOW.",
         "risk_level": "MEDIUM",
@@ -2125,7 +2135,7 @@
           "reason": "US-China trade war, Taiwan risk, export controls on tech",
           "headlines": [
             "US Power Advantage Over China Shrinks Further on Iran War Effect - Bloomberg.com",
-            "The U.S. has sufficient munitions to fight Iran \u2014 but what about China? - Deseret News",
+            "Resident of Japan island near Taiwan fears another war as China ties sour - Japan Wire by Kyodo News",
             "Trump says Board of Trade has brought 'greater balance' to US-China ties - Reuters"
           ],
           "escalated": true,
@@ -2321,7 +2331,7 @@
       }
     ],
     "geo_escalation_state": {},
-    "last_fetched": "2026-11-22T22:55:30.330569+00:00"
+    "last_fetched": "2026-11-23T04:25:24.618758+00:00"
   },
   "macro_economy": {
     "us": {
@@ -2349,12 +2359,12 @@
       "rate_as_of": "Nov 2026",
       "rate_label": "ECB deposit facility rate",
       "market_label": "EUR/USD",
-      "market_change_pct": 0.04,
+      "market_change_pct": 0.11,
       "market_sigma_pct": 0.28,
       "market_severity": "quiet",
-      "price_as_of": "2026-11-22",
+      "price_as_of": "2026-11-23",
       "trend": "Stable",
-      "summary": "EUR/USD +0.04% today, within its normal range (\u00b10.28% a day). CPI 4.0% YoY (Oct 2026) ECB deposit facility rate 2.50% (Nov 2026).",
+      "summary": "EUR/USD +0.11% today, within its normal range (\u00b10.28% a day). CPI 4.0% YoY (Oct 2026) ECB deposit facility rate 2.50% (Nov 2026).",
       "sources": [
         "Yahoo Finance",
         "FRED"
@@ -2367,12 +2377,12 @@
       "rate_as_of": null,
       "rate_label": "PBOC policy rate",
       "market_label": "USD/CNY",
-      "market_change_pct": -0.06,
+      "market_change_pct": 0.11,
       "market_sigma_pct": 0.08,
       "market_severity": "quiet",
-      "price_as_of": "2026-11-22",
+      "price_as_of": "2026-11-23",
       "trend": "Stable",
-      "summary": "USD/CNY -0.06% today, within its normal range (\u00b10.08% a day). No live inflation or policy-rate feed is connected for this region.",
+      "summary": "USD/CNY +0.11% today, about 1.3\u00d7 its normal daily move, below the level treated as unusual. No live inflation or policy-rate feed is connected for this region.",
       "sources": [
         "Yahoo Finance"
       ]
@@ -2462,9 +2472,14 @@
   ],
   "geopolitical_intel": {
     "China": {
-      "article_count": 521,
-      "avg_tone": -0.9,
+      "article_count": 560,
+      "avg_tone": -0.7,
       "articles": [
+        {
+          "title": "China suspends logistics and food companies as rocket force corruption probe widens",
+          "url": "https://www.theepochtimes.com/china/china-suspends-logistics-and-food-companies-as-rocket-force-corruption-probe-widens-6128066",
+          "tone": -4.1
+        },
         {
           "title": "China's spies set sights on ai semiconductors years before nvidia scandal 126112200539 1",
           "url": "https://www.business-standard.com/world-news/china-s-spies-set-sights-on-ai-semiconductors-years-before-nvidia-scandal-126112200539_1.html",
@@ -2479,13 +2494,13 @@
       "has_relevant": true,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 2014,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 2171,
       "event_mix": {
         "protest": 11,
-        "sanctions_embargo": 3,
-        "coerce": 83,
-        "assault": 9,
+        "sanctions_embargo": 4,
+        "coerce": 90,
+        "assault": 8,
         "fight": 31,
         "mass_violence": 0
       },
@@ -2493,13 +2508,8 @@
     },
     "Germany": {
       "article_count": 169,
-      "avg_tone": -1.7,
+      "avg_tone": -1.6,
       "articles": [
-        {
-          "title": "German car and shipyard workers set to strike as ig metall union extends walkout",
-          "url": "https://www.933thedrive.com/2026/11/21/german-car-and-shipyard-workers-set-to-strike-as-ig-metall-union-extends-walkout/",
-          "tone": -2.3
-        },
         {
           "title": "Germany flu vaccine shortage family doctors report empty stock despite doses released",
           "url": "https://www.techtimes.com/articles/331247/20261121/germany-flu-vaccine-shortage-family-doctors-report-empty-stock-despite-doses-released.htm",
@@ -2509,88 +2519,83 @@
       "has_relevant": true,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 565,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 568,
       "event_mix": {
-        "protest": 11,
-        "sanctions_embargo": 1,
-        "coerce": 14,
-        "assault": 20,
-        "fight": 33,
+        "protest": 5,
+        "sanctions_embargo": 0,
+        "coerce": 18,
+        "assault": 15,
+        "fight": 30,
         "mass_violence": 0
       },
-      "goldstein_avg": 0.4
+      "goldstein_avg": 0.5
     },
     "South Korea": {
-      "article_count": 77,
-      "avg_tone": -2.4,
+      "article_count": 100,
+      "avg_tone": -2.3,
       "articles": [],
       "has_relevant": false,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 277,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 342,
       "event_mix": {
         "protest": 1,
         "sanctions_embargo": 0,
-        "coerce": 8,
+        "coerce": 9,
         "assault": 1,
-        "fight": 8,
+        "fight": 9,
         "mass_violence": 0
       },
-      "goldstein_avg": 1.5
+      "goldstein_avg": 1.7
     },
     "Austria": {
-      "article_count": 23,
-      "avg_tone": 0.4,
+      "article_count": 25,
+      "avg_tone": 0.9,
       "articles": [],
       "has_relevant": false,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 66,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 69,
       "event_mix": {
-        "protest": 0,
+        "protest": 1,
         "sanctions_embargo": 0,
-        "coerce": 1,
+        "coerce": 0,
         "assault": 0,
         "fight": 2,
         "mass_violence": 0
       },
-      "goldstein_avg": 2.7
+      "goldstein_avg": 1.8
     },
     "Finland": {
-      "article_count": 88,
-      "avg_tone": -4.7,
+      "article_count": 87,
+      "avg_tone": -4.4,
       "articles": [],
       "has_relevant": false,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 358,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 335,
       "event_mix": {
         "protest": 1,
-        "sanctions_embargo": 0,
-        "coerce": 4,
-        "assault": 8,
-        "fight": 69,
+        "sanctions_embargo": 2,
+        "coerce": 10,
+        "assault": 10,
+        "fight": 54,
         "mass_violence": 0
       },
-      "goldstein_avg": -1.9
+      "goldstein_avg": -1.8
     },
     "India": {
-      "article_count": 1189,
-      "avg_tone": -1.1,
+      "article_count": 1205,
+      "avg_tone": -0.8,
       "articles": [
         {
           "title": "Nea moves to import 150 mw from india amid dry season shortages",
           "url": "https://peoplesreview.com.np/2026/11/22/nea-moves-to-import-150-mw-from-india-amid-dry-season-shortages/",
           "tone": -1.3
-        },
-        {
-          "title": "India a swing vote at imo meeting on shipping decarbonisation",
-          "url": "https://www.thehindu.com/business/india-a-swing-vote-at-imo-meeting-on-shipping-decarbonisation/article71729104.ece",
-          "tone": 1.3
         },
         {
           "title": "India netherlands eye tangible cooperation in semiconductors energy security dutch fm",
@@ -2606,26 +2611,31 @@
           "title": "India eu trade deal likely to be signed on december 16",
           "url": "https://economictimes.indiatimes.com/news/economy/foreign-trade/india-eu-trade-deal-likely-to-be-signed-on-december-16/articleshow/136082167.cms",
           "tone": 4.4
+        },
+        {
+          "title": "India canada cepa trade deal talks 6th round ends all about pact eyeing 50 billion trade impact on india 1820014030 1",
+          "url": "https://www.jagranjosh.com/general-knowledge/india-canada-cepa-trade-deal-talks-6th-round-ends-all-about-pact-eyeing-50-billion-trade-impact-on-india-1820014030-1",
+          "tone": 6.7
         }
       ],
       "has_relevant": true,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 4601,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 4554,
       "event_mix": {
-        "protest": 58,
+        "protest": 52,
         "sanctions_embargo": 1,
-        "coerce": 161,
-        "assault": 45,
-        "fight": 145,
+        "coerce": 150,
+        "assault": 39,
+        "fight": 138,
         "mass_violence": 0
       },
-      "goldstein_avg": 1.1
+      "goldstein_avg": 1.2
     },
     "South Africa": {
-      "article_count": 132,
-      "avg_tone": -1.5,
+      "article_count": 141,
+      "avg_tone": -1.6,
       "articles": [
         {
           "title": "Sa health department acknowledges medicine shortages in public healthcare",
@@ -2636,39 +2646,39 @@
       "has_relevant": true,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 660,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 775,
       "event_mix": {
-        "protest": 6,
+        "protest": 5,
         "sanctions_embargo": 0,
-        "coerce": 25,
+        "coerce": 26,
         "assault": 1,
-        "fight": 19,
+        "fight": 27,
         "mass_violence": 0
       },
       "goldstein_avg": 1.2
     },
     "Sweden": {
-      "article_count": 24,
-      "avg_tone": -3.5,
+      "article_count": 27,
+      "avg_tone": -4.0,
       "articles": [],
       "has_relevant": false,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 60,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 69,
       "event_mix": {
         "protest": 2,
         "sanctions_embargo": 0,
-        "coerce": 3,
+        "coerce": 5,
         "assault": 4,
         "fight": 3,
         "mass_violence": 0
       },
-      "goldstein_avg": -1.0
+      "goldstein_avg": -1.3
     },
     "USA": {
-      "article_count": 3281,
+      "article_count": 3372,
       "avg_tone": -2.1,
       "articles": [
         {
@@ -2692,29 +2702,29 @@
           "tone": -5.7
         },
         {
-          "title": "Article us sanction canadian judge kimberly prost ottawa",
-          "url": "https://www.theglobeandmail.com/business/commentary/article-us-sanction-canadian-judge-kimberly-prost-ottawa/",
-          "tone": -5.5
+          "title": "A decade after deadly chattanooga bus crash debate grows over driver rules and shortages",
+          "url": "https://wcyb.com/news/local/a-decade-after-deadly-chattanooga-bus-crash-debate-grows-over-driver-rules-and-shortages",
+          "tone": -5.6
         }
       ],
       "has_relevant": true,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 13854,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 13985,
       "event_mix": {
-        "protest": 61,
-        "sanctions_embargo": 16,
-        "coerce": 734,
-        "assault": 230,
-        "fight": 857,
+        "protest": 65,
+        "sanctions_embargo": 19,
+        "coerce": 690,
+        "assault": 215,
+        "fight": 890,
         "mass_violence": 0
       },
       "goldstein_avg": 0.5
     },
     "Japan": {
-      "article_count": 131,
-      "avg_tone": 0.3,
+      "article_count": 134,
+      "avg_tone": 0.0,
       "articles": [
         {
           "title": "China issues mount fuji warning",
@@ -2725,31 +2735,31 @@
       "has_relevant": true,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 401,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 458,
       "event_mix": {
-        "protest": 2,
+        "protest": 1,
         "sanctions_embargo": 0,
-        "coerce": 11,
-        "assault": 1,
-        "fight": 12,
+        "coerce": 18,
+        "assault": 3,
+        "fight": 15,
         "mass_violence": 0
       },
-      "goldstein_avg": 0.9
+      "goldstein_avg": 0.7
     },
     "Switzerland": {
-      "article_count": 48,
+      "article_count": 47,
       "avg_tone": -1.1,
       "articles": [],
       "has_relevant": false,
       "query_mode": "events",
       "window": "1d",
-      "fetched_at": "2026-11-22T22:55:30.335800+00:00",
-      "event_count": 155,
+      "fetched_at": "2026-11-23T04:25:24.624055+00:00",
+      "event_count": 143,
       "event_mix": {
         "protest": 1,
         "sanctions_embargo": 0,
-        "coerce": 3,
+        "coerce": 4,
         "assault": 2,
         "fight": 7,
         "mass_violence": 0
@@ -2759,74 +2769,74 @@
   },
   "geopolitical_attempts": {
     "Austria": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
       "consecutive_failures": 0,
-      "last_success": "2026-11-22T22:55:32.143946+00:00"
+      "last_success": "2026-11-23T04:25:26.321877+00:00"
     },
     "China": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
       "consecutive_failures": 0,
-      "last_success": "2026-11-22T22:55:32.143946+00:00"
+      "last_success": "2026-11-23T04:25:26.321877+00:00"
     },
     "Finland": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
       "consecutive_failures": 0,
-      "last_success": "2026-11-22T22:55:32.143946+00:00"
+      "last_success": "2026-11-23T04:25:26.321877+00:00"
     },
     "Germany": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
       "consecutive_failures": 0,
-      "last_success": "2026-11-22T22:55:32.143946+00:00"
+      "last_success": "2026-11-23T04:25:26.321877+00:00"
     },
     "India": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
-      "last_success": "2026-11-22T22:55:32.143946+00:00",
+      "last_success": "2026-11-23T04:25:26.321877+00:00",
       "consecutive_failures": 0
     },
     "Japan": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
       "consecutive_failures": 0,
-      "last_success": "2026-11-22T22:55:32.143946+00:00"
+      "last_success": "2026-11-23T04:25:26.321877+00:00"
     },
     "South Africa": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
-      "last_success": "2026-11-22T22:55:32.143946+00:00",
+      "last_success": "2026-11-23T04:25:26.321877+00:00",
       "consecutive_failures": 0
     },
     "South Korea": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
       "consecutive_failures": 0,
-      "last_success": "2026-11-22T22:55:32.143946+00:00"
+      "last_success": "2026-11-23T04:25:26.321877+00:00"
     },
     "Sweden": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
-      "last_success": "2026-11-22T22:55:32.143946+00:00",
+      "last_success": "2026-11-23T04:25:26.321877+00:00",
       "consecutive_failures": 0
     },
     "Switzerland": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
       "consecutive_failures": 0,
-      "last_success": "2026-11-22T22:55:32.143946+00:00"
+      "last_success": "2026-11-23T04:25:26.321877+00:00"
     },
     "USA": {
-      "last_attempt": "2026-11-22T22:55:32.143946+00:00",
+      "last_attempt": "2026-11-23T04:25:26.321877+00:00",
       "last_status": "ok",
       "consecutive_failures": 0,
-      "last_success": "2026-11-22T22:55:32.143946+00:00"
+      "last_success": "2026-11-23T04:25:26.321877+00:00"
     }
   },
   "world_signals": {
-    "fetched_at": "2026-11-22T22:55:32.182097+00:00",
+    "fetched_at": "2026-11-23T04:25:26.356267+00:00",
     "level": "severe",
     "drivers": [
       "Strait of Hormuz: transits down 97% on a year earlier (week to 15 Nov)",
@@ -3164,13 +3174,13 @@
       {
         "id": "river-rhine-at-kaub",
         "label": "Rhine at Kaub",
-        "value": 222.0,
+        "value": 224.0,
         "unit": "cm",
-        "as_of": "2026-11-22T23:45:00+01:00",
+        "as_of": "2026-11-23T05:15:00+01:00",
         "baseline": 208,
         "change_pct": null,
         "severity": "quiet",
-        "headline": "The Rhine at Kaub reads 222 cm (normal 208 cm, forecast 137-232 cm over the next two days), above the 80 cm mark where low water starts to limit barge loads; it is the route for AMCOR, Cerdia and CNT.",
+        "headline": "The Rhine at Kaub reads 224 cm (normal 208 cm, forecast 137-232 cm over the next two days), above the 80 cm mark where low water starts to limit barge loads; it is the route for AMCOR, Cerdia and CNT.",
         "affected_categories": [
           "Filter Materials",
           "Nicotine",
@@ -3190,13 +3200,13 @@
       {
         "id": "river-rhine-at-maxau",
         "label": "Rhine at Maxau",
-        "value": 509.0,
+        "value": 515.0,
         "unit": "cm",
-        "as_of": "2026-11-22T23:45:00+01:00",
+        "as_of": "2026-11-23T05:15:00+01:00",
         "baseline": 496,
         "change_pct": null,
         "severity": "quiet",
-        "headline": "The Rhine at Maxau reads 509 cm (normal 496 cm), above the 375 cm mark where low water starts to limit barge loads; it is the route for AMCOR, Cerdia and CNT.",
+        "headline": "The Rhine at Maxau reads 515 cm (normal 496 cm), above the 375 cm mark where low water starts to limit barge loads; it is the route for AMCOR, Cerdia and CNT.",
         "affected_categories": [
           "Filter Materials",
           "Nicotine",
@@ -3294,7 +3304,7 @@
       },
       "pegelonline": {
         "status": "ok",
-        "detail": "Rhine at Kaub 222 cm at 2026-11-22T23:45:00+01:00, Rhine at Maxau 509 cm at 2026-11-22T23:45:00+01:00"
+        "detail": "Rhine at Kaub 224 cm at 2026-11-23T05:15:00+01:00, Rhine at Maxau 515 cm at 2026-11-23T05:15:00+01:00"
       },
       "gdacs": {
         "status": "ok",
@@ -3307,9 +3317,27 @@
     }
   },
   "screening": {
-    "fetched_at": "2026-11-22T22:54:12.455733+00:00",
+    "fetched_at": "2026-11-23T04:24:08.699409+00:00",
     "hits": {},
     "notices": [
+      {
+        "title": "Tobacco Products Scientific Advisory Committee; Notice of Meeting; Establishment of a Public Docket; Request for Comments",
+        "date": "2026-11-23",
+        "url": "https://www.federalregister.gov/documents/2026/11/23/2026-23750/tobacco-products-scientific-advisory-committee-notice-of-meeting-establishment-of-a-public-docket",
+        "agencies": [
+          "Health and Human Services Department",
+          "Food and Drug Administration"
+        ],
+        "topic": "fda_ends",
+        "affected_categories": [
+          "Batteries",
+          "EMS",
+          "Modern/Traditional Oral Fleece",
+          "Nicotine"
+        ],
+        "type": "Notice",
+        "document_number": "2026-23750"
+      },
       {
         "title": "Notice of Product Exclusion Extensions: China's Acts, Policies, and Practices Related to Technology Transfer, Intellectual Property, and Innovation",
         "date": "2026-11-10",
@@ -3381,7 +3409,7 @@
     "sources": {
       "consolidated_screening_list": {
         "status": "ok",
-        "detail": "26,301 entries, 16,706 screened (people, vessels and aircraft skipped) in 0.6s; 0 possible match(es) across 0 supplier(s)"
+        "detail": "26,301 entries, 16,706 screened (people, vessels and aircraft skipped) in 0.7s; 0 possible match(es) across 0 supplier(s)"
       },
       "uflpa_entity_list": {
         "status": "ok",
@@ -3389,16 +3417,16 @@
       },
       "federal_register": {
         "status": "ok",
-        "detail": "6/6 topics read in 0.3s; 4 notice(s) since 2026-10-23 (section_301: 3, uflpa: 1)"
+        "detail": "6/6 topics read in 0.7s; 5 notice(s) since 2026-10-24 (section_301: 3, uflpa: 1, fda_ends: 1)"
       }
     },
     "unscreened": [
       "Fuji"
     ],
-    "duration_seconds": 0.82
+    "duration_seconds": 0.85
   },
   "asia_filings": {
-    "fetched_at": "2026-11-22T22:54:16.277872+00:00",
+    "fetched_at": "2026-11-23T04:24:12.530923+00:00",
     "window_days": 14,
     "filings": {
       "Smoore": [
@@ -3604,15 +3632,15 @@
         "detail": "EVE Energy (300014) orgId 9900008311 (live): 13 filing(s), 1 flagged; Porton (300363) orgId 9900022740 (live): 2 filing(s), 0 flagged"
       }
     },
-    "duration_seconds": 10.2
+    "duration_seconds": 8.01
   },
   "ransom_claims": {
-    "fetched_at": "2026-11-22T22:54:13.283079+00:00",
+    "fetched_at": "2026-11-23T04:24:09.554080+00:00",
     "hits": {},
     "sources": {
       "ransomlook_recent": {
         "status": "ok",
-        "detail": "100 latest posts back to 2026-11-19T11:16+00:00"
+        "detail": "100 latest posts back to 2026-11-20T11:17+00:00"
       },
       "ransomlook_search": {
         "status": "ok",
@@ -3622,7 +3650,7 @@
     "unscreened": [
       "Fuji"
     ],
-    "duration_seconds": 2.99
+    "duration_seconds": 2.97
   },
   "harvest_stats": {
     "total_errors": 0,
@@ -3630,83 +3658,83 @@
     "total_successes": 12,
     "errors": [],
     "warnings": [],
-    "duration_seconds": 97.485518
+    "duration_seconds": 90.386752
   },
   "source_health": {
     "yfinance_prices": {
       "status": "ok",
       "detail": "prices for 3/3 markets, 4/4 peers, 11/11 listed suppliers",
-      "checked_at": "2026-11-22T22:55:30.329659+00:00"
+      "checked_at": "2026-11-23T04:25:24.617871+00:00"
     },
     "yfinance_news": {
       "status": "ok",
       "detail": "headlines for 4/4 peers, 10/11 listed suppliers",
-      "checked_at": "2026-11-22T22:55:30.329710+00:00"
+      "checked_at": "2026-11-23T04:25:24.617889+00:00"
     },
     "google_news": {
       "status": "ok",
       "detail": "headlines for 9/18 searches",
-      "checked_at": "2026-11-22T22:55:29.984631+00:00"
+      "checked_at": "2026-11-23T04:25:24.255432+00:00"
     },
     "fred": {
       "status": "ok",
       "detail": "current readings for 3/4 series; CPIAUCSL has no latest value",
-      "checked_at": "2026-11-22T22:54:04.540758+00:00"
+      "checked_at": "2026-11-23T04:24:06.586782+00:00"
     },
     "cisa": {
       "status": "ok",
       "detail": "9 KEVs added in the last 7 days, all screened (catalog of 1790)",
-      "checked_at": "2026-11-22T22:54:01.348638+00:00"
+      "checked_at": "2026-11-23T04:24:03.117956+00:00"
     },
     "cpsc": {
       "status": "ok",
       "detail": "132 recalls from the last 90 days screened",
-      "checked_at": "2026-11-22T22:54:01.445275+00:00"
+      "checked_at": "2026-11-23T04:24:03.352949+00:00"
     },
     "ofac": {
       "status": "ok",
       "detail": "19599 SDN entries screened",
-      "checked_at": "2026-11-22T22:54:03.224305+00:00"
+      "checked_at": "2026-11-23T04:24:04.736076+00:00"
     },
     "ecb": {
       "status": "ok",
       "detail": "EUR/USD reference rate 1.099",
-      "checked_at": "2026-11-22T22:54:05.302981+00:00"
+      "checked_at": "2026-11-23T04:24:07.133323+00:00"
     },
     "sec": {
       "status": "ok",
       "detail": "8-K feed read for 1/1 US-listed peers",
-      "checked_at": "2026-11-22T22:54:11.766502+00:00"
+      "checked_at": "2026-11-23T04:24:08.021215+00:00"
     },
     "gdelt": {
       "status": "ok",
-      "detail": "events for 11/11 countries over 1d, 95/96 event files",
-      "checked_at": "2026-11-22T22:55:32.144027+00:00"
+      "detail": "events for 11/11 countries over 1d, 96/96 event files",
+      "checked_at": "2026-11-23T04:25:26.321982+00:00"
     },
     "claude": {
       "status": "ok",
       "detail": "executive summary written",
-      "checked_at": "2026-11-22T22:55:38.691015+00:00"
+      "checked_at": "2026-11-23T04:25:33.390089+00:00"
     },
     "asia_filings": {
       "status": "ok",
       "detail": "HKEXnews and CNINFO: 2/2 sources answered",
-      "checked_at": "2026-11-22T22:54:26.480043+00:00"
+      "checked_at": "2026-11-23T04:24:20.540444+00:00"
     },
     "ransom": {
       "status": "ok",
       "detail": "RansomLook: 2/2 sources answered",
-      "checked_at": "2026-11-22T22:54:26.480054+00:00"
+      "checked_at": "2026-11-23T04:24:20.540455+00:00"
     },
     "screening": {
       "status": "ok",
       "detail": "US trade lists and Federal Register: 3/3 sources answered",
-      "checked_at": "2026-11-22T22:54:26.480022+00:00"
+      "checked_at": "2026-11-23T04:24:20.540418+00:00"
     },
     "world_signals": {
       "status": "ok",
       "detail": "chokepoints, Rhine, hazards, input prices: 4/4 sources answered",
-      "checked_at": "2026-11-22T22:55:32.965000+00:00"
+      "checked_at": "2026-11-23T04:25:27.834068+00:00"
     }
   },
   "health": {
